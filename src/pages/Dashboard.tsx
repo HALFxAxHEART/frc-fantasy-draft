@@ -1,27 +1,28 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Moon, Sun } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchEvents, type TBAEvent } from "@/lib/tba-api";
+import { fetchEvents } from "@/lib/tba-api";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import { EventSelector } from "@/components/EventSelector";
 
 const Dashboard = () => {
   const [participants, setParticipants] = useState(2);
   const [participantNames, setParticipantNames] = useState<string[]>([]);
   const [selectedEvent, setSelectedEvent] = useState("");
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedDistrict, setSelectedDistrict] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  const currentYear = new Date().getFullYear();
   const { data: events, isLoading, error } = useQuery({
-    queryKey: ['events', currentYear],
-    queryFn: () => fetchEvents(currentYear),
+    queryKey: ['events', selectedYear],
+    queryFn: () => fetchEvents(selectedYear),
   });
 
   useEffect(() => {
@@ -145,25 +146,17 @@ const Dashboard = () => {
               ))}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Select Event
-              </label>
-              <Select value={selectedEvent} onValueChange={setSelectedEvent}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select an event..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {events?.map((event) => (
-                    <SelectItem key={event.key} value={event.key}>
-                      {event.name} ({event.city}, {event.state_prov})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {isLoading && <p className="text-sm text-gray-500">Loading events...</p>}
-              {error && <p className="text-sm text-red-500">Error loading events</p>}
-            </div>
+            <EventSelector
+              events={events}
+              selectedEvent={selectedEvent}
+              onEventChange={setSelectedEvent}
+              selectedYear={selectedYear}
+              onYearChange={setSelectedYear}
+              selectedDistrict={selectedDistrict}
+              onDistrictChange={setSelectedDistrict}
+              isLoading={isLoading}
+              error={error instanceof Error ? error : null}
+            />
 
             <Button
               className="w-full bg-primary hover:bg-primary/90 text-white mt-4"
