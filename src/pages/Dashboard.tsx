@@ -8,12 +8,15 @@ import { Moon, Sun } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEvents, type TBAEvent } from "@/lib/tba-api";
 import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [participants, setParticipants] = useState(2);
+  const [participantNames, setParticipantNames] = useState<string[]>([]);
   const [selectedEvent, setSelectedEvent] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const currentYear = new Date().getFullYear();
   const { data: events, isLoading, error } = useQuery({
@@ -28,12 +31,49 @@ const Dashboard = () => {
     }
   }, []);
 
+  useEffect(() => {
+    setParticipantNames(Array(participants).fill(""));
+  }, [participants]);
+
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
     document.documentElement.classList.toggle('dark');
     toast({
       title: `${isDarkMode ? 'Light' : 'Dark'} mode enabled`,
       duration: 1500,
+    });
+  };
+
+  const handleStartDraft = () => {
+    if (participantNames.some(name => !name.trim())) {
+      toast({
+        title: "Error",
+        description: "All participants must have names",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedEvent) {
+      toast({
+        title: "Error",
+        description: "Please select an event",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Randomize participant order
+    const shuffledParticipants = [...participantNames]
+      .map(value => ({ value, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ value }) => value);
+
+    navigate("/draft", {
+      state: {
+        participants: shuffledParticipants,
+        selectedEvent,
+      },
     });
   };
 
@@ -86,6 +126,25 @@ const Dashboard = () => {
               />
             </div>
 
+            <div className="space-y-4">
+              {participantNames.map((name, index) => (
+                <div key={index}>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Participant {index + 1} Name
+                  </label>
+                  <Input
+                    value={name}
+                    onChange={(e) => {
+                      const newNames = [...participantNames];
+                      newNames[index] = e.target.value;
+                      setParticipantNames(newNames);
+                    }}
+                    className="w-full max-w-xs dark:bg-secondary/80"
+                  />
+                </div>
+              ))}
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Select Event
@@ -108,7 +167,7 @@ const Dashboard = () => {
 
             <Button
               className="w-full bg-primary hover:bg-primary/90 text-white mt-4"
-              onClick={() => {}}
+              onClick={handleStartDraft}
             >
               Start Draft
             </Button>
