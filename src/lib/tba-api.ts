@@ -18,14 +18,22 @@ export interface TBAEvent {
 }
 
 export const fetchEvents = async (year: number) => {
+  const apiKey = import.meta.env.VITE_TBA_API_KEY;
+  
+  if (!apiKey) {
+    throw new Error('TBA API key is not configured. Please set VITE_TBA_API_KEY in your environment.');
+  }
+
   const response = await fetch(`${TBA_API_BASE_URL}/events/${year}`, {
     headers: {
-      'X-TBA-Auth-Key': import.meta.env.VITE_TBA_API_KEY || '',
+      'X-TBA-Auth-Key': apiKey,
+      'Accept': 'application/json',
     },
   });
   
   if (!response.ok) {
-    throw new Error('Failed to fetch events');
+    const errorText = await response.text();
+    throw new Error(`Failed to fetch events: ${response.status} ${response.statusText}\n${errorText}`);
   }
   
   return response.json() as Promise<TBAEvent[]>;

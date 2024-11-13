@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Moon, Sun } from "lucide-react";
@@ -22,7 +22,6 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    // Initialize dark mode from system preference
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       setIsDarkMode(true);
       document.documentElement.classList.add('dark');
@@ -91,17 +90,17 @@ const Dashboard = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Select Event
               </label>
-              <Select
-                value={selectedEvent}
-                onChange={(e) => setSelectedEvent(e.target.value)}
-                className="w-full"
-              >
-                <option value="">Select an event...</option>
-                {events?.map((event) => (
-                  <option key={event.key} value={event.key}>
-                    {event.name} ({event.city}, {event.state_prov})
-                  </option>
-                ))}
+              <Select value={selectedEvent} onValueChange={setSelectedEvent}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select an event..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {events?.map((event) => (
+                    <SelectItem key={event.key} value={event.key}>
+                      {event.name} ({event.city}, {event.state_prov})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
               {isLoading && <p className="text-sm text-gray-500">Loading events...</p>}
               {error && <p className="text-sm text-red-500">Error loading events</p>}
