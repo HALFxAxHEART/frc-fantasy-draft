@@ -30,17 +30,17 @@ export const DraftComplete = ({ participants }: DraftCompleteProps) => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 bg-black/90 backdrop-blur-lg z-50 flex items-center justify-center"
+      className="fixed inset-0 bg-background/90 backdrop-blur-lg z-50 flex items-center justify-center"
     >
       <div className="max-w-4xl w-full mx-auto p-8">
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 p-8 rounded-lg shadow-xl border border-primary/20 text-center space-y-6"
+          className="bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 p-8 rounded-lg shadow-xl border border-border text-center space-y-6"
         >
           <Trophy className="w-20 h-20 mx-auto text-primary animate-pulse" />
-          <h2 className="text-4xl font-bold text-foreground bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary animate-pulse">
+          <h2 className="text-4xl font-bold text-foreground">
             Draft Complete!
           </h2>
           <div className="grid grid-cols-2 gap-6 mt-8">
@@ -56,7 +56,7 @@ export const DraftComplete = ({ participants }: DraftCompleteProps) => {
                   {participant.teams.map((team) => (
                     <div
                       key={team.teamNumber}
-                      className="bg-background/40 p-3 rounded text-sm backdrop-blur-sm border border-primary/10"
+                      className="bg-card p-3 rounded text-sm text-card-foreground border border-border"
                     >
                       Team {team.teamNumber} - {team.teamName}
                     </div>
@@ -67,7 +67,7 @@ export const DraftComplete = ({ participants }: DraftCompleteProps) => {
           </div>
           <Button
             onClick={() => navigate("/dashboard")}
-            className="mt-8 bg-primary hover:bg-primary/90"
+            className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground"
             size="lg"
           >
             Return to Dashboard
