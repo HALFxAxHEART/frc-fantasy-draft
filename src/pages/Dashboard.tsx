@@ -41,7 +41,6 @@ const Dashboard = () => {
 
       if (error) {
         console.error('Profile fetch error:', error);
-        // Return a fallback profile if there's an error
         return { 
           id: user.id, 
           display_name: user.email?.split('@')[0] || 'User',
