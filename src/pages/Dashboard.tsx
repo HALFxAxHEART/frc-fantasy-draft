@@ -15,7 +15,6 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Check authentication status
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -26,7 +25,6 @@ const Dashboard = () => {
     checkAuth();
   }, [navigate]);
 
-  // Fetch user profile
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
@@ -41,14 +39,13 @@ const Dashboard = () => {
 
       if (error) {
         console.error('Profile fetch error:', error);
-        throw error;
+        return { id: user.id, display_name: user.email?.split('@')[0] || 'User' };
       }
       
       return data || { id: user.id, display_name: user.email?.split('@')[0] || 'User' };
     },
   });
 
-  // Fetch user's drafts
   const { data: drafts = [], isLoading: draftsLoading } = useQuery({
     queryKey: ['drafts'],
     queryFn: async () => {
@@ -63,14 +60,13 @@ const Dashboard = () => {
 
       if (error) {
         console.error('Drafts fetch error:', error);
-        throw error;
+        return [];
       }
       return data || [];
     },
     enabled: !!profile,
   });
 
-  // Fetch upcoming events
   const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ['events'],
     queryFn: () => fetchEvents(new Date().getFullYear()),
@@ -84,7 +80,6 @@ const Dashboard = () => {
     );
   }
 
-  // Show dashboard content
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/20 to-background p-8">
       <motion.div

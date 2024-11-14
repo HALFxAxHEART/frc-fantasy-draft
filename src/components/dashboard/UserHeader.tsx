@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Moon, Sun, Settings, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,16 +16,27 @@ export const UserHeader = ({ displayName }: { displayName: string }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  useEffect(() => {
+    // Check if dark mode was previously enabled
+    const isDark = localStorage.getItem("darkMode") === "true";
+    setIsDarkMode(isDark);
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate('/login');
   };
 
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    localStorage.setItem("darkMode", String(newDarkMode));
+    document.documentElement.classList.toggle("dark");
     toast({
-      title: `${isDarkMode ? 'Light' : 'Dark'} mode enabled`,
+      title: `${newDarkMode ? 'Dark' : 'Light'} mode enabled`,
       duration: 1500,
     });
   };
