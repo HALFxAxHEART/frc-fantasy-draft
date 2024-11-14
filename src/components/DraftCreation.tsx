@@ -1,9 +1,6 @@
-import { useState } from "react";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { EventSelector } from "./EventSelector";
-import { TBAEvent } from "@/lib/tba-api";
 
 interface DraftCreationProps {
   participants: number;
@@ -20,25 +17,10 @@ export const DraftCreation = ({
   onParticipantNameChange,
   onStartDraft,
 }: DraftCreationProps) => {
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [selectedEvent, setSelectedEvent] = useState("");
-  const [events, setEvents] = useState<TBAEvent[]>([]);
-
   return (
     <Card className="p-6 space-y-6">
       <h2 className="text-2xl font-semibold">Create New Draft</h2>
       
-      <EventSelector
-        events={events}
-        selectedEvent={selectedEvent}
-        onEventChange={setSelectedEvent}
-        selectedYear={selectedYear}
-        onYearChange={setSelectedYear}
-        selectedDistrict={selectedDistrict}
-        onDistrictChange={setSelectedDistrict}
-      />
-
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-1">
@@ -54,25 +36,24 @@ export const DraftCreation = ({
           />
         </div>
 
-        {Array.from({ length: participants }).map((_, index) => (
-          <div key={index}>
-            <label className="block text-sm font-medium mb-1">
-              Participant {index + 1} Name
-            </label>
-            <Input
-              type="text"
-              value={participantNames[index] || ''}
-              onChange={(e) => onParticipantNameChange(index, e.target.value)}
-              className="w-full max-w-xs"
-              placeholder={`Enter name for participant ${index + 1}`}
-            />
-          </div>
-        ))}
+        <div className="space-y-4">
+          {participantNames.map((name, index) => (
+            <div key={index}>
+              <label className="block text-sm font-medium mb-1">
+                Participant {index + 1} Name
+              </label>
+              <Input
+                value={name}
+                onChange={(e) => onParticipantNameChange(index, e.target.value)}
+                className="w-full max-w-xs"
+              />
+            </div>
+          ))}
+        </div>
 
-        <Button 
+        <Button
+          className="w-full bg-primary hover:bg-primary/90 text-white mt-4"
           onClick={onStartDraft}
-          className="mt-4"
-          disabled={!selectedEvent || participantNames.some(name => !name.trim())}
         >
           Start Draft
         </Button>
