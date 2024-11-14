@@ -65,6 +65,7 @@ const Draft = () => {
   });
 
   const [availableTeams, setAvailableTeams] = useState([]);
+  const [isTimerActive, setIsTimerActive] = useState(true);
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -109,11 +110,7 @@ const Draft = () => {
       description: `${draftState.participants[draftState.currentParticipantIndex].name}'s turn has ended`,
       variant: "destructive",
     });
-    setDraftState((prev) => ({
-      ...prev,
-      currentParticipantIndex: (prev.currentParticipantIndex + 1) % prev.participants.length,
-      timeRemaining: 120,
-    }));
+    setIsTimerActive(false);
   };
 
   const startDraft = () => {
@@ -121,6 +118,7 @@ const Draft = () => {
       ...prev,
       draftStarted: true,
     }));
+    setIsTimerActive(true);
     toast({
       title: "Draft Started",
       description: `${draftState.participants[0].name}'s turn to pick`,
@@ -163,6 +161,8 @@ const Draft = () => {
       prev.filter((t) => t.teamNumber !== team.teamNumber)
     );
 
+    setIsTimerActive(true);
+
     toast({
       title: "Team Selected",
       description: `Team ${team.teamNumber} has been drafted`,
@@ -200,6 +200,7 @@ const Draft = () => {
             <DraftTimer
               initialTime={draftState.timeRemaining}
               onTimeUp={handleTimeUp}
+              isActive={isTimerActive}
             />
           </div>
         </div>
@@ -225,27 +226,6 @@ const Draft = () => {
               ))}
             </div>
           )}
-        </Card>
-
-        <Card className="p-6">
-          <h3 className="text-xl font-bold mb-4">Selected Teams</h3>
-          <div className="space-y-4">
-            {draftState.participants.map((participant) => (
-              <div key={participant.name} className="space-y-2">
-                <h4 className="font-semibold">{participant.name}</h4>
-                <div className="flex flex-wrap gap-2">
-                  {participant.teams.map((team) => (
-                    <span
-                      key={team.teamNumber}
-                      className="inline-block bg-muted px-3 py-1 rounded-full text-sm"
-                    >
-                      Team {team.teamNumber} ({team.districtPoints} pts)
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
         </Card>
       </motion.div>
     </div>
