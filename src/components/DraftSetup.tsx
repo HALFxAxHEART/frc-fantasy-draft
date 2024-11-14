@@ -10,11 +10,7 @@ interface DraftSetupProps {
 }
 
 export const DraftSetup = ({ participants, onStartDraft }: DraftSetupProps) => {
-  const [showAnimation, setShowAnimation] = useState(false);
-
-  const handleStartClick = () => {
-    setShowAnimation(true);
-  };
+  const [showAnimation, setShowAnimation] = useState(true); // Changed to true to show animation immediately
 
   return (
     <motion.div
@@ -23,7 +19,7 @@ export const DraftSetup = ({ participants, onStartDraft }: DraftSetupProps) => {
       className="space-y-6"
     >
       <Card className="p-6">
-        <h2 className="text-2xl font-semibold mb-4">Draft Order</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-foreground">Draft Order</h2>
         <div className="space-y-4">
           {participants.map((participant, index) => (
             <div
@@ -31,14 +27,14 @@ export const DraftSetup = ({ participants, onStartDraft }: DraftSetupProps) => {
               className="flex items-center space-x-4 p-4 bg-muted rounded-lg"
             >
               <span className="text-2xl font-bold text-primary">{index + 1}</span>
-              <span className="font-medium">{participant.name}</span>
+              <span className="font-medium text-foreground">{participant.name}</span>
             </div>
           ))}
         </div>
         <Button
           className="w-full mt-6"
           size="lg"
-          onClick={handleStartClick}
+          onClick={onStartDraft}
         >
           Start Draft
         </Button>
@@ -47,7 +43,7 @@ export const DraftSetup = ({ participants, onStartDraft }: DraftSetupProps) => {
       {showAnimation && (
         <DraftOrderAnimation 
           participants={participants}
-          onComplete={onStartDraft}
+          onComplete={() => setShowAnimation(false)}
         />
       )}
     </motion.div>
