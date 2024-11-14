@@ -20,10 +20,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/lib/supabase";
+import { EventSelector } from "@/components/EventSelector";
+import { DraftCreation } from "@/components/DraftCreation";
 
 const Dashboard = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [userName, setUserName] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState("");
+  const [participants, setParticipants] = useState(2);
+  const [participantNames, setParticipantNames] = useState(["", ""]);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -56,7 +61,7 @@ const Dashboard = () => {
           .single();
         
         if (profile) {
-          setUserName(profile.display_name);
+          setDisplayName(profile.display_name);
         }
       }
     };
@@ -76,6 +81,28 @@ const Dashboard = () => {
       title: `${isDarkMode ? 'Light' : 'Dark'} mode enabled`,
       duration: 1500,
     });
+  };
+
+  const handleStartDraft = () => {
+    if (!selectedEvent) {
+      toast({
+        title: "Error",
+        description: "Please select an event",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (participantNames.some(name => !name.trim())) {
+      toast({
+        title: "Error",
+        description: "Please enter names for all participants",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    navigate('/draft', { state: { participants: participantNames, selectedEvent } });
   };
 
   return (
@@ -105,11 +132,11 @@ const Dashboard = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="gap-2">
                   <User className="h-4 w-4" />
-                  {userName || "User"}
+                  {displayName || "User"}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/settings')}>
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
                 </DropdownMenuItem>
@@ -133,13 +160,23 @@ const Dashboard = () => {
                 <CardDescription>Start a new fantasy draft for an FRC event</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button 
-                  onClick={() => navigate('/draft')} 
-                  className="w-full"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Draft
-                </Button>
+                <EventSelector
+                  events={events}
+                  selectedEvent={selectedEvent}
+                  onEventChange={setSelectedEvent}
+                  isLoading={eventsLoading}
+                />
+                <DraftCreation
+                  participants={participants}
+                  participantNames={participantNames}
+                  onParticipantsChange={setParticipants}
+                  onParticipantNameChange={(index, value) => {
+                    const newNames = [...participantNames];
+                    newNames[index] = value;
+                    setParticipantNames(newNames);
+                  }}
+                  onStartDraft={handleStartDraft}
+                />
               </CardContent>
             </Card>
 
@@ -202,8 +239,8 @@ const Dashboard = () => {
                             {new Date(event.start_date).toLocaleDateString()} - {new Date(event.end_date).toLocaleDateString()}
                           </p>
                         </div>
-                        <Button variant="outline" onClick={() => navigate(`/draft?event=${event.key}`)}>
-                          Create Draft
+                        <Button variant="outline" onClick={() => setSelectedEvent(event.key)}>
+                          Select
                         </Button>
                       </div>
                     ))}
