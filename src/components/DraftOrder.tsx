@@ -15,7 +15,7 @@ export const DraftOrder = ({ participants, currentIndex }: DraftOrderProps) => {
   return (
     <Card className="p-6">
       <h3 className="text-xl font-semibold mb-6">Draft Order</h3>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {participants.map((participant, index) => (
           <div
             key={participant.name}

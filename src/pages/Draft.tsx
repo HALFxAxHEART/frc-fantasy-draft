@@ -200,21 +200,14 @@ const Draft = () => {
             <DraftTimer
               initialTime={draftState.timeRemaining}
               onTimeUp={handleTimeUp}
-              isActive={isTimerActive}
+              isActive={isTimerActive && !draftState.draftComplete}
             />
           </div>
         </div>
 
         <Card className="p-6">
           {draftState.draftComplete ? (
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold">
-                Draft Complete!
-              </h3>
-              <Button onClick={() => navigate("/dashboard")}>
-                Return to Dashboard
-              </Button>
-            </div>
+            <DraftComplete participants={draftState.participants} />
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {availableTeams.map((team) => (
