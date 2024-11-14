@@ -70,6 +70,10 @@ const Draft = () => {
 
   useEffect(() => {
     const fetchTeams = async () => {
+      if (!draftState.selectedEvent) {
+        return;
+      }
+      
       try {
         const response = await fetch(
           `https://www.thebluealliance.com/api/v3/event/${draftState.selectedEvent}/teams`,

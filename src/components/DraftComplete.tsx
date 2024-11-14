@@ -1,3 +1,4 @@
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "./ui/button";
 import { Trophy } from "lucide-react";
@@ -17,7 +18,7 @@ interface DraftCompleteProps {
 export const DraftComplete = ({ participants }: DraftCompleteProps) => {
   const navigate = useNavigate();
 
-  React.useEffect(() => {
+  useEffect(() => {
     confetti({
       particleCount: 100,
       spread: 70,
