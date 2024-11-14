@@ -65,9 +65,9 @@ export const EventSelector = ({
               <SelectValue placeholder="Select district" />
             </SelectTrigger>
             <SelectContent className="bg-background border rounded-md shadow-lg min-w-[200px]">
-              <SelectItem value="">All Districts</SelectItem>
+              <SelectItem key="all" value="all">All Districts</SelectItem>
               {districts.map((district) => (
-                <SelectItem key={district} value={district}>
+                district && <SelectItem key={district} value={district}>
                   {district}
                 </SelectItem>
               ))}
@@ -93,7 +93,7 @@ export const EventSelector = ({
       </div>
 
       {isLoading && <p className="text-sm text-muted-foreground">Loading events...</p>}
-      {error && <p className="text-sm text-red-500">Error loading events</p>}
+      {error && <p className="text-sm text-red-500">Error loading events: {error.message}</p>}
     </Card>
   );
 };

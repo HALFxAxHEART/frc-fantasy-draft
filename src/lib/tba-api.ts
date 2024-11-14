@@ -24,17 +24,22 @@ export const fetchEvents = async (year: number) => {
     throw new Error('TBA API key is not configured. Please set VITE_TBA_API_KEY in your environment.');
   }
 
-  const response = await fetch(`${TBA_API_BASE_URL}/events/${year}`, {
-    headers: {
-      'X-TBA-Auth-Key': apiKey,
-      'Accept': 'application/json',
-    },
-  });
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to fetch events: ${response.status} ${response.statusText}\n${errorText}`);
+  try {
+    const response = await fetch(`${TBA_API_BASE_URL}/events/${year}`, {
+      headers: {
+        'X-TBA-Auth-Key': apiKey,
+        'Accept': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch events: ${response.status} ${response.statusText}\n${errorText}`);
+    }
+    
+    return response.json() as Promise<TBAEvent[]>;
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    throw new Error('Failed to fetch events. Please check your API key and try again.');
   }
-  
-  return response.json() as Promise<TBAEvent[]>;
 };
