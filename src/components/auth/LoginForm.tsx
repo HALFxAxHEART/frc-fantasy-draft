@@ -16,7 +16,8 @@ export const LoginForm = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
+      if (event === 'SIGNED_IN' && session?.user) {
+        console.log('User signed in:', session.user.email);
         navigate('/dashboard');
       }
     });
@@ -28,16 +29,20 @@ export const LoginForm = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       
       if (error) throw error;
+
+      console.log('Login successful:', data.user?.email);
       
-      // Explicitly navigate after successful login
-      navigate('/dashboard');
+      if (data.user) {
+        navigate('/dashboard');
+      }
     } catch (error: any) {
+      console.error('Login error:', error.message);
       toast({
         title: "Error",
         description: error.message,
