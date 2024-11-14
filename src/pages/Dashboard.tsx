@@ -41,10 +41,10 @@ const Dashboard = () => {
 
       if (error) {
         console.error('Profile fetch error:', error);
-        return { id: user.id, display_name: user.email?.split('@')[0] || 'User' };
+        return null;
       }
       
-      return data || { id: user.id, display_name: user.email?.split('@')[0] || 'User' };
+      return data;
     },
   });
 
@@ -67,14 +67,14 @@ const Dashboard = () => {
       }
       return data || [];
     },
-    enabled: !!profile?.id, // Only fetch drafts when we have a profile
+    enabled: !!profile, // Only fetch drafts when we have a profile
   });
 
   // Fetch events
   const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ['events'],
     queryFn: () => fetchEvents(new Date().getFullYear()),
-    enabled: !!profile?.id, // Only fetch events when we have a profile
+    enabled: !!profile, // Only fetch events when we have a profile
   });
 
   // Show loading state while profile is loading
@@ -86,17 +86,9 @@ const Dashboard = () => {
     );
   }
 
-  // Show error if no profile is found
-  if (!profile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-destructive">Unable to load user profile. Please try refreshing the page.</p>
-      </div>
-    );
-  }
-
+  // Return the dashboard content even if profile is null
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/20 to-background p-8">
+    <div className="min-h-screen bg-background p-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
