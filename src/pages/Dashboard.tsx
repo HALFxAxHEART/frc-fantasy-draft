@@ -48,11 +48,7 @@ const Dashboard = () => {
         };
       }
       
-      return data || { 
-        id: user.id, 
-        display_name: user.email?.split('@')[0] || 'User',
-        created_at: new Date().toISOString()
-      };
+      return data;
     },
   });
 
