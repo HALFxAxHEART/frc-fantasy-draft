@@ -4,18 +4,21 @@ import { Card } from "./ui/card";
 interface DraftTimerProps {
   initialTime: number;
   onTimeUp: () => void;
+  isActive: boolean;
 }
 
-export const DraftTimer = ({ initialTime, onTimeUp }: DraftTimerProps) => {
+export const DraftTimer = ({ initialTime, onTimeUp, isActive }: DraftTimerProps) => {
   const [timeRemaining, setTimeRemaining] = useState(initialTime);
   const [hasTriggeredTimeUp, setHasTriggeredTimeUp] = useState(false);
 
   useEffect(() => {
     setTimeRemaining(initialTime);
     setHasTriggeredTimeUp(false);
-  }, [initialTime]);
+  }, [initialTime, isActive]);
 
   useEffect(() => {
+    if (!isActive) return;
+
     if (timeRemaining === 0 && !hasTriggeredTimeUp) {
       setHasTriggeredTimeUp(true);
       onTimeUp();
@@ -27,7 +30,7 @@ export const DraftTimer = ({ initialTime, onTimeUp }: DraftTimerProps) => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeRemaining, onTimeUp, hasTriggeredTimeUp]);
+  }, [timeRemaining, onTimeUp, hasTriggeredTimeUp, isActive]);
 
   const minutes = Math.floor(timeRemaining / 60);
   const seconds = timeRemaining % 60;

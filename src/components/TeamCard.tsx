@@ -33,20 +33,20 @@ export const TeamCard = ({
         <Button
           variant="outline"
           onClick={onSelect}
-          className="w-full p-4 h-auto flex items-center gap-4 hover:bg-secondary/90 transition-colors"
+          className="w-full p-4 h-auto flex items-center gap-4 hover:bg-accent hover:text-accent-foreground transition-colors group"
         >
-          <Avatar className="h-12 w-12">
+          <Avatar className="h-12 w-12 shrink-0">
             <AvatarImage src={logoUrl} alt={`Team ${teamNumber} logo`} />
             <AvatarFallback>{teamNumber}</AvatarFallback>
           </Avatar>
-          <div className="text-left">
-            <div className="font-bold">Team {teamNumber}</div>
-            <div className="text-sm text-muted-foreground">{teamName}</div>
-            <div className="text-sm">Points: {districtPoints}</div>
+          <div className="text-left min-w-0">
+            <div className="font-bold truncate">Team {teamNumber}</div>
+            <div className="text-sm text-muted-foreground truncate group-hover:text-accent-foreground/80">{teamName}</div>
+            <div className="text-sm truncate">Points: {districtPoints}</div>
           </div>
         </Button>
       </HoverCardTrigger>
-      <HoverCardContent className="w-80 bg-background border">
+      <HoverCardContent className="w-80 bg-card border">
         <div className="space-y-2">
           <h4 className="text-sm font-semibold">Team Statistics</h4>
           <div className="grid grid-cols-2 gap-2 text-sm">
