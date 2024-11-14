@@ -25,7 +25,8 @@ export const TeamCard = ({
   stats, 
   onSelect 
 }: TeamCardProps) => {
-  const logoUrl = `https://www.thebluealliance.com/team/${teamNumber}/avatar.png`;
+  // Use the team-avatar endpoint instead of avatar.png
+  const logoUrl = `https://www.thebluealliance.com/api/v3/team/frc${teamNumber}/media/avatar`;
   
   return (
     <HoverCard>
