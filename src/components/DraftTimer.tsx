@@ -8,19 +8,26 @@ interface DraftTimerProps {
 
 export const DraftTimer = ({ initialTime, onTimeUp }: DraftTimerProps) => {
   const [timeRemaining, setTimeRemaining] = useState(initialTime);
+  const [hasTriggeredTimeUp, setHasTriggeredTimeUp] = useState(false);
 
   useEffect(() => {
-    if (timeRemaining === 0) {
+    setTimeRemaining(initialTime);
+    setHasTriggeredTimeUp(false);
+  }, [initialTime]);
+
+  useEffect(() => {
+    if (timeRemaining === 0 && !hasTriggeredTimeUp) {
+      setHasTriggeredTimeUp(true);
       onTimeUp();
       return;
     }
 
     const timer = setInterval(() => {
-      setTimeRemaining((prev) => prev - 1);
+      setTimeRemaining((prev) => prev > 0 ? prev - 1 : 0);
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeRemaining, onTimeUp]);
+  }, [timeRemaining, onTimeUp, hasTriggeredTimeUp]);
 
   const minutes = Math.floor(timeRemaining / 60);
   const seconds = timeRemaining % 60;

@@ -22,10 +22,11 @@ export const TeamCard = ({
   teamNumber, 
   teamName, 
   districtPoints, 
-  logoUrl, 
   stats, 
   onSelect 
 }: TeamCardProps) => {
+  const logoUrl = `https://www.thebluealliance.com/team/${teamNumber}/avatar.png`;
+  
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
@@ -45,7 +46,7 @@ export const TeamCard = ({
           </div>
         </Button>
       </HoverCardTrigger>
-      <HoverCardContent className="w-80">
+      <HoverCardContent className="w-80 bg-background border">
         <div className="space-y-2">
           <h4 className="text-sm font-semibold">Team Statistics</h4>
           <div className="grid grid-cols-2 gap-2 text-sm">

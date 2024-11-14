@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { motion } from "framer-motion";
+import { DraftOrderAnimation } from "./DraftOrderAnimation";
 
 interface DraftSetupProps {
   participants: Array<{ name: string; teams: any[] }>;
@@ -8,6 +10,12 @@ interface DraftSetupProps {
 }
 
 export const DraftSetup = ({ participants, onStartDraft }: DraftSetupProps) => {
+  const [showAnimation, setShowAnimation] = useState(false);
+
+  const handleStartClick = () => {
+    setShowAnimation(true);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -30,11 +38,18 @@ export const DraftSetup = ({ participants, onStartDraft }: DraftSetupProps) => {
         <Button
           className="w-full mt-6"
           size="lg"
-          onClick={onStartDraft}
+          onClick={handleStartClick}
         >
           Start Draft
         </Button>
       </Card>
+
+      {showAnimation && (
+        <DraftOrderAnimation 
+          participants={participants}
+          onComplete={onStartDraft}
+        />
+      )}
     </motion.div>
   );
 };
