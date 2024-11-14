@@ -26,8 +26,8 @@ const Dashboard = () => {
     checkAuth();
   }, [navigate]);
 
-  // Fetch user profile with proper error handling
-  const { data: profile, isLoading: profileLoading, error: profileError } = useQuery({
+  // Fetch user profile
+  const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -39,15 +39,17 @@ const Dashboard = () => {
         .eq('id', user.id)
         .single();
 
-      if (error) throw error;
-      if (!data) throw new Error('Profile not found');
+      if (error) {
+        console.error('Profile fetch error:', error);
+        throw error;
+      }
       
-      return data;
+      return data || { id: user.id, display_name: user.email?.split('@')[0] || 'User' };
     },
   });
 
-  // Fetch user's drafts with proper error handling
-  const { data: drafts, isLoading: draftsLoading } = useQuery({
+  // Fetch user's drafts
+  const { data: drafts = [], isLoading: draftsLoading } = useQuery({
     queryKey: ['drafts'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -59,40 +61,25 @@ const Dashboard = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Drafts fetch error:', error);
+        throw error;
+      }
       return data || [];
     },
     enabled: !!profile,
   });
 
   // Fetch upcoming events
-  const { data: events, isLoading: eventsLoading } = useQuery({
+  const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ['events'],
     queryFn: () => fetchEvents(new Date().getFullYear()),
   });
 
-  // Show loading state
   if (profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // Show error state if profile loading fails
-  if (profileError) {
-    toast({
-      title: "Error",
-      description: "Failed to load user profile. Please try again.",
-      variant: "destructive",
-    });
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <h2 className="text-2xl font-bold">Error Loading Dashboard</h2>
-          <p>Unable to load user profile. Please try refreshing the page.</p>
-        </div>
       </div>
     );
   }
@@ -105,12 +92,12 @@ const Dashboard = () => {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-7xl mx-auto space-y-8"
       >
-        <UserHeader displayName={profile.display_name || 'User'} />
+        <UserHeader displayName={profile?.display_name || 'User'} />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-8">
             <DraftCreation
-              events={events || []}
+              events={events}
               isLoading={eventsLoading}
               onCreateDraft={async (eventKey: string, eventName: string) => {
                 const { data: { user } } = await supabase.auth.getUser();
@@ -140,14 +127,14 @@ const Dashboard = () => {
               }}
             />
             <DraftsList 
-              drafts={drafts || []} 
+              drafts={drafts} 
               isLoading={draftsLoading}
             />
           </div>
 
           <div className="space-y-8">
             <UpcomingEvents 
-              events={events || []} 
+              events={events} 
               isLoading={eventsLoading}
               onSelectEvent={(eventKey) => {
                 toast({
