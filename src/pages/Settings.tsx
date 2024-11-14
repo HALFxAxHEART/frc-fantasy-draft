@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import type { Profile } from "@/integrations/supabase/types";
 
 const Settings = () => {
   const [displayName, setDisplayName] = useState('');
   const [draftDuration, setDraftDuration] = useState(120);
-  const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -24,7 +23,7 @@ const Settings = () => {
         .from('profiles')
         .select()
         .eq('id', user.id)
-        .single();
+        .single<Profile>();
 
       if (data) setDisplayName(data.display_name);
       if (error) console.error('Error fetching user profile:', error);
