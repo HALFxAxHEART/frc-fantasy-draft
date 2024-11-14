@@ -12,16 +12,22 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 export const UserHeader = ({ displayName }: { displayName: string }) => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true); // Default to true
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if dark mode was previously enabled
-    const isDark = localStorage.getItem("darkMode") === "true";
-    setIsDarkMode(isDark);
-    if (isDark) {
+    // Check if dark mode preference exists in localStorage
+    const storedPreference = localStorage.getItem("darkMode");
+    // If no preference is stored, default to dark mode
+    const shouldBeDark = storedPreference === null ? true : storedPreference === "true";
+    setIsDarkMode(shouldBeDark);
+    
+    // Apply dark mode class if needed
+    if (shouldBeDark) {
       document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
     }
   }, []);
 
@@ -50,6 +56,7 @@ export const UserHeader = ({ displayName }: { displayName: string }) => {
           size="icon"
           onClick={toggleDarkMode}
           className="rounded-full"
+          aria-label="Toggle dark mode"
         >
           {isDarkMode ? (
             <Sun className="h-5 w-5" />
