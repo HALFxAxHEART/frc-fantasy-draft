@@ -4,14 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
-
-interface Participant {
-  name: string;
-  teams: Array<{
-    teamNumber: number;
-    districtPoints: number;
-  }>;
-}
+import { DraftTimer } from "@/components/DraftTimer";
+import { TeamCard } from "@/components/TeamCard";
+import { DraftOrder } from "@/components/DraftOrder";
 
 interface DraftState {
   participants: Participant[];
@@ -19,6 +14,22 @@ interface DraftState {
   currentParticipantIndex: number;
   timeRemaining: number;
   draftComplete: boolean;
+}
+
+interface Participant {
+  name: string;
+  teams: Array<{
+    teamNumber: number;
+    teamName: string;
+    districtPoints: number;
+    logoUrl?: string;
+    stats: {
+      wins: number;
+      losses: number;
+      opr: number;
+      autoAvg: number;
+    };
+  }>;
 }
 
 const Draft = () => {
@@ -51,11 +62,18 @@ const Draft = () => {
 
   const [availableTeams, setAvailableTeams] = useState<Array<{
     teamNumber: number;
+    teamName: string;
     districtPoints: number;
+    logoUrl?: string;
+    stats: {
+      wins: number;
+      losses: number;
+      opr: number;
+      autoAvg: number;
+    };
   }>>([]);
 
   useEffect(() => {
-    // Fetch teams for the selected event
     const fetchTeams = async () => {
       try {
         const response = await fetch(
@@ -70,7 +88,15 @@ const Draft = () => {
         setAvailableTeams(
           teams.map((team: any) => ({
             teamNumber: team.team_number,
-            districtPoints: Math.floor(Math.random() * 100), // Simulated district points
+            teamName: team.nickname,
+            districtPoints: Math.floor(Math.random() * 100),
+            logoUrl: `https://www.thebluealliance.com/team/${team.team_number}`,
+            stats: {
+              wins: Math.floor(Math.random() * 10),
+              losses: Math.floor(Math.random() * 10),
+              opr: Math.random() * 50,
+              autoAvg: Math.random() * 15,
+            },
           }))
         );
       } catch (error) {
@@ -84,32 +110,20 @@ const Draft = () => {
     fetchTeams();
   }, [draftState.selectedEvent]);
 
-  useEffect(() => {
-    if (!draftState.draftComplete && draftState.timeRemaining > 0) {
-      const timer = setInterval(() => {
-        setDraftState((prev) => ({
-          ...prev,
-          timeRemaining: prev.timeRemaining - 1,
-        }));
-      }, 1000);
+  const handleTimeUp = () => {
+    toast({
+      title: "Time's up!",
+      description: "Moving to next participant",
+      variant: "destructive",
+    });
+    setDraftState((prev) => ({
+      ...prev,
+      currentParticipantIndex: (prev.currentParticipantIndex + 1) % prev.participants.length,
+      timeRemaining: 120,
+    }));
+  };
 
-      return () => clearInterval(timer);
-    }
-  }, [draftState.draftComplete, draftState.timeRemaining]);
-
-  const selectTeam = (teamNumber: number) => {
-    if (draftState.timeRemaining === 0) {
-      toast({
-        title: "Time's up!",
-        description: "Your turn has ended",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const team = availableTeams.find((t) => t.teamNumber === teamNumber);
-    if (!team) return;
-
+  const selectTeam = (team: typeof availableTeams[0]) => {
     setDraftState((prev) => {
       const newParticipants = [...prev.participants];
       const currentParticipant = newParticipants[prev.currentParticipantIndex];
@@ -142,7 +156,7 @@ const Draft = () => {
     });
 
     setAvailableTeams((prev) =>
-      prev.filter((t) => t.teamNumber !== teamNumber)
+      prev.filter((t) => t.teamNumber !== team.teamNumber)
     );
   };
 
@@ -151,7 +165,6 @@ const Draft = () => {
       const sortedTeams = [...participant.teams].sort(
         (a, b) => b.districtPoints - a.districtPoints
       );
-      // Remove highest and lowest scoring teams
       const countedTeams = sortedTeams.slice(1, -1);
       const totalPoints = countedTeams.reduce(
         (sum, team) => sum + team.districtPoints,
@@ -169,26 +182,29 @@ const Draft = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-4xl mx-auto space-y-8"
+        className="max-w-6xl mx-auto space-y-8"
       >
-        <Card className="p-6">
-          <h2 className="text-2xl font-bold mb-4">
-            {draftState.draftComplete
-              ? "Draft Complete!"
-              : `${draftState.participants[draftState.currentParticipantIndex].name}'s Turn`}
-          </h2>
-          {!draftState.draftComplete && (
-            <div className="mb-4">
-              <p className="text-lg">
-                Time Remaining: {Math.floor(draftState.timeRemaining / 60)}:
-                {(draftState.timeRemaining % 60).toString().padStart(2, "0")}
-              </p>
-            </div>
-          )}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="md:col-span-2">
+            <DraftOrder
+              participants={draftState.participants}
+              currentIndex={draftState.currentParticipantIndex}
+            />
+          </div>
+          <div>
+            <DraftTimer
+              initialTime={draftState.timeRemaining}
+              onTimeUp={handleTimeUp}
+            />
+          </div>
+        </div>
 
+        <Card className="p-6">
           {draftState.draftComplete ? (
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold">Winner: {calculateWinner().name}</h3>
+              <h3 className="text-xl font-semibold">
+                Winner: {calculateWinner().name}
+              </h3>
               <p>Total Points: {calculateWinner().points}</p>
               <Button onClick={() => navigate("/dashboard")}>
                 Return to Dashboard
@@ -197,16 +213,11 @@ const Draft = () => {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {availableTeams.map((team) => (
-                <Button
+                <TeamCard
                   key={team.teamNumber}
-                  onClick={() => selectTeam(team.teamNumber)}
-                  variant="outline"
-                  className="p-4"
-                >
-                  Team {team.teamNumber}
-                  <br />
-                  Points: {team.districtPoints}
-                </Button>
+                  {...team}
+                  onSelect={() => selectTeam(team)}
+                />
               ))}
             </div>
           )}
@@ -215,7 +226,7 @@ const Draft = () => {
         <Card className="p-6">
           <h3 className="text-xl font-bold mb-4">Selected Teams</h3>
           <div className="space-y-4">
-            {draftState.participants.map((participant, index) => (
+            {draftState.participants.map((participant) => (
               <div key={participant.name} className="space-y-2">
                 <h4 className="font-semibold">{participant.name}</h4>
                 <div className="flex flex-wrap gap-2">
