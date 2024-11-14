@@ -41,10 +41,19 @@ const Dashboard = () => {
 
       if (error) {
         console.error('Profile fetch error:', error);
-        return null;
+        // Return a fallback profile if there's an error
+        return { 
+          id: user.id, 
+          display_name: user.email?.split('@')[0] || 'User',
+          created_at: new Date().toISOString()
+        };
       }
       
-      return data;
+      return data || { 
+        id: user.id, 
+        display_name: user.email?.split('@')[0] || 'User',
+        created_at: new Date().toISOString()
+      };
     },
   });
 
@@ -67,14 +76,14 @@ const Dashboard = () => {
       }
       return data || [];
     },
-    enabled: !!profile, // Only fetch drafts when we have a profile
+    enabled: !!profile?.id,
   });
 
   // Fetch events
   const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ['events'],
     queryFn: () => fetchEvents(new Date().getFullYear()),
-    enabled: !!profile, // Only fetch events when we have a profile
+    enabled: !!profile?.id,
   });
 
   // Show loading state while profile is loading
@@ -86,7 +95,6 @@ const Dashboard = () => {
     );
   }
 
-  // Return the dashboard content even if profile is null
   return (
     <div className="min-h-screen bg-background p-8">
       <motion.div
