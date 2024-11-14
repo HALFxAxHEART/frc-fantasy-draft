@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { DraftTimer } from "@/components/DraftTimer";
 import { TeamCard } from "@/components/TeamCard";
 import { DraftOrder } from "@/components/DraftOrder";
+import { DraftSetup } from "@/components/DraftSetup";
 
 interface DraftState {
   participants: Participant[];
@@ -14,6 +15,7 @@ interface DraftState {
   currentParticipantIndex: number;
   timeRemaining: number;
   draftComplete: boolean;
+  draftStarted: boolean;
 }
 
 interface Participant {
@@ -46,6 +48,7 @@ const Draft = () => {
         currentParticipantIndex: 0,
         timeRemaining: 120,
         draftComplete: false,
+        draftStarted: false,
       };
     }
     return {
@@ -57,21 +60,11 @@ const Draft = () => {
       currentParticipantIndex: 0,
       timeRemaining: 120,
       draftComplete: false,
+      draftStarted: false,
     };
   });
 
-  const [availableTeams, setAvailableTeams] = useState<Array<{
-    teamNumber: number;
-    teamName: string;
-    districtPoints: number;
-    logoUrl?: string;
-    stats: {
-      wins: number;
-      losses: number;
-      opr: number;
-      autoAvg: number;
-    };
-  }>>([]);
+  const [availableTeams, setAvailableTeams] = useState([]);
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -113,7 +106,7 @@ const Draft = () => {
   const handleTimeUp = () => {
     toast({
       title: "Time's up!",
-      description: "Moving to next participant",
+      description: `${draftState.participants[draftState.currentParticipantIndex].name}'s turn has ended`,
       variant: "destructive",
     });
     setDraftState((prev) => ({
@@ -121,6 +114,17 @@ const Draft = () => {
       currentParticipantIndex: (prev.currentParticipantIndex + 1) % prev.participants.length,
       timeRemaining: 120,
     }));
+  };
+
+  const startDraft = () => {
+    setDraftState((prev) => ({
+      ...prev,
+      draftStarted: true,
+    }));
+    toast({
+      title: "Draft Started",
+      description: `${draftState.participants[0].name}'s turn to pick`,
+    });
   };
 
   const selectTeam = (team: typeof availableTeams[0]) => {
@@ -158,24 +162,25 @@ const Draft = () => {
     setAvailableTeams((prev) =>
       prev.filter((t) => t.teamNumber !== team.teamNumber)
     );
+
+    toast({
+      title: "Team Selected",
+      description: `Team ${team.teamNumber} has been drafted`,
+    });
   };
 
-  const calculateWinner = () => {
-    return draftState.participants.map((participant) => {
-      const sortedTeams = [...participant.teams].sort(
-        (a, b) => b.districtPoints - a.districtPoints
-      );
-      const countedTeams = sortedTeams.slice(1, -1);
-      const totalPoints = countedTeams.reduce(
-        (sum, team) => sum + team.districtPoints,
-        0
-      );
-      return {
-        name: participant.name,
-        points: totalPoints,
-      };
-    }).sort((a, b) => b.points - a.points)[0];
-  };
+  if (!draftState.draftStarted) {
+    return (
+      <div className="min-h-screen bg-background p-8">
+        <div className="max-w-4xl mx-auto">
+          <DraftSetup
+            participants={draftState.participants}
+            onStartDraft={startDraft}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -203,9 +208,8 @@ const Draft = () => {
           {draftState.draftComplete ? (
             <div className="space-y-4">
               <h3 className="text-xl font-semibold">
-                Winner: {calculateWinner().name}
+                Draft Complete!
               </h3>
-              <p>Total Points: {calculateWinner().points}</p>
               <Button onClick={() => navigate("/dashboard")}>
                 Return to Dashboard
               </Button>

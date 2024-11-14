@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "./ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
@@ -33,7 +32,7 @@ export const TeamCard = ({
         <Button
           variant="outline"
           onClick={onSelect}
-          className="w-full p-4 h-auto flex items-center gap-4"
+          className="w-full p-4 h-auto flex items-center gap-4 hover:bg-secondary/90 transition-colors"
         >
           <Avatar className="h-12 w-12">
             <AvatarImage src={logoUrl} alt={`Team ${teamNumber} logo`} />
