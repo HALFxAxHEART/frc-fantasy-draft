@@ -15,8 +15,19 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Fetch user profile
-  const { data: profile, isLoading: profileLoading } = useQuery({
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/login');
+      }
+    };
+    checkAuth();
+  }, [navigate]);
+
+  // Fetch user profile with proper error handling
+  const { data: profile, isLoading: profileLoading, error: profileError } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -29,11 +40,13 @@ const Dashboard = () => {
         .single();
 
       if (error) throw error;
+      if (!data) throw new Error('Profile not found');
+      
       return data;
     },
   });
 
-  // Fetch user's drafts
+  // Fetch user's drafts with proper error handling
   const { data: drafts, isLoading: draftsLoading } = useQuery({
     queryKey: ['drafts'],
     queryFn: async () => {
@@ -58,17 +71,7 @@ const Dashboard = () => {
     queryFn: () => fetchEvents(new Date().getFullYear()),
   });
 
-  // Check authentication status
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/login');
-      }
-    };
-    checkAuth();
-  }, [navigate]);
-
+  // Show loading state
   if (profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -77,7 +80,13 @@ const Dashboard = () => {
     );
   }
 
-  if (!profile) {
+  // Show error state if profile loading fails
+  if (profileError) {
+    toast({
+      title: "Error",
+      description: "Failed to load user profile. Please try again.",
+      variant: "destructive",
+    });
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -88,6 +97,7 @@ const Dashboard = () => {
     );
   }
 
+  // Show dashboard content
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/20 to-background p-8">
       <motion.div
@@ -95,7 +105,7 @@ const Dashboard = () => {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-7xl mx-auto space-y-8"
       >
-        <UserHeader displayName={profile.display_name} />
+        <UserHeader displayName={profile.display_name || 'User'} />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-8">
