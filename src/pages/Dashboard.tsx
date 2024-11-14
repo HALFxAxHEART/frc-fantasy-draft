@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEvents } from "@/lib/tba-api";
@@ -11,75 +12,78 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const Dashboard = () => {
-  const [displayName, setDisplayName] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedEvent, setSelectedEvent] = useState("");
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [participants, setParticipants] = useState(2);
-  const [participantNames, setParticipantNames] = useState(["", ""]);
+  const navigate = useNavigate();
   const { toast } = useToast();
-  
-  const { data: events, isLoading: eventsLoading } = useQuery({
-    queryKey: ['events', selectedYear],
-    queryFn: () => fetchEvents(selectedYear),
-  });
 
-  const { data: userDrafts, isLoading: draftsLoading } = useQuery({
-    queryKey: ['drafts'],
+  // Fetch user profile
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ['profile'],
     queryFn: async () => {
-      const { data: drafts, error } = await supabase
-        .from('drafts')
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
+      const { data, error } = await supabase
+        .from('profiles')
         .select('*')
-        .order('created_at', { ascending: false });
-      
+        .eq('id', user.id)
+        .single();
+
       if (error) throw error;
-      return drafts;
+      return data;
     },
   });
 
+  // Fetch user's drafts
+  const { data: drafts, isLoading: draftsLoading } = useQuery({
+    queryKey: ['drafts'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
+      const { data, error } = await supabase
+        .from('drafts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile,
+  });
+
+  // Fetch upcoming events
+  const { data: events, isLoading: eventsLoading } = useQuery({
+    queryKey: ['events'],
+    queryFn: () => fetchEvents(new Date().getFullYear()),
+  });
+
+  // Check authentication status
   useEffect(() => {
-    const getUserProfile = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('display_name')
-            .eq('id', user.id)
-            .single();
-          
-          if (error) {
-            console.error('Error fetching profile:', error);
-            toast({
-              title: "Error",
-              description: "Failed to load user profile",
-              variant: "destructive",
-            });
-          } else if (profile) {
-            setDisplayName(profile.display_name || user.email?.split('@')[0] || 'User');
-          }
-        }
-      } catch (error) {
-        console.error('Error in getUserProfile:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load user profile",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/login');
       }
     };
+    checkAuth();
+  }, [navigate]);
 
-    getUserProfile();
-  }, [toast]);
-
-  // Show loading spinner while initial profile data is being fetched
-  if (isLoading) {
+  if (profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-bold">Error Loading Dashboard</h2>
+          <p>Unable to load user profile. Please try refreshing the page.</p>
+        </div>
       </div>
     );
   }
@@ -91,29 +95,58 @@ const Dashboard = () => {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-7xl mx-auto space-y-8"
       >
-        <UserHeader displayName={displayName} />
+        <UserHeader displayName={profile.display_name} />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-8">
             <DraftCreation
-              participants={participants}
-              participantNames={participantNames}
-              onParticipantsChange={setParticipants}
-              onParticipantNameChange={(index, value) => {
-                const newNames = [...participantNames];
-                newNames[index] = value;
-                setParticipantNames(newNames);
+              events={events || []}
+              isLoading={eventsLoading}
+              onCreateDraft={async (eventKey: string, eventName: string) => {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+
+                const { error } = await supabase
+                  .from('drafts')
+                  .insert({
+                    user_id: user.id,
+                    event_key: eventKey,
+                    event_name: eventName,
+                  });
+
+                if (error) {
+                  toast({
+                    title: "Error",
+                    description: "Failed to create draft",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+
+                toast({
+                  title: "Success",
+                  description: "Draft created successfully",
+                });
               }}
-              onStartDraft={() => {}}
             />
-            <DraftsList drafts={userDrafts || []} isLoading={draftsLoading} />
+            <DraftsList 
+              drafts={drafts || []} 
+              isLoading={draftsLoading}
+              onSelectDraft={(draftId) => navigate(`/draft/${draftId}`)}
+            />
           </div>
 
           <div className="space-y-8">
             <UpcomingEvents 
               events={events || []} 
               isLoading={eventsLoading}
-              onSelectEvent={setSelectedEvent}
+              onSelectEvent={(eventKey) => {
+                // Handle event selection
+                toast({
+                  title: "Event Selected",
+                  description: "You can now create a draft for this event",
+                });
+              }}
             />
           </div>
         </div>
