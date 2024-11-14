@@ -8,6 +8,7 @@ import { DraftTimer } from "@/components/DraftTimer";
 import { TeamCard } from "@/components/TeamCard";
 import { DraftOrder } from "@/components/DraftOrder";
 import { DraftSetup } from "@/components/DraftSetup";
+import { DraftComplete } from "@/components/DraftComplete";
 
 interface DraftState {
   participants: Participant[];
