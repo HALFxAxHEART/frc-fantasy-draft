@@ -132,7 +132,6 @@ const Dashboard = () => {
             <DraftsList 
               drafts={drafts || []} 
               isLoading={draftsLoading}
-              onSelectDraft={(draftId) => navigate(`/draft/${draftId}`)}
             />
           </div>
 
@@ -141,7 +140,6 @@ const Dashboard = () => {
               events={events || []} 
               isLoading={eventsLoading}
               onSelectEvent={(eventKey) => {
-                // Handle event selection
                 toast({
                   title: "Event Selected",
                   description: "You can now create a draft for this event",
