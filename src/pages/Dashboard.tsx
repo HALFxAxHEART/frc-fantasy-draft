@@ -7,9 +7,11 @@ import { UserHeader } from "@/components/dashboard/UserHeader";
 import { DraftsList } from "@/components/dashboard/DraftsList";
 import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
 import { DraftCreation } from "@/components/DraftCreation";
+import { Loader2 } from "lucide-react";
 
 const Dashboard = () => {
   const [displayName, setDisplayName] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState("");
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedDistrict, setSelectedDistrict] = useState("");
@@ -36,22 +38,34 @@ const Dashboard = () => {
 
   useEffect(() => {
     const getUserProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('display_name')
-          .eq('id', user.id)
-          .single();
-        
-        if (profile) {
-          setDisplayName(profile.display_name);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('display_name')
+            .eq('id', user.id)
+            .single();
+          
+          if (profile) setDisplayName(profile.display_name);
         }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     getUserProfile();
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/20 to-background p-8">
