@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEvents } from "@/lib/tba-api";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { UserHeader } from "@/components/dashboard/UserHeader";
 import { DraftsList } from "@/components/dashboard/DraftsList";
 import { UpcomingEvents } from "@/components/dashboard/UpcomingEvents";
@@ -15,6 +15,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Check authentication status
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -25,6 +26,7 @@ const Dashboard = () => {
     checkAuth();
   }, [navigate]);
 
+  // Fetch user profile
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
@@ -46,6 +48,7 @@ const Dashboard = () => {
     },
   });
 
+  // Fetch user's drafts
   const { data: drafts = [], isLoading: draftsLoading } = useQuery({
     queryKey: ['drafts'],
     queryFn: async () => {
@@ -64,18 +67,30 @@ const Dashboard = () => {
       }
       return data || [];
     },
-    enabled: !!profile,
+    enabled: !!profile?.id, // Only fetch drafts when we have a profile
   });
 
+  // Fetch events
   const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ['events'],
     queryFn: () => fetchEvents(new Date().getFullYear()),
+    enabled: !!profile?.id, // Only fetch events when we have a profile
   });
 
+  // Show loading state while profile is loading
   if (profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Show error if no profile is found
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-destructive">Unable to load user profile. Please try refreshing the page.</p>
       </div>
     );
   }
@@ -95,30 +110,31 @@ const Dashboard = () => {
               events={events}
               isLoading={eventsLoading}
               onCreateDraft={async (eventKey: string, eventName: string) => {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) return;
+                try {
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (!user) return;
 
-                const { error } = await supabase
-                  .from('drafts')
-                  .insert({
-                    user_id: user.id,
-                    event_key: eventKey,
-                    event_name: eventName,
+                  const { error } = await supabase
+                    .from('drafts')
+                    .insert({
+                      user_id: user.id,
+                      event_key: eventKey,
+                      event_name: eventName,
+                    });
+
+                  if (error) throw error;
+
+                  toast({
+                    title: "Success",
+                    description: "Draft created successfully",
                   });
-
-                if (error) {
+                } catch (error: any) {
                   toast({
                     title: "Error",
-                    description: "Failed to create draft",
+                    description: error.message || "Failed to create draft",
                     variant: "destructive",
                   });
-                  return;
                 }
-
-                toast({
-                  title: "Success",
-                  description: "Draft created successfully",
-                });
               }}
             />
             <DraftsList 
