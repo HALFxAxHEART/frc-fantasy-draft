@@ -34,6 +34,9 @@ export const LoginForm = () => {
       });
       
       if (error) throw error;
+      
+      // Explicitly navigate after successful login
+      navigate('/dashboard');
     } catch (error: any) {
       toast({
         title: "Error",
