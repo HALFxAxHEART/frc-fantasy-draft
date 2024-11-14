@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "./ui/button";
 
 interface DraftOrderAnimationProps {
   participants: Array<{ 
@@ -16,7 +17,7 @@ export const DraftOrderAnimation = ({ participants, onComplete }: DraftOrderAnim
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
       <div className="max-w-md w-full space-y-4">
         <h2 className="text-2xl font-bold text-center mb-8 text-foreground">Draft Order</h2>
-        <AnimatePresence onExitComplete={onComplete}>
+        <AnimatePresence>
           {participants.map((participant, index) => (
             <motion.div
               key={participant.name}
@@ -46,6 +47,22 @@ export const DraftOrderAnimation = ({ participants, onComplete }: DraftOrderAnim
               </div>
             </motion.div>
           ))}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ 
+              opacity: 1,
+              transition: { delay: participants.length * 0.3 + 0.5 }
+            }}
+            className="mt-8"
+          >
+            <Button
+              className="w-full bg-primary hover:bg-primary/90 text-white"
+              size="lg"
+              onClick={onComplete}
+            >
+              Start Draft
+            </Button>
+          </motion.div>
         </AnimatePresence>
       </div>
     </div>
