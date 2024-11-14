@@ -35,11 +35,19 @@ export const DraftSetup = ({ participants, onStartDraft }: DraftSetupProps) => {
               >
                 <span className="text-2xl font-bold text-primary">{index + 1}</span>
                 <span className="font-medium text-foreground">{participant.name}</span>
+                <div className="text-sm text-muted-foreground">
+                  {participant.teams.map((team, idx) => (
+                    <span key={team.teamNumber} className="mr-2">
+                      Team {team.teamNumber} - {team.teamName}
+                      {idx < participant.teams.length - 1 ? ", " : ""}
+                    </span>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
           <Button
-            className="w-full mt-6"
+            className="w-full mt-6 bg-primary hover:bg-primary/90 text-white"
             size="lg"
             onClick={onStartDraft}
           >
