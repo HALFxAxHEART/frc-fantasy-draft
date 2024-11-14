@@ -22,7 +22,7 @@ const Settings = () => {
     if (user) {
       const { data, error } = await supabase
         .from('profiles')
-        .select('display_name')
+        .select()
         .eq('id', user.id)
         .single();
 

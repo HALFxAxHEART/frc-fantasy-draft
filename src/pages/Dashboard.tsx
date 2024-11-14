@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchEvents } from "@/lib/tba-api";
 import { useToast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
-import { Moon, Sun, Settings, LogOut, User, Plus } from "lucide-react";
+import { Moon, Sun, Settings, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,14 +27,16 @@ const Dashboard = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [selectedEvent, setSelectedEvent] = useState("");
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedDistrict, setSelectedDistrict] = useState("");
   const [participants, setParticipants] = useState(2);
   const [participantNames, setParticipantNames] = useState(["", ""]);
   const { toast } = useToast();
   const navigate = useNavigate();
   
   const { data: events, isLoading: eventsLoading } = useQuery({
-    queryKey: ['events', new Date().getFullYear()],
-    queryFn: () => fetchEvents(new Date().getFullYear()),
+    queryKey: ['events', selectedYear],
+    queryFn: () => fetchEvents(selectedYear),
   });
 
   const { data: userDrafts, isLoading: draftsLoading } = useQuery({
@@ -164,6 +166,10 @@ const Dashboard = () => {
                   events={events}
                   selectedEvent={selectedEvent}
                   onEventChange={setSelectedEvent}
+                  selectedYear={selectedYear}
+                  onYearChange={setSelectedYear}
+                  selectedDistrict={selectedDistrict}
+                  onDistrictChange={setSelectedDistrict}
                   isLoading={eventsLoading}
                 />
                 <DraftCreation
