@@ -59,10 +59,23 @@ const Dashboard = () => {
     getUserProfile();
   }, []);
 
+  // Show loading spinner while initial profile data is being fetched
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // If we're not loading the profile anymore but don't have a display name, something went wrong
+  if (!isLoading && !displayName) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-2xl font-semibold">Error Loading Dashboard</h2>
+          <p className="text-muted-foreground">Unable to load user profile. Please try refreshing the page.</p>
+        </div>
       </div>
     );
   }
