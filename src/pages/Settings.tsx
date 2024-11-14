@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import type { Profile } from "@/integrations/supabase/types";
+import { supabase } from "@/lib/supabase";
+import type { Profile } from "@/lib/supabase";
 
 const Settings = () => {
   const [displayName, setDisplayName] = useState('');
@@ -23,7 +23,7 @@ const Settings = () => {
         .from('profiles')
         .select()
         .eq('id', user.id)
-        .single<Profile>();
+        .single();
 
       if (data) setDisplayName(data.display_name);
       if (error) console.error('Error fetching user profile:', error);
