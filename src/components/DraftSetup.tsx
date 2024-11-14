@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import { motion } from "framer-motion";
@@ -10,7 +10,7 @@ interface DraftSetupProps {
 }
 
 export const DraftSetup = ({ participants, onStartDraft }: DraftSetupProps) => {
-  const [showAnimation, setShowAnimation] = useState(true); // Show animation immediately
+  const [showAnimation, setShowAnimation] = useState(true);
   const [animationComplete, setAnimationComplete] = useState(false);
 
   const handleAnimationComplete = () => {
@@ -24,6 +24,13 @@ export const DraftSetup = ({ participants, onStartDraft }: DraftSetupProps) => {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
+      {showAnimation && (
+        <DraftOrderAnimation 
+          participants={participants}
+          onComplete={handleAnimationComplete}
+        />
+      )}
+
       {animationComplete && (
         <Card className="p-6">
           <h2 className="text-2xl font-semibold mb-4 text-foreground">Draft Order</h2>
@@ -34,14 +41,16 @@ export const DraftSetup = ({ participants, onStartDraft }: DraftSetupProps) => {
                 className="flex items-center space-x-4 p-4 bg-muted rounded-lg"
               >
                 <span className="text-2xl font-bold text-primary">{index + 1}</span>
-                <span className="font-medium text-foreground">{participant.name}</span>
-                <div className="text-sm text-muted-foreground">
-                  {participant.teams.map((team, idx) => (
-                    <span key={team.teamNumber} className="mr-2">
-                      Team {team.teamNumber} - {team.teamName}
-                      {idx < participant.teams.length - 1 ? ", " : ""}
-                    </span>
-                  ))}
+                <div className="flex flex-col">
+                  <span className="font-medium text-foreground">{participant.name}</span>
+                  <div className="text-sm text-muted-foreground">
+                    {participant.teams.map((team, idx) => (
+                      <span key={team.teamNumber} className="mr-2">
+                        Team {team.teamNumber} - {team.teamName}
+                        {idx < participant.teams.length - 1 ? ", " : ""}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
@@ -54,13 +63,6 @@ export const DraftSetup = ({ participants, onStartDraft }: DraftSetupProps) => {
             Start Draft
           </Button>
         </Card>
-      )}
-
-      {showAnimation && (
-        <DraftOrderAnimation 
-          participants={participants}
-          onComplete={handleAnimationComplete}
-        />
       )}
     </motion.div>
   );

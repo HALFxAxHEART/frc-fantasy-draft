@@ -27,6 +27,7 @@ export const DraftOrderAnimation = ({ participants, onComplete }: DraftOrderAnim
                 transition: { delay: index * 0.3 }
               }}
               exit={{ x: 100, opacity: 0 }}
+              transition={{ duration: 0.3 }}
               className="bg-card p-4 rounded-lg shadow-lg border border-border"
             >
               <div className="flex items-center gap-4">
