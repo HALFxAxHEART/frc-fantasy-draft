@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Moon, Sun, Settings, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,19 +52,15 @@ export const UserHeader = ({ displayName }: { displayName: string }) => {
     <div className="flex justify-between items-center mb-8">
       <h1 className="text-4xl font-bold">Dashboard</h1>
       <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={toggleDarkMode}
-          className="rounded-full"
-          aria-label="Toggle dark mode"
-        >
-          {isDarkMode ? (
-            <Sun className="h-5 w-5" />
-          ) : (
-            <Moon className="h-5 w-5" />
-          )}
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Sun className="h-4 w-4" />
+          <Switch
+            checked={isDarkMode}
+            onCheckedChange={toggleDarkMode}
+            aria-label="Toggle dark mode"
+          />
+          <Moon className="h-4 w-4" />
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="gap-2">
