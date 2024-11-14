@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchEvents } from "@/lib/tba-api";
 import { useToast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
-import { Moon, Sun, Settings, LogOut, User } from "lucide-react";
+import { Settings, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -22,7 +22,6 @@ const Dashboard = () => {
   const [selectedEvent, setSelectedEvent] = useState("");
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -32,24 +31,8 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
-    }
-  }, []);
-
-  useEffect(() => {
     setParticipantNames(Array(participants).fill(""));
   }, [participants]);
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
-    toast({
-      title: `${isDarkMode ? 'Light' : 'Dark'} mode enabled`,
-      duration: 1500,
-    });
-  };
 
   const handleStartDraft = () => {
     if (participantNames.some(name => !name.trim())) {
@@ -95,18 +78,6 @@ const Dashboard = () => {
           <div className="flex items-center gap-4">
             <Button
               variant="outline"
-              size="icon"
-              onClick={toggleDarkMode}
-              className="rounded-full"
-            >
-              {isDarkMode ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
-            <Button
-              variant="outline"
               className="gap-2"
               onClick={() => navigate("/settings")}
             >
@@ -117,7 +88,6 @@ const Dashboard = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="gap-2">
                   <User className="h-4 w-4" />
-                  {/* Replace with actual user display name */}
                   John Doe
                 </Button>
               </DropdownMenuTrigger>
