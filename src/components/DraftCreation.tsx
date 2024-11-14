@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { EventSelector } from "./EventSelector";
+import { TBAEvent } from "@/lib/tba-api";
 
 interface DraftCreationProps {
   participants: number;
@@ -17,10 +20,25 @@ export const DraftCreation = ({
   onParticipantNameChange,
   onStartDraft,
 }: DraftCreationProps) => {
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState("");
+  const [events, setEvents] = useState<TBAEvent[]>([]);
+
   return (
     <Card className="p-6 space-y-6">
       <h2 className="text-2xl font-semibold">Create New Draft</h2>
       
+      <EventSelector
+        events={events}
+        selectedEvent={selectedEvent}
+        onEventChange={setSelectedEvent}
+        selectedYear={selectedYear}
+        onYearChange={setSelectedYear}
+        selectedDistrict={selectedDistrict}
+        onDistrictChange={setSelectedDistrict}
+      />
+
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-1">
@@ -36,7 +54,6 @@ export const DraftCreation = ({
           />
         </div>
 
-        {/* Participant Names */}
         {Array.from({ length: participants }).map((_, index) => (
           <div key={index}>
             <label className="block text-sm font-medium mb-1">
@@ -55,6 +72,7 @@ export const DraftCreation = ({
         <Button 
           onClick={onStartDraft}
           className="mt-4"
+          disabled={!selectedEvent || participantNames.some(name => !name.trim())}
         >
           Start Draft
         </Button>

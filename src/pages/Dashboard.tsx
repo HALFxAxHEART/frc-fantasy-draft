@@ -11,7 +11,8 @@ import { DraftCreation } from "@/components/DraftCreation";
 const Dashboard = () => {
   const [displayName, setDisplayName] = useState("");
   const [selectedEvent, setSelectedEvent] = useState("");
-  const [selectedYear] = useState(new Date().getFullYear());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedDistrict, setSelectedDistrict] = useState("");
   const [participants, setParticipants] = useState(2);
   const [participantNames, setParticipantNames] = useState(["", ""]);
   
