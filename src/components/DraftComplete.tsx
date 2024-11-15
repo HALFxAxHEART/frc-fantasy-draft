@@ -4,6 +4,12 @@ import { Button } from "./ui/button";
 import { Trophy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import confetti from 'canvas-confetti';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface DraftCompleteProps {
   participants: Array<{
@@ -48,20 +54,10 @@ export const DraftComplete = ({ participants }: DraftCompleteProps) => {
   }, []);
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-background/90 backdrop-blur-lg z-50 flex items-center justify-center"
-      >
-        <div className="max-w-4xl w-full mx-auto p-8">
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="bg-gradient-to-br from-primary/20 via-accent/20 to-secondary/20 p-8 rounded-lg shadow-xl border border-border text-center space-y-6"
-          >
+    <Dialog defaultOpen>
+      <DialogContent className="sm:max-w-[800px]">
+        <DialogHeader>
+          <DialogTitle>
             <motion.div
               animate={{ 
                 rotate: [0, 10, -10, 10, 0],
@@ -72,51 +68,49 @@ export const DraftComplete = ({ participants }: DraftCompleteProps) => {
                 repeat: Infinity,
                 repeatDelay: 2
               }}
+              className="flex flex-col items-center gap-4"
             >
-              <Trophy className="w-20 h-20 mx-auto text-primary" />
+              <Trophy className="w-20 h-20 text-primary" />
+              <h2 className="text-4xl font-bold">Draft Complete!</h2>
             </motion.div>
-            
-            <h2 className="text-4xl font-bold text-foreground">
-              Draft Complete!
-            </h2>
-            
-            <div className="grid grid-cols-2 gap-6 mt-8">
-              {participants.map((participant, index) => (
-                <motion.div
-                  key={participant.name}
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: index * 0.2 }}
-                  className="space-y-3"
-                >
-                  <h3 className="font-semibold text-xl text-primary">{participant.name}</h3>
-                  <div className="space-y-2">
-                    {participant.teams.map((team, teamIndex) => (
-                      <motion.div
-                        key={team.teamNumber}
-                        initial={{ x: -20, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: (index * 0.2) + (teamIndex * 0.1) }}
-                        className="bg-card p-3 rounded text-sm text-card-foreground border border-border"
-                      >
-                        Team {team.teamNumber} - {team.teamName}
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-            
-            <Button
-              onClick={() => navigate("/dashboard")}
-              className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground"
-              size="lg"
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="grid grid-cols-2 gap-6 mt-8">
+          {participants.map((participant, index) => (
+            <motion.div
+              key={participant.name}
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: index * 0.2 }}
+              className="space-y-3"
             >
-              Return to Dashboard
-            </Button>
-          </motion.div>
+              <h3 className="font-semibold text-xl text-primary">{participant.name}</h3>
+              <div className="space-y-2">
+                {participant.teams.map((team, teamIndex) => (
+                  <motion.div
+                    key={team.teamNumber}
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: (index * 0.2) + (teamIndex * 0.1) }}
+                    className="bg-card p-3 rounded text-sm border border-border"
+                  >
+                    Team {team.teamNumber} - {team.teamName}
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          ))}
         </div>
-      </motion.div>
-    </AnimatePresence>
+        
+        <Button
+          onClick={() => navigate("/dashboard")}
+          className="mt-8 w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+          size="lg"
+        >
+          Return to Dashboard
+        </Button>
+      </DialogContent>
+    </Dialog>
   );
 };
