@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { DraftControls } from "./DraftControls";
@@ -52,6 +52,18 @@ export const DraftCreationSection = ({
     }
 
     try {
+      // First, verify that the user profile exists
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', userId)
+        .single();
+
+      if (profileError) {
+        throw new Error('User profile not found. Please try logging out and back in.');
+      }
+
+      // Now create the draft
       const { data, error: draftError } = await supabase
         .from('drafts')
         .insert({
@@ -67,10 +79,10 @@ export const DraftCreationSection = ({
       if (draftError) throw draftError;
 
       navigate(`/draft/${data.id}`);
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to create draft. Please try again.",
+        description: error.message || "Failed to create draft. Please try again.",
         variant: "destructive",
       });
       console.error('Draft creation error:', error);
