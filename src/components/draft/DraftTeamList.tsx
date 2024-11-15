@@ -28,6 +28,7 @@ interface DraftTeamListProps {
   availableTeams: Team[];
   currentParticipant: string;
   onTeamSelect: (team: Team) => void;
+  hidePoints?: boolean;
 }
 
 export const DraftTeamList = ({
@@ -35,6 +36,7 @@ export const DraftTeamList = ({
   availableTeams,
   currentParticipant,
   onTeamSelect,
+  hidePoints = false,
 }: DraftTeamListProps) => {
   const { toast } = useToast();
   const { draftState } = useDraftState();
@@ -55,21 +57,9 @@ export const DraftTeamList = ({
       const draftData = (draft.draft_data as { selectedTeams?: number[] }) || {};
       const selectedTeams = draftData.selectedTeams || [];
 
-      // Find current participant's teams
       const currentParticipantData = participants.find(p => p.name === currentParticipant);
       if (!currentParticipantData) {
         throw new Error('Current participant not found');
-      }
-
-      // Check if it's the participant's turn
-      const currentParticipantIndex = participants.findIndex(p => p.name === currentParticipant);
-      if (currentParticipantIndex !== draftState.currentParticipantIndex) {
-        toast({
-          title: "Not Your Turn",
-          description: "Please wait for your turn to select a team.",
-          variant: "destructive",
-        });
-        return;
       }
 
       if (currentParticipantData.teams.length >= 5) {
@@ -90,31 +80,7 @@ export const DraftTeamList = ({
         return;
       }
 
-      const updatedParticipants = participants.map(p =>
-        p.name === currentParticipant
-          ? { ...p, teams: [...p.teams, team] }
-          : p
-      );
-
-      const { error: updateError } = await supabase
-        .from('drafts')
-        .update({
-          participants: updatedParticipants as unknown as Json,
-          draft_data: {
-            ...draftData,
-            selectedTeams: [...selectedTeams, team.teamNumber]
-          } as unknown as Json
-        })
-        .eq('id', draftId);
-
-      if (updateError) throw updateError;
-
       onTeamSelect(team);
-      
-      toast({
-        title: "Team Selected",
-        description: `${team.teamName} (${team.teamNumber}) has been drafted by ${currentParticipant}`,
-      });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -124,7 +90,6 @@ export const DraftTeamList = ({
     }
   };
 
-  // Filter out already selected teams
   const filteredTeams = availableTeams.filter(team => 
     !draftState.participants.some(p => 
       p.teams.some(t => t.teamNumber === team.teamNumber)
@@ -150,6 +115,7 @@ export const DraftTeamList = ({
             >
               <TeamCard
                 {...team}
+                hidePoints={hidePoints}
                 onSelect={() => handleTeamSelect(team)}
               />
             </motion.div>

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { DraftTimer } from "@/components/DraftTimer";
 import { DraftOrder } from "@/components/DraftOrder";
 import { DraftTeamList } from "@/components/draft/DraftTeamList";
+import { DraftComplete } from "@/components/DraftComplete";
 import { useDraftState } from "@/components/draft/DraftStateProvider";
 import { useToast } from "@/components/ui/use-toast";
 import { useDraftData } from "@/hooks/useDraftData";
@@ -10,6 +11,7 @@ import { selectTeam } from "@/services/draftService";
 import { Team } from "@/types/draft";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEventTeams } from "@/services/tbaService";
+import { Button } from "@/components/ui/button";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
@@ -17,12 +19,20 @@ export const DraftContent = () => {
   const { draftState, setDraftState } = useDraftState();
   const { data: draftData, isLoading: isDraftLoading, refetch } = useDraftData(draftId);
 
-  // Fetch teams from TBA API
   const { data: teams, isLoading: isTeamsLoading } = useQuery({
     queryKey: ['eventTeams', draftData?.event_key],
     queryFn: () => fetchEventTeams(draftData?.event_key || ''),
     enabled: !!draftData?.event_key,
   });
+
+  const isDraftComplete = draftState.participants.every(p => p.teams.length >= 5);
+
+  const handleCompleteDraft = () => {
+    setDraftState(prev => ({
+      ...prev,
+      draftComplete: true
+    }));
+  };
 
   const handleTeamSelect = async (team: Team) => {
     if (!draftId || !draftData) return;
@@ -75,7 +85,6 @@ export const DraftContent = () => {
     return <div className="flex items-center justify-center min-h-screen">Draft not found</div>;
   }
 
-  // Initialize participants from draft data if not already set
   if ((!draftState.participants || draftState.participants.length === 0) && draftData.participants) {
     setDraftState(prev => ({
       ...prev,
@@ -99,7 +108,10 @@ export const DraftContent = () => {
     return <div className="flex items-center justify-center min-h-screen">Invalid participant state</div>;
   }
 
-  // Use the teams from TBA API instead of draft data
+  if (draftState.draftComplete) {
+    return <DraftComplete participants={participants} />;
+  }
+
   const availableTeams = teams || [];
 
   return (
@@ -110,7 +122,18 @@ export const DraftContent = () => {
           animate={{ opacity: 1, y: 0 }}
           className="space-y-8"
         >
-          <h1 className="text-3xl font-bold">{draftData.event_name}</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold">{draftData.event_name}</h1>
+            {isDraftComplete && (
+              <Button 
+                onClick={handleCompleteDraft}
+                className="bg-green-500 hover:bg-green-600"
+              >
+                Complete Draft
+              </Button>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-2">
               <DraftOrder
@@ -119,11 +142,13 @@ export const DraftContent = () => {
               />
             </div>
             <div>
-              <DraftTimer
-                key={currentIndex}
-                onTimeUp={() => {}}
-                isActive={true}
-              />
+              {!isDraftComplete && (
+                <DraftTimer
+                  key={currentIndex}
+                  onTimeUp={() => {}}
+                  isActive={true}
+                />
+              )}
             </div>
           </div>
 
@@ -132,6 +157,7 @@ export const DraftContent = () => {
             availableTeams={availableTeams}
             currentParticipant={currentParticipant.name}
             onTeamSelect={handleTeamSelect}
+            hidePoints={true}
           />
         </motion.div>
       </div>
