@@ -1,7 +1,6 @@
 import { useParams } from "react-router-dom";
 import { DraftTimer } from "@/components/DraftTimer";
 import { DraftOrder } from "@/components/DraftOrder";
-import { DraftTeamList } from "@/components/draft/DraftTeamList";
 import { DraftComplete } from "@/components/DraftComplete";
 import { DraftSetup } from "@/components/DraftSetup";
 import { useDraftState } from "@/components/draft/DraftStateProvider";
@@ -13,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchEventTeams, fetchEventDetails } from "@/services/tbaService";
 import { DraftHeader } from "./DraftHeader";
 import { DraftLayout } from "./DraftLayout";
+import { DraftTeamGrid } from "./DraftTeamGrid";
 import confetti from 'canvas-confetti';
 import { DraftCompleteDialog } from "./DraftCompleteDialog";
 import { Loader2 } from "lucide-react";
@@ -21,11 +21,11 @@ export const DraftContent = () => {
   const { draftId } = useParams();
   const { toast } = useToast();
   const { draftState, setDraftState } = useDraftState();
-  const { data: draftData, isLoading: isDraftLoading, refetch } = useDraftData(draftId);
+  const { data: draftData, isLoading: isDraftLoading } = useDraftData(draftId);
 
   // Get draft settings from localStorage
   const draftSettings = JSON.parse(localStorage.getItem("draftSettings") || "{}");
-  const timeLimit = draftSettings.draftTimeLimit || 120; // Default to 120 seconds if not set
+  const timeLimit = draftSettings.draftTimeLimit || 120;
 
   const { data: teams, isLoading: isTeamsLoading } = useQuery({
     queryKey: ['eventTeams', draftData?.event_key],
@@ -40,32 +40,11 @@ export const DraftContent = () => {
   });
 
   const isDraftComplete = draftState.participants.every(p => p.teams.length >= 5);
-
-  const handleAutoSelectTeam = async () => {
-    if (!teams) return;
-    
-    const availableTeams = teams.filter(team => 
-      !draftState.participants.some(p => 
-        p.teams.some(t => t.teamNumber === team.teamNumber)
-      )
-    );
-
-    if (availableTeams.length > 0) {
-      await handleTeamSelect(availableTeams[0]);
-    }
-  };
+  const isLoading = isDraftLoading || isTeamsLoading;
 
   const handleTeamSelect = async (team: Team) => {
     const currentParticipant = draftState.participants[draftState.currentParticipantIndex];
-    if (!currentParticipant) {
-      toast({
-        title: "Error",
-        description: "No active participant found",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    
     try {
       const { updatedParticipants } = await selectTeam(
         draftId || '',
@@ -75,22 +54,17 @@ export const DraftContent = () => {
         teams || []
       );
 
-      // Calculate next picker based on snake draft pattern
       const totalPicks = updatedParticipants.reduce((sum, p) => sum + p.teams.length, 0);
       const round = Math.floor(totalPicks / updatedParticipants.length) + 1;
       const isReverseRound = round % 2 === 0;
 
-      let nextIndex;
-      if (isReverseRound) {
-        nextIndex = draftState.currentParticipantIndex - 1;
-        if (nextIndex < 0) {
-          nextIndex = 0;
-        }
-      } else {
-        nextIndex = draftState.currentParticipantIndex + 1;
-        if (nextIndex >= updatedParticipants.length) {
-          nextIndex = updatedParticipants.length - 1;
-        }
+      let nextIndex = isReverseRound
+        ? draftState.currentParticipantIndex - 1
+        : draftState.currentParticipantIndex + 1;
+
+      if (nextIndex < 0) nextIndex = 0;
+      if (nextIndex >= updatedParticipants.length) {
+        nextIndex = updatedParticipants.length - 1;
       }
 
       setDraftState(prev => ({
@@ -105,8 +79,6 @@ export const DraftContent = () => {
         origin: { y: 0.6 }
       });
 
-      refetch();
-
       toast({
         title: "Team Selected",
         description: `${team.teamName} has been drafted by ${currentParticipant.name}`
@@ -120,7 +92,7 @@ export const DraftContent = () => {
     }
   };
 
-  if (isDraftLoading || isTeamsLoading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -167,40 +139,34 @@ export const DraftContent = () => {
         nickname={draftData.nickname} 
       />
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="md:col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="lg:col-span-3">
           <DraftOrder
             participants={draftState.participants}
             currentIndex={draftState.currentParticipantIndex}
             round={Math.floor(draftState.participants.reduce((sum, p) => sum + p.teams.length, 0) / draftState.participants.length) + 1}
           />
         </div>
-        <div className="space-y-4">
-          {!isDraftComplete && (
+        <div>
+          {!isDraftComplete && !isTeamsLoading && teams && (
             <DraftTimer
               key={draftState.currentParticipantIndex}
-              onTimeUp={handleAutoSelectTeam}
+              onTimeUp={() => handleTeamSelect(teams[0])}
               isActive={true}
-              autoSelectTeam={handleAutoSelectTeam}
+              autoSelectTeam={() => handleTeamSelect(teams[0])}
               initialTime={timeLimit}
             />
           )}
         </div>
       </div>
 
-      {teams && teams.length > 0 ? (
-        <DraftTeamList
-          draftId={draftId || ''}
-          availableTeams={teams}
-          currentParticipant={draftState.participants[draftState.currentParticipantIndex].name}
+      {teams && (
+        <DraftTeamGrid
+          teams={teams}
+          isLoading={isTeamsLoading}
           onTeamSelect={handleTeamSelect}
           hidePoints={true}
         />
-      ) : (
-        <div className="text-center p-4 mt-4">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-          <p className="text-lg text-muted-foreground">Loading teams...</p>
-        </div>
       )}
     </DraftLayout>
   );

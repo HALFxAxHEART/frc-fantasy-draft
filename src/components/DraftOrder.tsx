@@ -2,7 +2,7 @@ import { Card } from "./ui/card";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { motion } from "framer-motion";
 import { Team } from "@/types/draft";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Trophy } from "lucide-react";
 
 interface DraftOrderProps {
   participants: Array<{
@@ -43,7 +43,7 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
   return (
     <Card className="p-6">
       <h3 className="text-xl font-semibold mb-6">Draft Order - Round {round}</h3>
-      <div className="flex flex-col space-y-4">
+      <div className="grid grid-cols-1 gap-4">
         {participants.map((participant, displayIndex) => {
           const { isPicking, isNext } = getPickingStatus(displayIndex);
           
@@ -57,7 +57,7 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
                 isPicking
                   ? 'bg-primary text-primary-foreground shadow-lg'
                   : isNext
-                  ? 'bg-secondary'
+                  ? 'bg-secondary/20'
                   : 'bg-muted'
               }`}
             >
@@ -76,6 +76,9 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
                     {isNext && (
                       <ChevronRight className="h-5 w-5 text-primary animate-pulse" />
                     )}
+                    {isPicking && (
+                      <Trophy className="h-5 w-5 text-primary-foreground animate-bounce" />
+                    )}
                   </div>
                   <span className={`text-sm font-semibold ${isPicking ? 'text-primary-foreground' : isNext ? 'text-primary' : ''}`}>
                     {isPicking && '🎯 Currently Picking'}
@@ -83,9 +86,9 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
                   </span>
                 </div>
                 {participant.teams.length > 0 && (
-                  <div className="text-sm grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
                     {participant.teams.map((team, idx) => (
-                      <div key={idx} className="bg-background/10 p-2 rounded">
+                      <div key={idx} className="bg-background/10 p-2 rounded text-sm">
                         Team {team.teamNumber}
                       </div>
                     ))}
