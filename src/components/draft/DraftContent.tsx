@@ -7,7 +7,6 @@ import { useDraftState } from "@/components/draft/DraftStateProvider";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Json } from "@/integrations/supabase/types";
 
 interface DraftParticipant {
   name: string;
@@ -54,15 +53,12 @@ export const DraftContent = () => {
         .single();
       
       if (error) throw error;
-      
+
       // Initialize draft state with participants from database
       if (data?.participants) {
         const parsedParticipants = (data.participants as any[]).map(p => ({
           name: p.name || '',
-          teams: Array.isArray(p.teams) ? p.teams.map(t => ({
-            teamNumber: t.teamNumber,
-            teamName: t.teamName
-          })) : []
+          teams: Array.isArray(p.teams) ? p.teams : []
         }));
 
         setDraftState(prev => ({
@@ -70,24 +66,27 @@ export const DraftContent = () => {
           participants: parsedParticipants
         }));
       }
-      
+
+      // Parse the draft data
       const typedData: DraftData = {
         participants: (data?.participants as any[] || []).map(p => ({
           name: p.name || '',
           teams: Array.isArray(p.teams) ? p.teams : []
         })),
         draft_data: {
-          availableTeams: ((data?.draft_data as any)?.availableTeams || []).map((t: any) => ({
-            teamNumber: t.teamNumber,
-            teamName: t.teamName,
-            districtPoints: t.districtPoints,
-            stats: {
-              wins: t.stats?.wins || 0,
-              losses: t.stats?.losses || 0,
-              opr: t.stats?.opr || 0,
-              autoAvg: t.stats?.autoAvg || 0
-            }
-          }))
+          availableTeams: Array.isArray((data?.draft_data as any)?.availableTeams) 
+            ? (data?.draft_data as any).availableTeams.map((t: any) => ({
+                teamNumber: t.teamNumber,
+                teamName: t.teamName,
+                districtPoints: t.districtPoints || 0,
+                stats: {
+                  wins: t.stats?.wins || 0,
+                  losses: t.stats?.losses || 0,
+                  opr: t.stats?.opr || 0,
+                  autoAvg: t.stats?.autoAvg || 0
+                }
+              }))
+            : []
         },
         event_name: data?.event_name || ''
       };
@@ -98,6 +97,8 @@ export const DraftContent = () => {
   });
 
   const handleTeamSelect = async (team: Team) => {
+    if (!team) return;
+    
     setDraftState(prev => ({
       ...prev,
       currentParticipantIndex: (prev.currentParticipantIndex + 1) % prev.participants.length,
@@ -116,10 +117,7 @@ export const DraftContent = () => {
   const participants = Array.isArray(draftState.participants) 
     ? draftState.participants.map(p => ({
         name: p.name || '',
-        teams: Array.isArray(p.teams) ? p.teams.map(t => ({
-          teamNumber: t.teamNumber || 0,
-          teamName: t.teamName || ''
-        })) : []
+        teams: Array.isArray(p.teams) ? p.teams : []
       }))
     : [];
 
@@ -158,7 +156,7 @@ export const DraftContent = () => {
             <div>
               <DraftTimer
                 key={currentIndex}
-                onTimeUp={() => handleTeamSelect(null as any)}
+                onTimeUp={() => {}}
                 isActive={true}
               />
             </div>
