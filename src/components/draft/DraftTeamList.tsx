@@ -17,6 +17,19 @@ interface Team {
   };
 }
 
+interface DraftData {
+  selectedTeams: number[];
+  // Add other draft_data fields if needed
+}
+
+interface DraftParticipant {
+  name: string;
+  teams: Array<{
+    teamNumber: number;
+    teamName: string;
+  }>;
+}
+
 interface DraftTeamListProps {
   draftId: string;
   availableTeams: Team[];
@@ -47,11 +60,11 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      const participants = draft.participants || [];
-      const draftData = draft.draft_data || {};
+      const participants = (draft.participants || []) as DraftParticipant[];
+      const draftData = (draft.draft_data as DraftData) || { selectedTeams: [] };
       const selectedTeams = draftData.selectedTeams || [];
 
-      const currentParticipantData = participants.find((p: any) => p.name === currentParticipant);
+      const currentParticipantData = participants.find(p => p.name === currentParticipant);
       if (!currentParticipantData) {
         throw new Error('Current participant not found');
       }
