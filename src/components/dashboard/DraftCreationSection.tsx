@@ -55,12 +55,16 @@ export const DraftCreationSection = ({
       // First, verify that the user profile exists
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('id')
-        .eq('id', userId)
-        .single();
+        .select('*')
+        .eq('id', userId);
 
-      if (profileError) {
-        throw new Error('User profile not found. Please try logging out and back in.');
+      if (profileError || !profile || profile.length === 0) {
+        toast({
+          title: "Error",
+          description: "User profile not found. Please try logging out and back in.",
+          variant: "destructive",
+        });
+        return;
       }
 
       // Now create the draft

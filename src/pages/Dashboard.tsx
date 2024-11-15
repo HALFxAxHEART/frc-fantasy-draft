@@ -59,6 +59,11 @@ const Dashboard = () => {
     await supabase.auth.signOut();
   };
 
+  const handleEventSelect = (eventKey: string) => {
+    // Handle event selection
+    navigate(`/draft?event=${eventKey}`);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/20 to-background p-8">
       <motion.div
@@ -116,6 +121,7 @@ const Dashboard = () => {
             {userId && <UserDrafts userId={userId} />}
             <UpcomingEvents
               events={events}
+              onEventSelect={handleEventSelect}
               isLoading={isLoading}
             />
           </div>
