@@ -8,7 +8,6 @@ import { DraftOrder } from "@/components/DraftOrder";
 import { DraftSetup } from "@/components/DraftSetup";
 import { DraftComplete } from "@/components/DraftComplete";
 import { DraftStateProvider, useDraftState } from "@/components/draft/DraftStateProvider";
-import { DraftControls } from "@/components/draft/DraftControls";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -116,6 +115,42 @@ const DraftContent = () => {
     return <div>Draft not found</div>;
   }
 
+  const handleTeamSelect = async (team: any) => {
+    if (!draftData || !draftId) return;
+
+    try {
+      const currentParticipant = draftData.participants[0]; // For now, just use the first participant
+      
+      // Update the draft in Supabase
+      const { error } = await supabase
+        .from('drafts')
+        .update({
+          participants: draftData.participants.map(p => 
+            p.name === currentParticipant.name
+              ? { ...p, teams: [...p.teams, team] }
+              : p
+          )
+        })
+        .eq('id', draftId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Team selected",
+        description: `${team.teamName} has been drafted`,
+      });
+
+      // Remove the selected team from available teams
+      setAvailableTeams(prev => prev.filter(t => t.teamNumber !== team.teamNumber));
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to select team",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
@@ -149,7 +184,7 @@ const DraftContent = () => {
                     <TeamCard
                       key={team.teamNumber}
                       {...team}
-                      onSelect={() => {}}
+                      onSelect={() => handleTeamSelect(team)}
                     />
                   ))}
                 </div>
