@@ -21,6 +21,25 @@ export const DraftCreation = ({
   nickname,
   onNicknameChange,
 }: DraftCreationProps) => {
+  const handleParticipantsChange = (newValue: number) => {
+    // Preserve existing names when increasing participants
+    const newNames = [...participantNames];
+    if (newValue > participants) {
+      // Add empty strings for new participants
+      while (newNames.length < newValue) {
+        newNames.push("");
+      }
+    } else {
+      // Remove extra names if decreasing
+      newNames.splice(newValue);
+    }
+    onParticipantsChange(newValue);
+    // Update names array while preserving existing names
+    newNames.forEach((name, index) => {
+      onParticipantNameChange(index, name);
+    });
+  };
+
   return (
     <Card className="p-6 space-y-6">
       <h2 className="text-2xl font-semibold">Create New Draft</h2>
@@ -47,7 +66,7 @@ export const DraftCreation = ({
             min="2"
             max="10"
             value={participants}
-            onChange={(e) => onParticipantsChange(Number(e.target.value))}
+            onChange={(e) => handleParticipantsChange(Number(e.target.value))}
             className="w-full max-w-xs"
           />
         </div>

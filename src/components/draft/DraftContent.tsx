@@ -22,6 +22,10 @@ export const DraftContent = () => {
   const { draftState, setDraftState } = useDraftState();
   const { data: draftData, isLoading: isDraftLoading, refetch } = useDraftData(draftId);
 
+  // Get draft settings from localStorage
+  const draftSettings = JSON.parse(localStorage.getItem("draftSettings") || "{}");
+  const timeLimit = draftSettings.draftTimeLimit || 120; // Default to 120 seconds if not set
+
   const { data: teams, isLoading: isTeamsLoading } = useQuery({
     queryKey: ['eventTeams', draftData?.event_key],
     queryFn: () => fetchEventTeams(draftData?.event_key || ''),
@@ -167,18 +171,25 @@ export const DraftContent = () => {
               onTimeUp={handleAutoSelectTeam}
               isActive={true}
               autoSelectTeam={handleAutoSelectTeam}
+              initialTime={timeLimit}
             />
           )}
         </div>
       </div>
 
-      <DraftTeamList
-        draftId={draftId}
-        availableTeams={teams || []}
-        currentParticipant={draftState.participants[draftState.currentParticipantIndex].name}
-        onTeamSelect={handleTeamSelect}
-        hidePoints={true}
-      />
+      {teams && teams.length > 0 ? (
+        <DraftTeamList
+          draftId={draftId}
+          availableTeams={teams}
+          currentParticipant={draftState.participants[draftState.currentParticipantIndex].name}
+          onTeamSelect={handleTeamSelect}
+          hidePoints={true}
+        />
+      ) : (
+        <div className="text-center p-4 mt-4">
+          <p className="text-lg text-muted-foreground">No teams available for this event yet.</p>
+        </div>
+      )}
     </DraftLayout>
   );
 };

@@ -35,14 +35,14 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
 
     return {
       isPicking: displayIndex === effectiveIndex,
-      isNext: displayIndex === nextIndex
+      isNext: displayIndex === nextIndex && nextIndex >= 0 && nextIndex < participants.length
     };
   };
 
   return (
     <Card className="p-6">
       <h3 className="text-xl font-semibold mb-6">Draft Order</h3>
-      <div className="grid grid-cols-1 gap-4">
+      <div className="flex flex-col space-y-4">
         {participants.map((participant, displayIndex) => {
           const { isPicking, isNext } = getPickingStatus(displayIndex);
           
@@ -56,7 +56,7 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
                 isPicking
                   ? 'bg-red-500 text-white shadow-lg'
                   : isNext
-                  ? 'bg-gray-200 text-gray-800'
+                  ? 'bg-green-500/20 text-gray-800'
                   : 'bg-muted'
               }`}
             >
@@ -73,9 +73,9 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
                     </Avatar>
                     <span className="text-lg font-bold">{participant.name}</span>
                   </div>
-                  <span className="text-sm">
-                    {isPicking && '(Picking)'}
-                    {isNext && '(Next)'}
+                  <span className={`text-sm font-semibold ${isPicking ? 'text-white' : isNext ? 'text-green-700' : ''}`}>
+                    {isPicking && '🎯 Currently Picking'}
+                    {isNext && '⏳ Up Next'}
                   </span>
                 </div>
                 {participant.teams.length > 0 && (
