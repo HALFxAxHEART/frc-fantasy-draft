@@ -34,6 +34,18 @@ export const DraftContent = () => {
         .single();
       
       if (error) throw error;
+      
+      // Initialize draft state with participants from database
+      if (data && Array.isArray(data.participants)) {
+        setDraftState(prev => ({
+          ...prev,
+          participants: data.participants.map((p: any) => ({
+            name: p.name || '',
+            teams: Array.isArray(p.teams) ? p.teams : []
+          }))
+        }));
+      }
+      
       return data;
     },
     enabled: !!draftId,
@@ -56,8 +68,8 @@ export const DraftContent = () => {
   }
 
   // Parse and validate participants data with proper type checking
-  const participants: DraftParticipant[] = Array.isArray(draftData.participants) 
-    ? (draftData.participants as any[]).map(p => ({
+  const participants: DraftParticipant[] = Array.isArray(draftState.participants) 
+    ? draftState.participants.map(p => ({
         name: p.name || '',
         teams: Array.isArray(p.teams) ? p.teams.map(t => ({
           teamNumber: t.teamNumber || 0,
@@ -81,14 +93,6 @@ export const DraftContent = () => {
   );
 
   const currentParticipant = participants[currentIndex];
-  
-  if (!currentParticipant) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        Error: Could not determine current participant. Please try refreshing the page.
-      </div>
-    );
-  }
 
   const availableTeams = ((draftData.draft_data as { availableTeams?: any[] })?.availableTeams) || [];
 
