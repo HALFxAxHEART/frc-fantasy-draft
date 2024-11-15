@@ -89,7 +89,7 @@ export const ProfilePicture = ({ userId, displayName, currentUrl }: {
               const file = e.target.files?.[0];
               if (file) uploadProfilePicture(file);
             }}
-            disabled={isLoading}
+            disabled={isUploading}
           />
         </div>
       </DialogContent>
