@@ -17,20 +17,22 @@ interface DraftParticipant {
   }>;
 }
 
+interface Team {
+  teamNumber: number;
+  teamName: string;
+  districtPoints: number;
+  stats: {
+    wins: number;
+    losses: number;
+    opr: number;
+    autoAvg: number;
+  };
+}
+
 interface DraftData {
   participants: DraftParticipant[];
   draft_data: {
-    availableTeams?: Array<{
-      teamNumber: number;
-      teamName: string;
-      districtPoints: number;
-      stats: {
-        wins: number;
-        losses: number;
-        opr: number;
-        autoAvg: number;
-      };
-    }>;
+    availableTeams?: Team[];
   };
   event_name: string;
 }
@@ -54,23 +56,48 @@ export const DraftContent = () => {
       if (error) throw error;
       
       // Initialize draft state with participants from database
-      if (data && data.participants) {
-        const parsedParticipants = data.participants as DraftParticipant[];
+      if (data?.participants) {
+        const parsedParticipants = (data.participants as any[]).map(p => ({
+          name: p.name || '',
+          teams: Array.isArray(p.teams) ? p.teams.map(t => ({
+            teamNumber: t.teamNumber,
+            teamName: t.teamName
+          })) : []
+        }));
+
         setDraftState(prev => ({
           ...prev,
-          participants: parsedParticipants.map(p => ({
-            name: p.name || '',
-            teams: Array.isArray(p.teams) ? p.teams : []
-          }))
+          participants: parsedParticipants
         }));
       }
       
-      return data as DraftData;
+      const typedData: DraftData = {
+        participants: (data?.participants as any[] || []).map(p => ({
+          name: p.name || '',
+          teams: Array.isArray(p.teams) ? p.teams : []
+        })),
+        draft_data: {
+          availableTeams: ((data?.draft_data as any)?.availableTeams || []).map((t: any) => ({
+            teamNumber: t.teamNumber,
+            teamName: t.teamName,
+            districtPoints: t.districtPoints,
+            stats: {
+              wins: t.stats?.wins || 0,
+              losses: t.stats?.losses || 0,
+              opr: t.stats?.opr || 0,
+              autoAvg: t.stats?.autoAvg || 0
+            }
+          }))
+        },
+        event_name: data?.event_name || ''
+      };
+      
+      return typedData;
     },
     enabled: !!draftId,
   });
 
-  const handleTeamSelect = async (team: any) => {
+  const handleTeamSelect = async (team: Team) => {
     setDraftState(prev => ({
       ...prev,
       currentParticipantIndex: (prev.currentParticipantIndex + 1) % prev.participants.length,
@@ -86,8 +113,7 @@ export const DraftContent = () => {
     return <div className="flex items-center justify-center min-h-screen">Draft not found</div>;
   }
 
-  // Parse and validate participants data with proper type checking
-  const participants: DraftParticipant[] = Array.isArray(draftState.participants) 
+  const participants = Array.isArray(draftState.participants) 
     ? draftState.participants.map(p => ({
         name: p.name || '',
         teams: Array.isArray(p.teams) ? p.teams.map(t => ({
@@ -105,14 +131,12 @@ export const DraftContent = () => {
     );
   }
 
-  // Ensure currentParticipantIndex is within bounds
   const currentIndex = Math.min(
     Math.max(0, draftState.currentParticipantIndex),
     participants.length - 1
   );
 
   const currentParticipant = participants[currentIndex];
-
   const availableTeams = draftData.draft_data?.availableTeams || [];
 
   return (
@@ -134,7 +158,7 @@ export const DraftContent = () => {
             <div>
               <DraftTimer
                 key={currentIndex}
-                onTimeUp={() => handleTeamSelect(null)}
+                onTimeUp={() => handleTeamSelect(null as any)}
                 isActive={true}
               />
             </div>
