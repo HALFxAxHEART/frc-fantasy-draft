@@ -7,6 +7,7 @@ interface DatabaseDraftData {
   participants: Json;
   draft_data: Json;
   event_name: string;
+  event_key: string;
 }
 
 export const useDraftData = (draftId: string | undefined) => {
@@ -54,7 +55,8 @@ export const useDraftData = (draftId: string | undefined) => {
         draft_data: {
           availableTeams
         },
-        event_name: dbData?.event_name || ''
+        event_name: dbData?.event_name || '',
+        event_key: dbData?.event_key || ''
       };
       
       return typedData;
