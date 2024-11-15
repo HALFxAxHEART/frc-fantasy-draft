@@ -7,6 +7,7 @@ interface TeamStats {
   losses: number;
   opr: number;
   autoAvg: number;
+  ranking?: number; // Made ranking optional to work with both contexts
 }
 
 interface TeamCardProps {
@@ -16,6 +17,7 @@ interface TeamCardProps {
   logoUrl?: string;
   stats: TeamStats;
   onSelect: () => void;
+  hidePoints?: boolean; // Added hidePoints prop
 }
 
 export const TeamCard = ({ 
@@ -23,9 +25,9 @@ export const TeamCard = ({
   teamName, 
   districtPoints, 
   stats, 
-  onSelect 
+  onSelect,
+  hidePoints = false // Default to false
 }: TeamCardProps) => {
-  // Use the team-avatar endpoint instead of avatar.png
   const logoUrl = `https://www.thebluealliance.com/api/v3/team/frc${teamNumber}/media/avatar`;
   
   return (
@@ -43,7 +45,7 @@ export const TeamCard = ({
           <div className="text-center min-w-0 flex-1 flex flex-col justify-center">
             <div className="font-bold">Team {teamNumber}</div>
             <div className="text-sm text-muted-foreground group-hover:text-accent-foreground/80 line-clamp-2">{teamName}</div>
-            <div className="text-sm">Points: {districtPoints}</div>
+            {!hidePoints && <div className="text-sm">Points: {districtPoints}</div>}
           </div>
         </Button>
       </HoverCardTrigger>
@@ -54,6 +56,7 @@ export const TeamCard = ({
             <div>Win/Loss: {stats.wins}/{stats.losses}</div>
             <div>OPR: {stats.opr.toFixed(2)}</div>
             <div>Auto Avg: {stats.autoAvg.toFixed(2)}</div>
+            {stats.ranking && <div>Rank: {stats.ranking}</div>}
           </div>
         </div>
       </HoverCardContent>

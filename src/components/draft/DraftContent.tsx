@@ -109,7 +109,20 @@ export const DraftContent = () => {
   }
 
   if (draftState.draftComplete) {
-    return <DraftComplete participants={participants} />;
+    // Transform the participants data to include ranking
+    const participantsWithRanking = draftState.participants.map(participant => ({
+      name: participant.name,
+      teams: participant.teams.map(team => ({
+        teamNumber: team.teamNumber,
+        teamName: team.teamName,
+        stats: {
+          wins: team.stats.wins,
+          losses: team.stats.losses,
+          ranking: Math.floor(Math.random() * 100) // Placeholder ranking calculation
+        }
+      }))
+    }));
+    return <DraftComplete participants={participantsWithRanking} />;
   }
 
   const availableTeams = teams || [];
