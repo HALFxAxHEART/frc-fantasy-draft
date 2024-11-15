@@ -8,12 +8,21 @@ import { useToast } from "@/components/ui/use-toast";
 import { useDraftData } from "@/hooks/useDraftData";
 import { selectTeam } from "@/services/draftService";
 import { Team } from "@/types/draft";
+import { useQuery } from "@tanstack/react-query";
+import { fetchEventTeams } from "@/services/tbaService";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
   const { toast } = useToast();
   const { draftState, setDraftState } = useDraftState();
-  const { data: draftData, isLoading, refetch } = useDraftData(draftId);
+  const { data: draftData, isLoading: isDraftLoading, refetch } = useDraftData(draftId);
+
+  // Fetch teams from TBA API
+  const { data: teams, isLoading: isTeamsLoading } = useQuery({
+    queryKey: ['eventTeams', draftData?.event_key],
+    queryFn: () => fetchEventTeams(draftData?.event_key || ''),
+    enabled: !!draftData?.event_key,
+  });
 
   const handleTeamSelect = async (team: Team) => {
     if (!draftId || !draftData) return;
@@ -34,7 +43,7 @@ export const DraftContent = () => {
         team,
         draftState.participants,
         currentParticipant.name,
-        draftData.draft_data.availableTeams
+        teams || []
       );
 
       setDraftState(prev => ({
@@ -58,7 +67,7 @@ export const DraftContent = () => {
     }
   };
 
-  if (isLoading) {
+  if (isDraftLoading || isTeamsLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading draft...</div>;
   }
 
@@ -90,7 +99,8 @@ export const DraftContent = () => {
     return <div className="flex items-center justify-center min-h-screen">Invalid participant state</div>;
   }
 
-  const availableTeams = draftData.draft_data.availableTeams || [];
+  // Use the teams from TBA API instead of draft data
+  const availableTeams = teams || [];
 
   return (
     <div className="min-h-screen bg-background p-8">
