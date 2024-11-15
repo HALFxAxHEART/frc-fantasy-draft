@@ -31,6 +31,7 @@ export const DraftOrder = ({ participants, currentIndex }: DraftOrderProps) => {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
+                  <span className="text-lg font-bold min-w-[24px]">{index + 1}.</span>
                   <Avatar className="h-12 w-12 border-2 border-background">
                     <AvatarFallback className="text-lg">
                       {participant.name[0]?.toUpperCase()}
