@@ -55,25 +55,27 @@ export const DraftContent = () => {
     return <div>Draft not found</div>;
   }
 
-  const participants = (draftData.participants as unknown as DraftParticipant[]) || [];
+  // Parse and validate participants data
+  let participants: DraftParticipant[] = [];
+  try {
+    participants = Array.isArray(draftData.participants) 
+      ? draftData.participants as DraftParticipant[]
+      : [];
+  } catch (e) {
+    console.error("Error parsing participants:", e);
+  }
 
-  // Add safety check for participants array
-  if (!participants || !Array.isArray(participants) || participants.length === 0) {
+  if (participants.length === 0) {
     return <div>No participants found in this draft.</div>;
   }
 
-  // Ensure currentParticipantIndex is within bounds and participants exist
+  // Ensure currentParticipantIndex is within bounds
   const currentIndex = Math.min(
-    Math.max(0, draftState.currentParticipantIndex), 
+    Math.max(0, draftState.currentParticipantIndex),
     participants.length - 1
   );
 
-  // Verify the current participant exists
   const currentParticipant = participants[currentIndex];
-  if (!currentParticipant) {
-    return <div>Error: Could not find current participant</div>;
-  }
-
   const availableTeams = ((draftData.draft_data as { availableTeams?: any[] })?.availableTeams) || [];
 
   return (
