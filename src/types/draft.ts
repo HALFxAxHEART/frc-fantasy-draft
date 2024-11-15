@@ -21,4 +21,5 @@ export interface DraftData {
     availableTeams: Team[];
   };
   event_name: string;
+  event_key: string;  // Added this field
 }
