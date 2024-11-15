@@ -1,4 +1,5 @@
 import { Card } from "./ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 interface DraftOrderProps {
   participants: Array<{
@@ -29,7 +30,14 @@ export const DraftOrder = ({ participants, currentIndex }: DraftOrderProps) => {
           >
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-lg font-bold">{participant.name}</span>
+                <div className="flex items-center space-x-3">
+                  <Avatar className="h-12 w-12 border-2 border-background">
+                    <AvatarFallback className="text-lg">
+                      {participant.name[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-lg font-bold">{participant.name}</span>
+                </div>
                 <span className="text-sm">
                   {index === currentIndex && '(Picking)'}
                   {index === (currentIndex + 1) % participants.length && '(Next)'}
