@@ -51,7 +51,20 @@ const DraftContent = () => {
         .single();
       
       if (error) throw error;
-      return data as DraftData;
+
+      // Ensure participants data is properly typed
+      const typedData: DraftData = {
+        ...data,
+        participants: (data.participants as any[] || []).map((participant: any) => ({
+          name: participant.name,
+          teams: Array.isArray(participant.teams) ? participant.teams.map((team: any) => ({
+            teamNumber: team.teamNumber,
+            teamName: team.teamName
+          })) : []
+        }))
+      };
+      
+      return typedData;
     },
     enabled: !!draftId,
   });
@@ -124,7 +137,7 @@ const DraftContent = () => {
                   <DraftTimer
                     initialTime={120}
                     onTimeUp={() => {}}
-                    isActive={false}
+                    isActive={isTimerActive}
                   />
                 </div>
               </div>
