@@ -35,14 +35,6 @@ export const DraftOrderAnimation = ({ participants, onComplete }: DraftOrderAnim
                 <span className="text-4xl font-bold text-primary">{index + 1}</span>
                 <div className="flex flex-col">
                   <span className="text-xl font-semibold text-foreground">{participant.name}</span>
-                  <div className="text-sm text-muted-foreground">
-                    {participant.teams.map((team, idx) => (
-                      <span key={team.teamNumber} className="mr-2">
-                        Team {team.teamNumber} - {team.teamName}
-                        {idx < participant.teams.length - 1 ? ", " : ""}
-                      </span>
-                    ))}
-                  </div>
                 </div>
               </div>
             </motion.div>

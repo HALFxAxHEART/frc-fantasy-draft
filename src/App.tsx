@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "./components/ui/use-toast";
+import { ProfilePicture } from "@/components/ProfilePicture";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,8 @@ const AppContent = () => {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
   const [displayName, setDisplayName] = useState<string | null>(null);
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -45,12 +48,14 @@ const AppContent = () => {
       if (session?.user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('display_name')
+          .select('display_name, profile_picture_url')
           .eq('id', session.user.id)
           .single();
         
         if (profile) {
           setDisplayName(profile.display_name);
+          setProfilePicture(profile.profile_picture_url);
+          setUserId(session.user.id);
         }
       }
     };
@@ -60,6 +65,8 @@ const AppContent = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         setDisplayName(null);
+        setProfilePicture(null);
+        setUserId(null);
         navigate('/login');
       } else if (session) {
         fetchUserProfile();
@@ -100,7 +107,14 @@ const AppContent = () => {
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline">
+            <Button variant="outline" className="gap-2">
+              {userId && displayName && (
+                <ProfilePicture
+                  userId={userId}
+                  displayName={displayName}
+                  currentUrl={profilePicture || undefined}
+                />
+              )}
               {displayName || 'Profile'}
             </Button>
           </DropdownMenuTrigger>
