@@ -13,20 +13,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UpcomingEvents } from "@/components/UpcomingEvents";
-import { DraftCreation } from "@/components/DraftCreation";
 import { EventSelector } from "@/components/EventSelector";
 import { DraftStats } from "@/components/DraftStats";
 import { supabase } from "@/integrations/supabase/client";
 import { UserDrafts } from "@/components/dashboard/UserDrafts";
 import { DraftControls } from "@/components/dashboard/DraftControls";
+import { DraftCreationSection } from "@/components/dashboard/DraftCreationSection";
 
 const Dashboard = () => {
-  const [participants, setParticipants] = useState(2);
-  const [participantNames, setParticipantNames] = useState<string[]>([]);
-  const [selectedEvent, setSelectedEvent] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [userId, setUserId] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -57,62 +54,6 @@ const Dashboard = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
-
-  useEffect(() => {
-    setParticipantNames(Array(participants).fill(""));
-  }, [participants]);
-
-  const handleStartDraft = async () => {
-    if (!userId) {
-      toast({
-        title: "Error",
-        description: "Please sign in to create a draft",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (participantNames.some(name => !name.trim())) {
-      toast({
-        title: "Error",
-        description: "All participants must have names",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!selectedEvent) {
-      toast({
-        title: "Error",
-        description: "Please select an event",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from('drafts')
-      .insert({
-        user_id: userId,
-        event_key: selectedEvent,
-        event_name: events?.find(e => e.key === selectedEvent)?.name || selectedEvent,
-        status: 'active',
-        participants: participantNames.map(name => ({ name, teams: [] })),
-      })
-      .select()
-      .single();
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create draft",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    navigate(`/draft/${data.id}`);
-  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -158,23 +99,10 @@ const Dashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-8">
-            <DraftControls
-              participants={participants}
-              participantNames={participantNames}
-              onParticipantsChange={setParticipants}
-              onParticipantNameChange={(index, value) => {
-                const newNames = [...participantNames];
-                newNames[index] = value;
-                setParticipantNames(newNames);
-              }}
-              onStartDraft={handleStartDraft}
-            />
-            
-            <EventSelector
+          {userId && (
+            <DraftCreationSection
+              userId={userId}
               events={events}
-              selectedEvent={selectedEvent}
-              onEventChange={setSelectedEvent}
               selectedYear={selectedYear}
               onYearChange={setSelectedYear}
               selectedDistrict={selectedDistrict}
@@ -182,13 +110,12 @@ const Dashboard = () => {
               isLoading={isLoading}
               error={error instanceof Error ? error : null}
             />
-          </div>
+          )}
 
           <div className="space-y-8">
             {userId && <UserDrafts userId={userId} />}
             <UpcomingEvents
               events={events}
-              onEventSelect={setSelectedEvent}
               isLoading={isLoading}
             />
           </div>
