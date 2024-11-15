@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { DraftTimer } from "@/components/DraftTimer";
@@ -9,23 +10,40 @@ import { DraftComplete } from "@/components/DraftComplete";
 import { DraftStateProvider, useDraftState } from "@/components/draft/DraftStateProvider";
 import { DraftControls } from "@/components/draft/DraftControls";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const DraftContent = () => {
-  const { draftState, setDraftState } = useDraftState();
+  const { draftId } = useParams();
+  const navigate = useNavigate();
   const { toast } = useToast();
-  const { startDraft } = DraftControls();
   const [availableTeams, setAvailableTeams] = useState([]);
   const [isTimerActive, setIsTimerActive] = useState(true);
 
+  // Fetch draft data if draftId exists
+  const { data: draftData, isLoading } = useQuery({
+    queryKey: ['draft', draftId],
+    queryFn: async () => {
+      if (!draftId) return null;
+      const { data, error } = await supabase
+        .from('drafts')
+        .select('*')
+        .eq('id', draftId)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!draftId,
+  });
+
   useEffect(() => {
     const fetchTeams = async () => {
-      if (!draftState.selectedEvent) {
-        return;
-      }
+      if (!draftData?.event_key) return;
       
       try {
         const response = await fetch(
-          `https://www.thebluealliance.com/api/v3/event/${draftState.selectedEvent}/teams`,
+          `https://www.thebluealliance.com/api/v3/event/${draftData.event_key}/teams`,
           {
             headers: {
               "X-TBA-Auth-Key": import.meta.env.VITE_TBA_API_KEY,
@@ -38,7 +56,6 @@ const DraftContent = () => {
             teamNumber: team.team_number,
             teamName: team.nickname,
             districtPoints: Math.floor(Math.random() * 100),
-            logoUrl: `https://www.thebluealliance.com/team/${team.team_number}`,
             stats: {
               wins: Math.floor(Math.random() * 10),
               losses: Math.floor(Math.random() * 10),
@@ -47,7 +64,7 @@ const DraftContent = () => {
             },
           }))
         );
-      } catch (error) {
+      } catch (error: any) {
         toast({
           title: "Error",
           description: "Failed to fetch teams for this event",
@@ -56,112 +73,64 @@ const DraftContent = () => {
       }
     };
     fetchTeams();
-  }, [draftState.selectedEvent]);
+  }, [draftData?.event_key]);
 
-  const handleTimeUp = () => {
-    if (!draftState.participants.length) return;
-    
-    toast({
-      title: "Time's up!",
-      description: `${draftState.participants[draftState.currentParticipantIndex].name}'s turn has ended`,
-      variant: "destructive",
-    });
-    setIsTimerActive(false);
-  };
+  if (isLoading) {
+    return <div>Loading draft...</div>;
+  }
 
-  const selectTeam = (team: typeof availableTeams[0]) => {
-    if (!draftState.participants.length) return;
-    
-    setDraftState((prev) => {
-      const newParticipants = [...prev.participants];
-      const currentParticipant = newParticipants[prev.currentParticipantIndex];
-      
-      if (currentParticipant.teams.length >= 5) {
-        toast({
-          title: "Maximum teams reached",
-          description: "You can only select 5 teams",
-          variant: "destructive",
-        });
-        return prev;
-      }
-
-      currentParticipant.teams.push(team);
-      
-      const nextParticipantIndex = 
-        (prev.currentParticipantIndex + 1) % prev.participants.length;
-      
-      const draftComplete = newParticipants.every(
-        (p) => p.teams.length === 5
-      );
-
-      return {
-        ...prev,
-        participants: newParticipants,
-        currentParticipantIndex: nextParticipantIndex,
-        timeRemaining: 120,
-        draftComplete,
-      };
-    });
-
-    setAvailableTeams((prev) =>
-      prev.filter((t) => t.teamNumber !== team.teamNumber)
-    );
-
-    setIsTimerActive(true);
-
-    toast({
-      title: "Team Selected",
-      description: `Team ${team.teamNumber} has been drafted`,
-    });
-  };
+  if (!draftData && draftId) {
+    return <div>Draft not found</div>;
+  }
 
   return (
     <div className="min-h-screen bg-background p-8">
-      <div className="max-w-4xl mx-auto">
-        {!draftState.draftStarted ? (
-          <DraftSetup
-            participants={draftState.participants}
-            onStartDraft={startDraft}
-          />
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-6xl mx-auto space-y-8"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="md:col-span-2">
-                <DraftOrder
-                  participants={draftState.participants}
-                  currentIndex={draftState.currentParticipantIndex}
-                />
+      <div className="max-w-7xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-8"
+        >
+          {draftData ? (
+            <>
+              <h1 className="text-3xl font-bold">{draftData.event_name}</h1>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="md:col-span-2">
+                  <DraftOrder
+                    participants={draftData.participants || []}
+                    currentIndex={0}
+                  />
+                </div>
+                <div>
+                  <DraftTimer
+                    initialTime={120}
+                    onTimeUp={() => {}}
+                    isActive={false}
+                  />
+                </div>
               </div>
-              <div>
-                <DraftTimer
-                  initialTime={draftState.timeRemaining}
-                  onTimeUp={handleTimeUp}
-                  isActive={isTimerActive && !draftState.draftComplete}
-                />
-              </div>
-            </div>
 
-            <Card className="p-6">
-              {draftState.draftComplete ? (
-                <DraftComplete participants={draftState.participants} />
-              ) : (
+              <Card className="p-6">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {availableTeams.map((team) => (
                     <TeamCard
                       key={team.teamNumber}
                       {...team}
-                      onSelect={() => selectTeam(team)}
+                      onSelect={() => {}}
                     />
                   ))}
                 </div>
-              )}
-            </Card>
-          </motion.div>
-        )}
+              </Card>
+            </>
+          ) : (
+            <div>
+              <h1 className="text-3xl font-bold mb-8">Create New Draft</h1>
+              <Card className="p-6">
+                <p>Please use the dashboard to create a new draft.</p>
+              </Card>
+            </div>
+          )}
+        </motion.div>
       </div>
     </div>
   );
