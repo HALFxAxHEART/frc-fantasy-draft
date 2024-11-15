@@ -1,7 +1,6 @@
 import { Card } from "../ui/card";
 import { useToast } from "../ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Json } from "@/integrations/supabase/types";
 import { TeamCard } from "../TeamCard";
 
 interface Team {
@@ -48,11 +47,10 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      const participants = (draft.participants as unknown as DraftParticipant[]) || [];
-      const draftData = (draft.draft_data as { selectedTeams?: number[] }) || {};
+      const participants = (draft.participants as DraftParticipant[]) || [];
+      const draftData = (draft.draft_data as any) || {};
       const selectedTeams = draftData.selectedTeams || [];
 
-      // Check if team is already selected
       if (selectedTeams.includes(team.teamNumber)) {
         toast({
           title: "Team Already Selected",
@@ -62,23 +60,21 @@ export const DraftTeamList = ({
         return;
       }
 
-      // Update the participants array with the new team
       const updatedParticipants = participants.map(p =>
         p.name === currentParticipant
           ? { ...p, teams: [...p.teams, team] }
           : p
       );
 
-      // Update the draft in Supabase
       const { error: updateError } = await supabase
         .from('drafts')
         .update({
-          participants: updatedParticipants as unknown as Json,
+          participants: updatedParticipants,
           draft_data: {
             ...draftData,
             selectedTeams: [...selectedTeams, team.teamNumber],
             availableTeams: availableTeams.filter(t => t.teamNumber !== team.teamNumber)
-          },
+          }
         })
         .eq('id', draftId);
 

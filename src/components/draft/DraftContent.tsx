@@ -8,6 +8,14 @@ import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+interface DraftParticipant {
+  name: string;
+  teams: Array<{
+    teamNumber: number;
+    teamName: string;
+  }>;
+}
+
 export const DraftContent = () => {
   const { draftId } = useParams();
   const navigate = useNavigate();
@@ -34,7 +42,7 @@ export const DraftContent = () => {
     setDraftState(prev => ({
       ...prev,
       currentParticipantIndex: (prev.currentParticipantIndex + 1) % prev.participants.length,
-      timeRemaining: 120, // Reset timer
+      timeRemaining: 120,
     }));
   };
 
@@ -45,6 +53,9 @@ export const DraftContent = () => {
   if (!draftData) {
     return <div>Draft not found</div>;
   }
+
+  const participants = draftData.participants as DraftParticipant[];
+  const availableTeams = (draftData.draft_data as any)?.availableTeams || [];
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -58,14 +69,14 @@ export const DraftContent = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-2">
               <DraftOrder
-                participants={draftData.participants}
+                participants={participants}
                 currentIndex={draftState.currentParticipantIndex}
               />
             </div>
             <div>
               <DraftTimer
-                key={draftState.currentParticipantIndex} // Force timer reset
-                onTimeUp={handleTeamSelect}
+                key={draftState.currentParticipantIndex}
+                onTimeUp={() => handleTeamSelect(null)}
                 isActive={true}
               />
             </div>
@@ -73,8 +84,8 @@ export const DraftContent = () => {
 
           <DraftTeamList
             draftId={draftId!}
-            availableTeams={draftData.draft_data?.availableTeams || []}
-            currentParticipant={draftData.participants[draftState.currentParticipantIndex].name}
+            availableTeams={availableTeams}
+            currentParticipant={participants[draftState.currentParticipantIndex].name}
             onTeamSelect={handleTeamSelect}
           />
         </motion.div>
