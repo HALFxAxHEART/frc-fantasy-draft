@@ -7,6 +7,7 @@ import { useDraftState } from "@/components/draft/DraftStateProvider";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Json } from "@/integrations/supabase/types";
 
 interface DraftParticipant {
   name: string;
@@ -36,6 +37,12 @@ interface DraftData {
   event_name: string;
 }
 
+interface DatabaseDraftData {
+  participants: Json;
+  draft_data: Json;
+  event_name: string;
+}
+
 export const DraftContent = () => {
   const { draftId } = useParams();
   const navigate = useNavigate();
@@ -54,8 +61,10 @@ export const DraftContent = () => {
       
       if (error) throw error;
 
-      if (data?.participants) {
-        const parsedParticipants = (data.participants as any[]).map(p => ({
+      const dbData = data as DatabaseDraftData;
+
+      if (dbData?.participants) {
+        const parsedParticipants = (dbData.participants as any[]).map(p => ({
           name: p.name || '',
           teams: Array.isArray(p.teams) ? p.teams : []
         }));
@@ -80,15 +89,19 @@ export const DraftContent = () => {
       }));
 
       // Parse the draft data
+      const availableTeams = dbData?.draft_data && typeof dbData.draft_data === 'object' && 'availableTeams' in dbData.draft_data
+        ? (dbData.draft_data.availableTeams as Team[])
+        : defaultTeams;
+
       const typedData: DraftData = {
-        participants: (data?.participants as any[] || []).map(p => ({
+        participants: (dbData?.participants as any[] || []).map(p => ({
           name: p.name || '',
           teams: Array.isArray(p.teams) ? p.teams : []
         })),
         draft_data: {
-          availableTeams: data?.draft_data?.availableTeams || defaultTeams
+          availableTeams
         },
-        event_name: data?.event_name || ''
+        event_name: dbData?.event_name || ''
       };
       
       return typedData;
@@ -113,14 +126,14 @@ export const DraftContent = () => {
       t => t.teamNumber !== team.teamNumber
     );
 
-    // Update the database
+    // Update the database with type-safe JSON
     const { error } = await supabase
       .from('drafts')
       .update({
-        participants: updatedParticipants,
+        participants: updatedParticipants as Json,
         draft_data: {
           availableTeams: updatedAvailableTeams
-        }
+        } as Json
       })
       .eq('id', draftId);
 
