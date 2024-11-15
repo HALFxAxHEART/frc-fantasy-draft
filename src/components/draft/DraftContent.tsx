@@ -4,6 +4,7 @@ import { DraftTimer } from "@/components/DraftTimer";
 import { DraftOrder } from "@/components/DraftOrder";
 import { DraftTeamList } from "@/components/draft/DraftTeamList";
 import { DraftComplete } from "@/components/DraftComplete";
+import { DraftSetup } from "@/components/DraftSetup";
 import { useDraftState } from "@/components/draft/DraftStateProvider";
 import { useToast } from "@/components/ui/use-toast";
 import { useDraftData } from "@/hooks/useDraftData";
@@ -108,8 +109,16 @@ export const DraftContent = () => {
     return <div className="flex items-center justify-center min-h-screen">Invalid participant state</div>;
   }
 
+  if (!draftState.draftStarted) {
+    return (
+      <DraftSetup
+        participants={participants}
+        onStartDraft={() => setDraftState(prev => ({ ...prev, draftStarted: true }))}
+      />
+    );
+  }
+
   if (draftState.draftComplete) {
-    // Transform the participants data to include ranking
     const participantsWithRanking = draftState.participants.map(participant => ({
       name: participant.name,
       teams: participant.teams.map(team => ({
@@ -118,7 +127,7 @@ export const DraftContent = () => {
         stats: {
           wins: team.stats.wins,
           losses: team.stats.losses,
-          ranking: Math.floor(Math.random() * 100) // Placeholder ranking calculation
+          ranking: Math.floor(Math.random() * 100)
         }
       }))
     }));
@@ -137,14 +146,6 @@ export const DraftContent = () => {
         >
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold">{draftData.event_name}</h1>
-            {isDraftComplete && (
-              <Button 
-                onClick={handleCompleteDraft}
-                className="bg-green-500 hover:bg-green-600"
-              >
-                Complete Draft
-              </Button>
-            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -154,13 +155,21 @@ export const DraftContent = () => {
                 currentIndex={currentIndex}
               />
             </div>
-            <div>
+            <div className="space-y-4">
               {!isDraftComplete && (
                 <DraftTimer
                   key={currentIndex}
                   onTimeUp={() => {}}
                   isActive={true}
                 />
+              )}
+              {isDraftComplete && (
+                <Button 
+                  onClick={handleCompleteDraft}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white"
+                >
+                  Complete Draft
+                </Button>
               )}
             </div>
           </div>
