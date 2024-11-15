@@ -4,8 +4,8 @@ export interface Team {
   districtPoints?: number;
   logoUrl?: string;
   stats?: {
-    wins?: number;
-    losses?: number;
+    wins: number;
+    losses: number;
     opr?: number;
     autoAvg?: number;
     ranking?: number;
