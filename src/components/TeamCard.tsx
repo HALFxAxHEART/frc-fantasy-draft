@@ -7,26 +7,26 @@ interface TeamStats {
   losses: number;
   opr: number;
   autoAvg: number;
-  ranking?: number; // Made ranking optional to work with both contexts
+  ranking?: number;
 }
 
 interface TeamCardProps {
   teamNumber: number;
   teamName: string;
-  districtPoints: number;
+  districtPoints?: number; // Made optional by adding ?
   logoUrl?: string;
   stats: TeamStats;
   onSelect: () => void;
-  hidePoints?: boolean; // Added hidePoints prop
+  hidePoints?: boolean;
 }
 
 export const TeamCard = ({ 
   teamNumber, 
   teamName, 
-  districtPoints, 
+  districtPoints = 0, // Added default value
   stats, 
   onSelect,
-  hidePoints = false // Default to false
+  hidePoints = false
 }: TeamCardProps) => {
   const logoUrl = `https://www.thebluealliance.com/api/v3/team/frc${teamNumber}/media/avatar`;
   
