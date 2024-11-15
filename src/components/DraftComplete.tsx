@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import confetti from 'canvas-confetti';
 import { useEffect, useState } from "react";
 import { DraftStats } from "./DraftStats";
-import { Team, DraftParticipant } from "@/types/draft";
+import { DraftParticipant } from "@/types/draft";
 
 interface DraftCompleteProps {
   participants: DraftParticipant[];

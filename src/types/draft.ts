@@ -3,7 +3,7 @@ export interface Team {
   teamName: string;
   districtPoints?: number;
   logoUrl?: string;
-  stats: {
+  stats?: {
     wins?: number;
     losses?: number;
     opr?: number;

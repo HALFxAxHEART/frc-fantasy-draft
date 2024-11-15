@@ -1,27 +1,25 @@
 import { Card } from "./ui/card";
 import { Progress } from "./ui/progress";
 import { motion } from "framer-motion";
-import { Team } from "@/types/draft";
+import { DraftParticipant } from "@/types/draft";
 
 interface DraftStatsProps {
-  participants: Array<{
-    name: string;
-    teams: Team[];
-  }>;
+  participants: DraftParticipant[];
 }
 
 export const DraftStats = ({ participants }: DraftStatsProps) => {
-  const calculateScore = (teams: Team[]) => {
-    return teams.reduce((acc, team) => {
+  const calculateScore = (participant: DraftParticipant) => {
+    return participant.teams.reduce((acc, team) => {
       if (team.stats?.wins !== undefined && team.stats?.losses !== undefined) {
-        return acc + (team.stats.wins / (team.stats.wins + team.stats.losses)) * 100;
+        const totalGames = team.stats.wins + team.stats.losses;
+        return acc + (totalGames > 0 ? (team.stats.wins / totalGames) * 100 : 0);
       }
       return acc;
-    }, 0) / teams.length;
+    }, 0) / (participant.teams.length || 1);
   };
 
   const sortedParticipants = [...participants].sort(
-    (a, b) => calculateScore(b.teams) - calculateScore(a.teams)
+    (a, b) => calculateScore(b) - calculateScore(a)
   );
 
   return (
@@ -42,10 +40,10 @@ export const DraftStats = ({ participants }: DraftStatsProps) => {
                 <span className="text-lg">{participant.name}</span>
               </div>
               <span className="text-sm text-muted-foreground">
-                {calculateScore(participant.teams).toFixed(1)}% Win Rate
+                {calculateScore(participant).toFixed(1)}% Win Rate
               </span>
             </div>
-            <Progress value={calculateScore(participant.teams)} className="h-2" />
+            <Progress value={calculateScore(participant)} className="h-2" />
             <div className="grid grid-cols-2 gap-2 mt-2">
               {participant.teams.map((team) => (
                 <div
