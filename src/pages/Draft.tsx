@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { DraftTimer } from "@/components/DraftTimer";
@@ -115,58 +115,54 @@ const DraftContent = () => {
     });
   };
 
-  if (!draftState.draftStarted) {
-    return (
-      <div className="min-h-screen bg-background p-8">
-        <div className="max-w-4xl mx-auto">
+  return (
+    <div className="min-h-screen bg-background p-8">
+      <div className="max-w-4xl mx-auto">
+        {!draftState.draftStarted ? (
           <DraftSetup
             participants={draftState.participants}
             onStartDraft={startDraft}
           />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-background p-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-6xl mx-auto space-y-8"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="md:col-span-2">
-            <DraftOrder
-              participants={draftState.participants}
-              currentIndex={draftState.currentParticipantIndex}
-            />
-          </div>
-          <div>
-            <DraftTimer
-              initialTime={draftState.timeRemaining}
-              onTimeUp={handleTimeUp}
-              isActive={isTimerActive && !draftState.draftComplete}
-            />
-          </div>
-        </div>
-
-        <Card className="p-6">
-          {draftState.draftComplete ? (
-            <DraftComplete participants={draftState.participants} />
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {availableTeams.map((team) => (
-                <TeamCard
-                  key={team.teamNumber}
-                  {...team}
-                  onSelect={() => selectTeam(team)}
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-6xl mx-auto space-y-8"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="md:col-span-2">
+                <DraftOrder
+                  participants={draftState.participants}
+                  currentIndex={draftState.currentParticipantIndex}
                 />
-              ))}
+              </div>
+              <div>
+                <DraftTimer
+                  initialTime={draftState.timeRemaining}
+                  onTimeUp={handleTimeUp}
+                  isActive={isTimerActive && !draftState.draftComplete}
+                />
+              </div>
             </div>
-          )}
-        </Card>
-      </motion.div>
+
+            <Card className="p-6">
+              {draftState.draftComplete ? (
+                <DraftComplete participants={draftState.participants} />
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {availableTeams.map((team) => (
+                    <TeamCard
+                      key={team.teamNumber}
+                      {...team}
+                      onSelect={() => selectTeam(team)}
+                    />
+                  ))}
+                </div>
+              )}
+            </Card>
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 };
