@@ -19,6 +19,14 @@ export const DraftContent = () => {
     if (!draftId || !draftData) return;
 
     const currentParticipant = draftState.participants[draftState.currentParticipantIndex];
+    if (!currentParticipant) {
+      toast({
+        title: "Error",
+        description: "No active participant found",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
       const { updatedParticipants, updatedAvailableTeams } = await selectTeam(
@@ -58,10 +66,19 @@ export const DraftContent = () => {
     return <div className="flex items-center justify-center min-h-screen">Draft not found</div>;
   }
 
+  if (!draftState.participants || draftState.participants.length === 0) {
+    return <div className="flex items-center justify-center min-h-screen">No participants found</div>;
+  }
+
   const participants = draftState.participants;
   const currentIndex = draftState.currentParticipantIndex;
   const currentParticipant = participants[currentIndex];
-  const availableTeams = draftData.draft_data.availableTeams;
+
+  if (!currentParticipant) {
+    return <div className="flex items-center justify-center min-h-screen">Invalid participant state</div>;
+  }
+
+  const availableTeams = draftData.draft_data.availableTeams || [];
 
   return (
     <div className="min-h-screen bg-background p-8">
