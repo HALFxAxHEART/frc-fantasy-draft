@@ -2,6 +2,7 @@ import { Card } from "../ui/card";
 import { useToast } from "../ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TeamCard } from "../TeamCard";
+import { Json } from "@/integrations/supabase/types";
 
 interface Team {
   teamNumber: number;
@@ -47,8 +48,8 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      const participants = (draft.participants as DraftParticipant[]) || [];
-      const draftData = (draft.draft_data as any) || {};
+      const participants = (draft.participants as unknown as DraftParticipant[]) || [];
+      const draftData = (draft.draft_data as { selectedTeams?: number[] }) || {};
       const selectedTeams = draftData.selectedTeams || [];
 
       if (selectedTeams.includes(team.teamNumber)) {
@@ -69,7 +70,7 @@ export const DraftTeamList = ({
       const { error: updateError } = await supabase
         .from('drafts')
         .update({
-          participants: updatedParticipants,
+          participants: updatedParticipants as unknown as Json,
           draft_data: {
             ...draftData,
             selectedTeams: [...selectedTeams, team.teamNumber],

@@ -7,6 +7,7 @@ import { useDraftState } from "@/components/draft/DraftStateProvider";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Json } from "@/integrations/supabase/types";
 
 interface DraftParticipant {
   name: string;
@@ -54,8 +55,8 @@ export const DraftContent = () => {
     return <div>Draft not found</div>;
   }
 
-  const participants = draftData.participants as DraftParticipant[];
-  const availableTeams = (draftData.draft_data as any)?.availableTeams || [];
+  const participants = (draftData.participants as unknown as DraftParticipant[]) || [];
+  const availableTeams = ((draftData.draft_data as { availableTeams?: any[] })?.availableTeams) || [];
 
   return (
     <div className="min-h-screen bg-background p-8">
