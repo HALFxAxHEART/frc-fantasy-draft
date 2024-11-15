@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { TeamCard } from "../TeamCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDraftState } from "./DraftStateProvider";
+import { Json } from "@/integrations/supabase/types";
 
 interface Team {
   teamNumber: number;
@@ -60,8 +61,9 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      const participants = (draft.participants || []) as DraftParticipant[];
-      const draftData = (draft.draft_data as DraftData) || { selectedTeams: [] };
+      // Safely type assert the data from Supabase
+      const participants = (draft.participants as unknown as DraftParticipant[]) || [];
+      const draftData = ((draft.draft_data as unknown) as DraftData) || { selectedTeams: [] };
       const selectedTeams = draftData.selectedTeams || [];
 
       const currentParticipantData = participants.find(p => p.name === currentParticipant);
