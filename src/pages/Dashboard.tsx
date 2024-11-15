@@ -17,7 +17,8 @@ import { DraftCreation } from "@/components/DraftCreation";
 import { EventSelector } from "@/components/EventSelector";
 import { DraftStats } from "@/components/DraftStats";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
+import { UserDrafts } from "@/components/dashboard/UserDrafts";
+import { DraftControls } from "@/components/dashboard/DraftControls";
 
 const Dashboard = () => {
   const [participants, setParticipants] = useState(2);
@@ -25,7 +26,7 @@ const Dashboard = () => {
   const [selectedEvent, setSelectedEvent] = useState("");
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [userDrafts, setUserDrafts] = useState([]);
+  const [userId, setUserId] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -35,42 +36,42 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    setParticipantNames(Array(participants).fill(""));
-  }, [participants]);
-
-  useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/login');
         return;
       }
-      fetchUserDrafts(session.user.id);
+      setUserId(session.user.id);
     };
 
     checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        navigate('/login');
+      } else if (session) {
+        setUserId(session.user.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const fetchUserDrafts = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('drafts')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+  useEffect(() => {
+    setParticipantNames(Array(participants).fill(""));
+  }, [participants]);
 
-    if (error) {
+  const handleStartDraft = async () => {
+    if (!userId) {
       toast({
         title: "Error",
-        description: "Failed to fetch your drafts",
+        description: "Please sign in to create a draft",
         variant: "destructive",
       });
       return;
     }
 
-    setUserDrafts(data || []);
-  };
-
-  const handleStartDraft = async () => {
     if (participantNames.some(name => !name.trim())) {
       toast({
         title: "Error",
@@ -89,21 +90,10 @@ const Dashboard = () => {
       return;
     }
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      toast({
-        title: "Error",
-        description: "Please sign in to create a draft",
-        variant: "destructive",
-      });
-      navigate('/login');
-      return;
-    }
-
     const { data, error } = await supabase
       .from('drafts')
       .insert({
-        user_id: session.user.id,
+        user_id: userId,
         event_key: selectedEvent,
         event_name: events?.find(e => e.key === selectedEvent)?.name || selectedEvent,
         status: 'active',
@@ -121,18 +111,11 @@ const Dashboard = () => {
       return;
     }
 
-    navigate("/draft", {
-      state: {
-        draftId: data.id,
-        participants: participantNames,
-        selectedEvent,
-      },
-    });
+    navigate(`/draft/${data.id}`);
   };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    navigate('/login');
   };
 
   return (
@@ -176,7 +159,7 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-8">
-            <DraftCreation
+            <DraftControls
               participants={participants}
               participantNames={participantNames}
               onParticipantsChange={setParticipants}
@@ -202,16 +185,7 @@ const Dashboard = () => {
           </div>
 
           <div className="space-y-8">
-            {userDrafts.length > 0 && (
-              <DraftStats
-                participants={userDrafts.flatMap(draft => 
-                  draft.participants.map((p: any) => ({
-                    name: p.name,
-                    teams: p.teams || [],
-                  }))
-                )}
-              />
-            )}
+            {userId && <UserDrafts userId={userId} />}
             <UpcomingEvents
               events={events}
               onEventSelect={setSelectedEvent}

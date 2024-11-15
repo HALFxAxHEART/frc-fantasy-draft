@@ -12,27 +12,33 @@ export type Database = {
       drafts: {
         Row: {
           created_at: string
+          draft_data: Json | null
           event_key: string
           event_name: string
           id: string
+          participants: Json | null
           status: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           created_at?: string
+          draft_data?: Json | null
           event_key: string
           event_name: string
           id?: string
+          participants?: Json | null
           status?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           created_at?: string
+          draft_data?: Json | null
           event_key?: string
           event_name?: string
           id?: string
+          participants?: Json | null
           status?: string | null
           updated_at?: string
           user_id?: string | null
