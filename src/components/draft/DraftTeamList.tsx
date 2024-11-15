@@ -62,12 +62,14 @@ export const DraftTeamList = ({
         return;
       }
 
-      const updatedParticipants = participants.map((p) =>
+      // Update the participants array with the new team
+      const updatedParticipants = participants.map(p =>
         p.name === currentParticipant
           ? { ...p, teams: [...p.teams, team] }
           : p
       );
 
+      // Update the draft in Supabase
       const { error: updateError } = await supabase
         .from('drafts')
         .update({
@@ -75,6 +77,7 @@ export const DraftTeamList = ({
           draft_data: {
             ...draftData,
             selectedTeams: [...selectedTeams, team.teamNumber],
+            availableTeams: availableTeams.filter(t => t.teamNumber !== team.teamNumber)
           },
         })
         .eq('id', draftId);
