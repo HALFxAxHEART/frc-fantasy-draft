@@ -58,9 +58,13 @@ export const DraftContent = () => {
   // Parse and validate participants data
   let participants: DraftParticipant[] = [];
   try {
-    participants = Array.isArray(draftData.participants) 
-      ? draftData.participants as DraftParticipant[]
-      : [];
+    const rawParticipants = draftData.participants as Json[];
+    if (Array.isArray(rawParticipants)) {
+      participants = rawParticipants.map(p => ({
+        name: (p as any).name || '',
+        teams: Array.isArray((p as any).teams) ? (p as any).teams : []
+      }));
+    }
   } catch (e) {
     console.error("Error parsing participants:", e);
   }
