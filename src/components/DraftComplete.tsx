@@ -8,17 +8,7 @@ import { Team } from "@/types/draft";
 interface DraftCompleteProps {
   participants: Array<{
     name: string;
-    teams: Array<{
-      teamNumber: number;
-      teamName: string;
-      stats?: {
-        wins: number;
-        losses: number;
-        opr?: number;
-        autoAvg?: number;
-        ranking?: number;
-      };
-    }>;
+    teams: Array<Team>;
   }>;
 }
 
