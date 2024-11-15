@@ -65,13 +65,38 @@ export const DraftContent = () => {
     );
   }
 
+  // Check if there are participants before accessing the current participant
+  if (!draftState.participants.length) {
+    return (
+      <DraftLayout>
+        <div className="space-y-8">
+          <h1 className="text-3xl font-bold">
+            {draftData.nickname ? `${draftData.nickname} - ${draftData.event_name}` : draftData.event_name}
+          </h1>
+          <div className="text-center p-8">
+            <p className="text-lg text-muted-foreground">No participants found. Please return to dashboard and try again.</p>
+          </div>
+        </div>
+      </DraftLayout>
+    );
+  }
+
+  const currentParticipant = draftState.participants[draftState.currentParticipantIndex];
+  if (!currentParticipant) {
+    setDraftState(prev => ({
+      ...prev,
+      currentParticipantIndex: 0
+    }));
+    return null;
+  }
+
   const handleTeamSelect = async (team: Team) => {
     try {
       const { updatedParticipants } = await selectTeam(
         draftId || '',
         team,
         draftState.participants,
-        draftState.participants[draftState.currentParticipantIndex].name,
+        currentParticipant.name,
         teams
       );
 
@@ -129,7 +154,7 @@ export const DraftContent = () => {
           <DraftTeamList
             draftId={draftId}
             availableTeams={teams}
-            currentParticipant={draftState.participants[draftState.currentParticipantIndex].name}
+            currentParticipant={currentParticipant.name}
             onTeamSelect={handleTeamSelect}
           />
         )}
