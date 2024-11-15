@@ -36,7 +36,7 @@ export const DraftContent = () => {
       spread: 70,
       origin: { y: 0.6 }
     });
-    
+
     setDraftState(prev => ({
       ...prev,
       draftComplete: true
@@ -55,7 +55,7 @@ export const DraftContent = () => {
       });
       return;
     }
-    
+
     try {
       const { updatedParticipants } = await selectTeam(
         draftId,
@@ -69,7 +69,7 @@ export const DraftContent = () => {
       const totalPicks = updatedParticipants.reduce((sum, p) => sum + p.teams.length, 0);
       const round = Math.floor(totalPicks / updatedParticipants.length) + 1;
       const isReverseRound = round % 2 === 0;
-      
+
       let nextIndex;
       if (isReverseRound) {
         nextIndex = draftState.currentParticipantIndex - 1;
@@ -88,6 +88,13 @@ export const DraftContent = () => {
         participants: updatedParticipants,
         currentParticipantIndex: nextIndex
       }));
+
+      // Trigger confetti animation
+      confetti({
+        particleCount: 50,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
 
       refetch();
 
@@ -133,7 +140,10 @@ export const DraftContent = () => {
 
   return (
     <DraftLayout>
-      <DraftHeader eventName={draftData.event_name} nickname={draftData.nickname} />
+      <DraftHeader 
+        eventName={draftData.event_name} 
+        nickname={draftData.nickname} 
+      />
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-2">

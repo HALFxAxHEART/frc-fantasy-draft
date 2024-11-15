@@ -7,6 +7,7 @@ export interface Team {
     losses: number;
     opr: number;
     autoAvg: number;
+    ranking?: number;
   };
 }
 
@@ -21,5 +22,6 @@ export interface DraftData {
     availableTeams: Team[];
   };
   event_name: string;
-  event_key: string;  // Added this field
+  event_key: string;
+  nickname?: string;
 }

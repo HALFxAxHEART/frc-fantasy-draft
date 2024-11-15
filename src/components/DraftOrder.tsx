@@ -8,6 +8,11 @@ interface DraftOrderProps {
     teams: Array<{
       teamNumber: number;
       teamName: string;
+      stats?: {
+        wins: number;
+        losses: number;
+        ranking?: number;
+      };
     }>;
   }>;
   currentIndex: number;
@@ -17,50 +22,34 @@ interface DraftOrderProps {
 export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrderProps) => {
   const isReverseRound = round % 2 === 0;
   
-  const getDisplayOrder = () => {
-    if (currentIndex === -1) {
-      // Initial random order display with animation
-      return participants.map((p, i) => ({ participant: p, index: i }));
-    }
+  const getPickingStatus = (displayIndex: number) => {
+    const effectiveIndex = isReverseRound 
+      ? participants.length - 1 - currentIndex
+      : currentIndex;
     
-    // Calculate picking order based on snake draft pattern
-    return participants.map((participant, originalIndex) => {
-      let newIndex;
-      if (isReverseRound) {
-        newIndex = participants.length - 1 - originalIndex;
-      } else {
-        newIndex = originalIndex;
-      }
-      return { participant, index: newIndex };
-    });
-  };
+    const nextIndex = isReverseRound
+      ? effectiveIndex - 1
+      : effectiveIndex + 1;
 
-  const displayOrder = getDisplayOrder();
+    return {
+      isPicking: displayIndex === effectiveIndex,
+      isNext: displayIndex === nextIndex
+    };
+  };
 
   return (
     <Card className="p-6">
       <h3 className="text-xl font-semibold mb-6">Draft Order</h3>
       <div className="grid grid-cols-1 gap-4">
-        {displayOrder.map(({ participant }, displayIndex) => {
-          const isPicking = isReverseRound 
-            ? displayIndex === participants.length - 1 - currentIndex
-            : displayIndex === currentIndex;
-          const isNext = isReverseRound
-            ? displayIndex === participants.length - 2 - currentIndex
-            : displayIndex === currentIndex + 1;
+        {participants.map((participant, displayIndex) => {
+          const { isPicking, isNext } = getPickingStatus(displayIndex);
           
           return (
             <motion.div
               key={participant.name}
-              initial={currentIndex === -1 ? { scale: 0.9, opacity: 0 } : false}
-              animate={{ 
-                opacity: 1,
-                scale: 1
-              }}
-              transition={{ 
-                duration: 0.3,
-                delay: currentIndex === -1 ? displayIndex * 0.2 : 0
-              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
               className={`p-4 rounded-lg ${
                 isPicking
                   ? 'bg-red-500 text-white shadow-lg'
@@ -72,9 +61,7 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <span className={`text-lg font-bold min-w-[24px] ${
-                      currentIndex === -1 ? 'animate-pulse text-primary' : ''
-                    }`}>
+                    <span className="text-lg font-bold min-w-[24px]">
                       {displayIndex + 1}.
                     </span>
                     <Avatar className="h-12 w-12 border-2 border-background">

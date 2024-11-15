@@ -16,6 +16,7 @@ export type Database = {
           event_key: string
           event_name: string
           id: string
+          nickname: string | null
           participants: Json | null
           status: string | null
           updated_at: string
@@ -27,6 +28,7 @@ export type Database = {
           event_key: string
           event_name: string
           id?: string
+          nickname?: string | null
           participants?: Json | null
           status?: string | null
           updated_at?: string
@@ -38,6 +40,7 @@ export type Database = {
           event_key?: string
           event_name?: string
           id?: string
+          nickname?: string | null
           participants?: Json | null
           status?: string | null
           updated_at?: string
