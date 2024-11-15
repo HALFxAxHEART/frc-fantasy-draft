@@ -13,6 +13,26 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
+interface DraftParticipant {
+  name: string;
+  teams: Array<{
+    teamNumber: number;
+    teamName: string;
+  }>;
+}
+
+interface DraftData {
+  id: string;
+  event_key: string;
+  event_name: string;
+  status: string;
+  participants: DraftParticipant[];
+  draft_data: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+}
+
 const DraftContent = () => {
   const { draftId } = useParams();
   const navigate = useNavigate();
@@ -20,7 +40,6 @@ const DraftContent = () => {
   const [availableTeams, setAvailableTeams] = useState([]);
   const [isTimerActive, setIsTimerActive] = useState(true);
 
-  // Fetch draft data if draftId exists
   const { data: draftData, isLoading } = useQuery({
     queryKey: ['draft', draftId],
     queryFn: async () => {
@@ -32,7 +51,7 @@ const DraftContent = () => {
         .single();
       
       if (error) throw error;
-      return data;
+      return data as DraftData;
     },
     enabled: !!draftId,
   });
@@ -97,7 +116,7 @@ const DraftContent = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="md:col-span-2">
                   <DraftOrder
-                    participants={draftData.participants || []}
+                    participants={draftData.participants}
                     currentIndex={0}
                   />
                 </div>
@@ -112,7 +131,7 @@ const DraftContent = () => {
 
               <Card className="p-6">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {availableTeams.map((team) => (
+                  {availableTeams.map((team: any) => (
                     <TeamCard
                       key={team.teamNumber}
                       {...team}
