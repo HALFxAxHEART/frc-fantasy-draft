@@ -56,6 +56,14 @@ export const DraftContent = () => {
   }
 
   const participants = (draftData.participants as unknown as DraftParticipant[]) || [];
+
+  // Add safety check for participants array
+  if (!participants.length) {
+    return <div>No participants found in this draft.</div>;
+  }
+
+  // Ensure currentParticipantIndex is within bounds
+  const currentIndex = Math.min(draftState.currentParticipantIndex, participants.length - 1);
   const availableTeams = ((draftData.draft_data as { availableTeams?: any[] })?.availableTeams) || [];
 
   return (
@@ -71,12 +79,12 @@ export const DraftContent = () => {
             <div className="md:col-span-2">
               <DraftOrder
                 participants={participants}
-                currentIndex={draftState.currentParticipantIndex}
+                currentIndex={currentIndex}
               />
             </div>
             <div>
               <DraftTimer
-                key={draftState.currentParticipantIndex}
+                key={currentIndex}
                 onTimeUp={() => handleTeamSelect(null)}
                 isActive={true}
               />
@@ -86,7 +94,7 @@ export const DraftContent = () => {
           <DraftTeamList
             draftId={draftId!}
             availableTeams={availableTeams}
-            currentParticipant={participants[draftState.currentParticipantIndex].name}
+            currentParticipant={participants[currentIndex].name}
             onTeamSelect={handleTeamSelect}
           />
         </motion.div>
