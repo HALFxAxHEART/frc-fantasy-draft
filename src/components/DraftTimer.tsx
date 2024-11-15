@@ -7,32 +7,26 @@ interface DraftTimerProps {
 }
 
 export const DraftTimer = ({ onTimeUp, isActive }: DraftTimerProps) => {
-  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState(120); // 2 minutes default
   const [hasTriggeredTimeUp, setHasTriggeredTimeUp] = useState(false);
-
-  useEffect(() => {
-    // Get the draft time limit from settings
-    const draftSettings = localStorage.getItem("draftSettings");
-    const settings = draftSettings ? JSON.parse(draftSettings) : { draftTimeLimit: 120 };
-    setTimeRemaining(settings.draftTimeLimit);
-    setHasTriggeredTimeUp(false);
-  }, [isActive]);
 
   useEffect(() => {
     if (!isActive) return;
 
-    if (timeRemaining === 0 && !hasTriggeredTimeUp) {
-      setHasTriggeredTimeUp(true);
-      onTimeUp();
-      return;
-    }
-
     const timer = setInterval(() => {
-      setTimeRemaining((prev) => prev > 0 ? prev - 1 : 0);
+      setTimeRemaining((prev) => {
+        if (prev <= 1 && !hasTriggeredTimeUp) {
+          clearInterval(timer);
+          setHasTriggeredTimeUp(true);
+          onTimeUp();
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeRemaining, onTimeUp, hasTriggeredTimeUp, isActive]);
+  }, [isActive, onTimeUp, hasTriggeredTimeUp]);
 
   const minutes = Math.floor(timeRemaining / 60);
   const seconds = timeRemaining % 60;

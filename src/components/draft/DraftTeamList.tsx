@@ -2,7 +2,6 @@ import { Card } from "../ui/card";
 import { useToast } from "../ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TeamCard } from "../TeamCard";
-import { Json } from "@/integrations/supabase/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDraftState } from "./DraftStateProvider";
 
@@ -16,11 +15,6 @@ interface Team {
     opr: number;
     autoAvg: number;
   };
-}
-
-interface DraftParticipant {
-  name: string;
-  teams: Team[];
 }
 
 interface DraftTeamListProps {
@@ -53,16 +47,16 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      const participants = (draft.participants as unknown as DraftParticipant[]) || [];
-      const draftData = (draft.draft_data as { selectedTeams?: number[] }) || {};
+      const participants = draft.participants || [];
+      const draftData = draft.draft_data || {};
       const selectedTeams = draftData.selectedTeams || [];
 
-      const currentParticipantData = participants.find(p => p.name === currentParticipant);
+      const currentParticipantData = participants.find((p: any) => p.name === currentParticipant);
       if (!currentParticipantData) {
         throw new Error('Current participant not found');
       }
 
-      if (currentParticipantData.teams.length >= 5) {
+      if (currentParticipantData.teams?.length >= 5) {
         toast({
           title: "Maximum Teams Reached",
           description: "You can only select up to 5 teams per participant.",
@@ -81,6 +75,11 @@ export const DraftTeamList = ({
       }
 
       onTeamSelect(team);
+      
+      toast({
+        title: "Team Selected!",
+        description: `${team.teamName} has been drafted by ${currentParticipant}`,
+      });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -111,6 +110,7 @@ export const DraftTeamList = ({
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
+              whileHover={{ scale: 1.05 }}
               transition={{ duration: 0.2 }}
             >
               <TeamCard
