@@ -7,6 +7,7 @@ import { useDraftState } from "@/components/draft/DraftStateProvider";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Json } from "@/integrations/supabase/types";
 
 interface DraftParticipant {
   name: string;
@@ -67,8 +68,10 @@ export const DraftContent = () => {
         }));
       }
 
-      console.log("Raw draft data:", data); // Debug log
+      console.log("Raw draft data:", data);
 
+      const draftDataJson = data?.draft_data as { availableTeams?: any[] } | null;
+      
       // Parse the draft data
       const typedData: DraftData = {
         participants: (data?.participants as any[] || []).map(p => ({
@@ -76,8 +79,8 @@ export const DraftContent = () => {
           teams: Array.isArray(p.teams) ? p.teams : []
         })),
         draft_data: {
-          availableTeams: data?.draft_data?.availableTeams 
-            ? (data.draft_data.availableTeams as any[]).map((t: any) => ({
+          availableTeams: draftDataJson?.availableTeams
+            ? draftDataJson.availableTeams.map((t: any) => ({
                 teamNumber: t.teamNumber,
                 teamName: t.teamName,
                 districtPoints: t.districtPoints || 0,
@@ -93,7 +96,7 @@ export const DraftContent = () => {
         event_name: data?.event_name || ''
       };
 
-      console.log("Parsed draft data:", typedData); // Debug log
+      console.log("Parsed draft data:", typedData);
       
       return typedData;
     },
@@ -141,7 +144,7 @@ export const DraftContent = () => {
   const currentParticipant = participants[currentIndex];
   const availableTeams = draftData.draft_data?.availableTeams || [];
 
-  console.log("Available teams:", availableTeams); // Debug log
+  console.log("Available teams:", availableTeams);
 
   return (
     <div className="min-h-screen bg-background p-8">
