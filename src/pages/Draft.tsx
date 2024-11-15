@@ -25,12 +25,12 @@ interface DraftData {
   id: string;
   event_key: string;
   event_name: string;
-  status: string;
+  status: string | null;
   participants: DraftParticipant[];
-  draft_data: Record<string, any>;
+  draft_data: Record<string, any> | null;
   created_at: string;
   updated_at: string;
-  user_id: string;
+  user_id: string | null;
 }
 
 const DraftContent = () => {
@@ -61,7 +61,8 @@ const DraftContent = () => {
             teamNumber: team.teamNumber,
             teamName: team.teamName
           })) : []
-        }))
+        })),
+        draft_data: data.draft_data as Record<string, any> | null
       };
       
       return typedData;
