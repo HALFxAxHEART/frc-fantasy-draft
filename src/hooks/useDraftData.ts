@@ -8,13 +8,14 @@ interface DatabaseDraftData {
   draft_data: Json;
   event_name: string;
   event_key: string;
+  nickname?: string;
 }
 
 export const useDraftData = (draftId: string | undefined) => {
   return useQuery({
     queryKey: ['draft', draftId],
     queryFn: async () => {
-      if (!draftId) return null;
+      if (!draftId) throw new Error('Draft ID is required');
       
       const { data, error } = await supabase
         .from('drafts')
@@ -23,6 +24,7 @@ export const useDraftData = (draftId: string | undefined) => {
         .single();
       
       if (error) throw error;
+      if (!data) throw new Error('Draft not found');
 
       const dbData = data as DatabaseDraftData;
 
@@ -56,11 +58,13 @@ export const useDraftData = (draftId: string | undefined) => {
           availableTeams
         },
         event_name: dbData?.event_name || '',
-        event_key: dbData?.event_key || ''
+        event_key: dbData?.event_key || '',
+        nickname: dbData?.nickname
       };
       
       return typedData;
     },
     enabled: !!draftId,
+    retry: 1,
   });
 };

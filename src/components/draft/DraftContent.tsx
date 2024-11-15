@@ -19,9 +19,18 @@ export const DraftContent = () => {
   const { draftId } = useParams();
   const { toast } = useToast();
   const { draftState, setDraftState } = useDraftState();
-  const { data: draftData, isLoading: isDraftLoading } = useDraftData(draftId);
+  
+  const { 
+    data: draftData, 
+    isLoading: isDraftLoading,
+    error: draftError 
+  } = useDraftData(draftId);
 
-  const { data: teams, isLoading: isTeamsLoading } = useQuery({
+  const { 
+    data: teams, 
+    isLoading: isTeamsLoading,
+    error: teamsError
+  } = useQuery({
     queryKey: ['eventTeams', draftData?.event_key],
     queryFn: () => fetchEventTeams(draftData?.event_key || ''),
     enabled: !!draftData?.event_key,
@@ -31,8 +40,29 @@ export const DraftContent = () => {
     return <DraftLoadingState />;
   }
 
+  if (draftError || teamsError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center space-y-4">
+          <p className="text-lg text-red-600">
+            {draftError ? 'Error loading draft data' : 'Error loading teams data'}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Please try refreshing the page
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!draftData || !teams) {
-    return <div>Error loading draft data</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center space-y-4">
+          <p className="text-lg text-muted-foreground">No data available</p>
+        </div>
+      </div>
+    );
   }
 
   const handleTeamSelect = async (team: Team) => {
