@@ -44,10 +44,17 @@ export const fetchEventTeams = async (eventKey: string): Promise<Array<{
   );
   const stats = await statsResponse.json();
 
+  // Fetch district points
+  const districtPointsResponse = await fetch(
+    `${TBA_BASE_URL}/event/${eventKey}/district_points`,
+    { headers }
+  );
+  const districtPoints = await districtPointsResponse.json();
+
   return teams.map(team => ({
     teamNumber: team.team_number,
     teamName: team.nickname,
-    districtPoints: 0, // This would need to be calculated based on district points if needed
+    districtPoints: districtPoints?.points?.[`frc${team.team_number}`]?.total || 0,
     stats: {
       wins: 0, // These would need to be calculated from match data if needed
       losses: 0,
