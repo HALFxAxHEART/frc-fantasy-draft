@@ -1,7 +1,8 @@
 export interface Team {
   teamNumber: number;
   teamName: string;
-  districtPoints: number;
+  districtPoints?: number;
+  logoUrl?: string;
   stats: {
     wins: number;
     losses: number;

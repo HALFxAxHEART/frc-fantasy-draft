@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import confetti from 'canvas-confetti';
 import { useEffect, useState } from "react";
 import { DraftStats } from "./DraftStats";
+import { Team } from "@/types/draft";
 
 interface DraftCompleteProps {
   participants: Array<{
@@ -13,7 +14,9 @@ interface DraftCompleteProps {
       stats?: {
         wins: number;
         losses: number;
-        ranking: number;
+        opr?: number;
+        autoAvg?: number;
+        ranking?: number;
       };
     }>;
   }>;
