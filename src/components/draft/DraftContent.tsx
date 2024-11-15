@@ -11,12 +11,10 @@ import { selectTeam } from "@/services/draftService";
 import { Team } from "@/types/draft";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEventTeams, fetchEventDetails } from "@/services/tbaService";
-import { Button } from "@/components/ui/button";
 import { DraftHeader } from "./DraftHeader";
 import { DraftLayout } from "./DraftLayout";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { format } from "date-fns";
 import confetti from 'canvas-confetti';
+import { DraftCompleteDialog } from "./DraftCompleteDialog";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
@@ -48,7 +46,6 @@ export const DraftContent = () => {
     );
 
     if (availableTeams.length > 0) {
-      // Select the first available team
       await handleTeamSelect(availableTeams[0]);
     }
   };
@@ -82,12 +79,12 @@ export const DraftContent = () => {
       if (isReverseRound) {
         nextIndex = draftState.currentParticipantIndex - 1;
         if (nextIndex < 0) {
-          nextIndex = 0; // Start next forward round
+          nextIndex = 0;
         }
       } else {
         nextIndex = draftState.currentParticipantIndex + 1;
         if (nextIndex >= updatedParticipants.length) {
-          nextIndex = updatedParticipants.length - 1; // Start next reverse round
+          nextIndex = updatedParticipants.length - 1;
         }
       }
 
@@ -97,7 +94,6 @@ export const DraftContent = () => {
         currentParticipantIndex: nextIndex
       }));
 
-      // Trigger confetti animation
       confetti({
         particleCount: 50,
         spread: 70,
@@ -140,32 +136,8 @@ export const DraftContent = () => {
     );
   }
 
-  if (draftState.draftComplete && eventDetails) {
-    return (
-      <Dialog open={true}>
-        <DialogContent className="sm:max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>Draft Complete!</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <DraftComplete participants={draftState.participants} />
-            <div className="p-4 bg-muted rounded-lg">
-              <h3 className="font-semibold mb-2">Event Details</h3>
-              <p>Start Date: {format(new Date(eventDetails.start_date), 'PPP')}</p>
-              <p>End Date: {format(new Date(eventDetails.end_date), 'PPP')}</p>
-              <a 
-                href={`https://www.thebluealliance.com/event/${draftData.event_key}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                Watch Event on The Blue Alliance
-              </a>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
+  if (isDraftComplete && eventDetails) {
+    return <DraftCompleteDialog draftState={draftState} eventDetails={eventDetails} />;
   }
 
   return (
@@ -187,18 +159,10 @@ export const DraftContent = () => {
           {!isDraftComplete && (
             <DraftTimer
               key={draftState.currentParticipantIndex}
-              onTimeUp={() => {}}
+              onTimeUp={handleAutoSelectTeam}
               isActive={true}
               autoSelectTeam={handleAutoSelectTeam}
             />
-          )}
-          {isDraftComplete && (
-            <Button 
-              onClick={handleCompleteDraft}
-              className="w-full bg-green-500 hover:bg-green-600 text-white"
-            >
-              Complete Draft
-            </Button>
           )}
         </div>
       </div>

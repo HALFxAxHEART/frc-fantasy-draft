@@ -26,6 +26,19 @@ export interface TBAEvent {
   }>;
 }
 
+interface TBAEventStatus {
+  qual?: {
+    ranking?: {
+      record?: {
+        wins: number;
+        losses: number;
+      };
+      sort_orders?: number[];
+    };
+  };
+  last_match_time?: number;
+}
+
 export const fetchEventDetails = async (eventKey: string): Promise<TBAEvent> => {
   const headers = {
     'X-TBA-Auth-Key': TBA_API_KEY,
@@ -73,11 +86,11 @@ export const fetchEventTeams = async (eventKey: string): Promise<Array<{
       `${TBA_BASE_URL}/team/frc${team.team_number}/events/2024/statuses`,
       { headers }
     );
-    const teamEvents = await teamEventsResponse.json();
+    const teamEvents: Record<string, TBAEventStatus> = await teamEventsResponse.json();
     
     // Find the last event's stats
-    const lastEventStats = Object.values(teamEvents).reduce((latest: any, current: any) => {
-      if (!latest || (current.last_match_time > latest.last_match_time)) {
+    const lastEventStats = Object.values(teamEvents).reduce((latest: TBAEventStatus | null, current: TBAEventStatus) => {
+      if (!latest || (current.last_match_time && latest.last_match_time && current.last_match_time > latest.last_match_time)) {
         return current;
       }
       return latest;
@@ -91,7 +104,7 @@ export const fetchEventTeams = async (eventKey: string): Promise<Array<{
         wins: lastEventStats?.qual?.ranking?.record?.wins || 0,
         losses: lastEventStats?.qual?.ranking?.record?.losses || 0,
         opr: stats?.oprs?.[`frc${team.team_number}`] || 0,
-        autoAvg: lastEventStats?.qual?.ranking?.sort_orders?.[0] || 0, // Assuming first sort order is auto points
+        autoAvg: lastEventStats?.qual?.ranking?.sort_orders?.[0] || 0,
       }
     };
   }));
