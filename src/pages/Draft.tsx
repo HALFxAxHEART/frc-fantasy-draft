@@ -62,11 +62,11 @@ const DraftContent = () => {
       
       if (error) throw error;
       
-      // Cast the data to the correct type
+      // Cast the data to the correct type with proper type assertions
       const typedData: DraftData = {
         ...data,
-        participants: data.participants as DraftParticipant[],
-        draft_data: data.draft_data as DraftData['draft_data']
+        participants: (data.participants as unknown as DraftParticipant[]) || [],
+        draft_data: (data.draft_data as DraftData['draft_data']) || {}
       };
       
       return typedData;
