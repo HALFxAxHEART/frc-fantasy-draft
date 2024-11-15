@@ -6,8 +6,8 @@ export interface Team {
   stats: {
     wins: number;
     losses: number;
-    opr: number;
-    autoAvg: number;
+    opr?: number;
+    autoAvg?: number;
     ranking?: number;
   };
 }

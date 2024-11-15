@@ -1,26 +1,9 @@
 import { createContext, useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-
-interface Team {
-  teamNumber: number;
-  teamName: string;
-  districtPoints: number;
-  logoUrl?: string;
-  stats: {
-    wins: number;
-    losses: number;
-    opr: number;
-    autoAvg: number;
-  };
-}
-
-interface Participant {
-  name: string;
-  teams: Team[];
-}
+import { Team, DraftParticipant } from "@/types/draft";
 
 interface DraftState {
-  participants: Participant[];
+  participants: DraftParticipant[];
   selectedEvent: string;
   currentParticipantIndex: number;
   timeRemaining: number;
@@ -50,7 +33,6 @@ export const DraftStateProvider = ({ children }: { children: React.ReactNode }) 
   const [draftState, setDraftState] = useState<DraftState>(() => {
     const state = location.state;
     
-    // Check if we have valid state data
     if (!state?.participants) {
       console.warn("No participants found in location state");
       navigate("/dashboard");
@@ -64,7 +46,6 @@ export const DraftStateProvider = ({ children }: { children: React.ReactNode }) 
       };
     }
 
-    // Initialize participants from state
     const initialParticipants = Array.isArray(state.participants) 
       ? state.participants.map((participant: any) => ({
           name: typeof participant === 'string' ? participant : participant.name,
