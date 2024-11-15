@@ -2,19 +2,21 @@ import { useState, useEffect } from "react";
 import { Card } from "./ui/card";
 
 interface DraftTimerProps {
-  initialTime: number;
   onTimeUp: () => void;
   isActive: boolean;
 }
 
-export const DraftTimer = ({ initialTime, onTimeUp, isActive }: DraftTimerProps) => {
-  const [timeRemaining, setTimeRemaining] = useState(initialTime);
+export const DraftTimer = ({ onTimeUp, isActive }: DraftTimerProps) => {
+  const [timeRemaining, setTimeRemaining] = useState(0);
   const [hasTriggeredTimeUp, setHasTriggeredTimeUp] = useState(false);
 
   useEffect(() => {
-    setTimeRemaining(initialTime);
+    // Get the draft time limit from settings
+    const draftSettings = localStorage.getItem("draftSettings");
+    const settings = draftSettings ? JSON.parse(draftSettings) : { draftTimeLimit: 120 };
+    setTimeRemaining(settings.draftTimeLimit);
     setHasTriggeredTimeUp(false);
-  }, [initialTime, isActive]);
+  }, [isActive]);
 
   useEffect(() => {
     if (!isActive) return;

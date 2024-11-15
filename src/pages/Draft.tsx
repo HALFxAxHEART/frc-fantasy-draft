@@ -1,23 +1,29 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { DraftTimer } from "@/components/DraftTimer";
-import { TeamCard } from "@/components/TeamCard";
 import { DraftOrder } from "@/components/DraftOrder";
-import { DraftSetup } from "@/components/DraftSetup";
-import { DraftComplete } from "@/components/DraftComplete";
+import { DraftTeamList } from "@/components/draft/DraftTeamList";
 import { DraftStateProvider, useDraftState } from "@/components/draft/DraftStateProvider";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
+interface Team {
+  teamNumber: number;
+  teamName: string;
+  districtPoints: number;
+  stats: {
+    wins: number;
+    losses: number;
+    opr: number;
+    autoAvg: number;
+  };
+}
+
 interface DraftParticipant {
   name: string;
-  teams: Array<{
-    teamNumber: number;
-    teamName: string;
-  }>;
+  teams: Team[];
 }
 
 interface DraftData {
@@ -26,7 +32,7 @@ interface DraftData {
   event_name: string;
   status: string | null;
   participants: DraftParticipant[];
-  draft_data: Record<string, any> | null;
+  draft_data: Record<string, any>;
   created_at: string;
   updated_at: string;
   user_id: string | null;
@@ -36,7 +42,8 @@ const DraftContent = () => {
   const { draftId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [availableTeams, setAvailableTeams] = useState([]);
+  const [availableTeams, setAvailableTeams] = useState<Team[]>([]);
+  const [currentParticipantIndex, setCurrentParticipantIndex] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(true);
 
   const { data: draftData, isLoading } = useQuery({
@@ -50,21 +57,7 @@ const DraftContent = () => {
         .single();
       
       if (error) throw error;
-
-      // Ensure participants data is properly typed
-      const typedData: DraftData = {
-        ...data,
-        participants: (data.participants as any[] || []).map((participant: any) => ({
-          name: participant.name,
-          teams: Array.isArray(participant.teams) ? participant.teams.map((team: any) => ({
-            teamNumber: team.teamNumber,
-            teamName: team.teamName
-          })) : []
-        })),
-        draft_data: data.draft_data as Record<string, any> | null
-      };
-      
-      return typedData;
+      return data as DraftData;
     },
     enabled: !!draftId,
   });
@@ -83,18 +76,22 @@ const DraftContent = () => {
           }
         );
         const teams = await response.json();
+        const selectedTeams = draftData.draft_data?.selectedTeams || [];
+        
         setAvailableTeams(
-          teams.map((team: any) => ({
-            teamNumber: team.team_number,
-            teamName: team.nickname,
-            districtPoints: Math.floor(Math.random() * 100),
-            stats: {
-              wins: Math.floor(Math.random() * 10),
-              losses: Math.floor(Math.random() * 10),
-              opr: Math.random() * 50,
-              autoAvg: Math.random() * 15,
-            },
-          }))
+          teams
+            .filter((team: any) => !selectedTeams.includes(team.team_number))
+            .map((team: any) => ({
+              teamNumber: team.team_number,
+              teamName: team.nickname,
+              districtPoints: Math.floor(Math.random() * 100),
+              stats: {
+                wins: Math.floor(Math.random() * 10),
+                losses: Math.floor(Math.random() * 10),
+                opr: Math.random() * 50,
+                autoAvg: Math.random() * 15,
+              },
+            }))
         );
       } catch (error: any) {
         toast({
@@ -105,7 +102,27 @@ const DraftContent = () => {
       }
     };
     fetchTeams();
-  }, [draftData?.event_key]);
+  }, [draftData?.event_key, draftData?.draft_data?.selectedTeams]);
+
+  const handleTimeUp = () => {
+    const draftSettings = localStorage.getItem("draftSettings");
+    const settings = draftSettings ? JSON.parse(draftSettings) : { autoAdvancePicks: false };
+    
+    if (settings.autoAdvancePicks) {
+      setCurrentParticipantIndex((prev) => 
+        (prev + 1) % (draftData?.participants.length || 1)
+      );
+    }
+  };
+
+  const handleTeamSelect = (team: Team) => {
+    setAvailableTeams((prev) => 
+      prev.filter((t) => t.teamNumber !== team.teamNumber)
+    );
+    setCurrentParticipantIndex((prev) => 
+      (prev + 1) % (draftData?.participants.length || 1)
+    );
+  };
 
   if (isLoading) {
     return <div>Loading draft...</div>;
@@ -114,42 +131,6 @@ const DraftContent = () => {
   if (!draftData && draftId) {
     return <div>Draft not found</div>;
   }
-
-  const handleTeamSelect = async (team: any) => {
-    if (!draftData || !draftId) return;
-
-    try {
-      const currentParticipant = draftData.participants[0]; // For now, just use the first participant
-      
-      // Update the draft in Supabase
-      const { error } = await supabase
-        .from('drafts')
-        .update({
-          participants: draftData.participants.map(p => 
-            p.name === currentParticipant.name
-              ? { ...p, teams: [...p.teams, team] }
-              : p
-          )
-        })
-        .eq('id', draftId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Team selected",
-        description: `${team.teamName} has been drafted`,
-      });
-
-      // Remove the selected team from available teams
-      setAvailableTeams(prev => prev.filter(t => t.teamNumber !== team.teamNumber));
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to select team",
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -166,36 +147,28 @@ const DraftContent = () => {
                 <div className="md:col-span-2">
                   <DraftOrder
                     participants={draftData.participants}
-                    currentIndex={0}
+                    currentIndex={currentParticipantIndex}
                   />
                 </div>
                 <div>
                   <DraftTimer
-                    initialTime={120}
-                    onTimeUp={() => {}}
+                    onTimeUp={handleTimeUp}
                     isActive={isTimerActive}
                   />
                 </div>
               </div>
 
-              <Card className="p-6">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {availableTeams.map((team: any) => (
-                    <TeamCard
-                      key={team.teamNumber}
-                      {...team}
-                      onSelect={() => handleTeamSelect(team)}
-                    />
-                  ))}
-                </div>
-              </Card>
+              <DraftTeamList
+                draftId={draftId}
+                availableTeams={availableTeams}
+                currentParticipant={draftData.participants[currentParticipantIndex].name}
+                onTeamSelect={handleTeamSelect}
+              />
             </>
           ) : (
             <div>
               <h1 className="text-3xl font-bold mb-8">Create New Draft</h1>
-              <Card className="p-6">
-                <p>Please use the dashboard to create a new draft.</p>
-              </Card>
+              <p>Please use the dashboard to create a new draft.</p>
             </div>
           )}
         </motion.div>
