@@ -4,14 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchEvents } from "@/lib/tba-api";
 import { useToast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
-import { Settings, LogOut, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { UpcomingEvents } from "@/components/UpcomingEvents";
 import { EventSelector } from "@/components/EventSelector";
 import { DraftStats } from "@/components/DraftStats";
@@ -55,12 +47,7 @@ const Dashboard = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-  };
-
   const handleEventSelect = (eventKey: string) => {
-    // Handle event selection
     navigate(`/draft?event=${eventKey}`);
   };
 
@@ -71,37 +58,7 @@ const Dashboard = () => {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-7xl mx-auto space-y-8"
       >
-        <div className="flex justify-between items-center">
-          <h1 className="text-4xl font-bold">Dashboard</h1>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() => navigate("/settings")}
-            >
-              <Settings className="h-4 w-4" />
-              Settings
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <User className="h-4 w-4" />
-                  Profile
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => navigate("/settings")}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleSignOut}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+        <h1 className="text-4xl font-bold">Dashboard</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {userId && (

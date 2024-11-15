@@ -48,9 +48,19 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      // Type assertion with proper type checking
       const participants = (draft.participants as unknown as DraftParticipant[]) || [];
       const draftData = (draft.draft_data as { selectedTeams?: number[] }) || {};
+      const selectedTeams = draftData.selectedTeams || [];
+
+      // Check if team is already selected
+      if (selectedTeams.includes(team.teamNumber)) {
+        toast({
+          title: "Team Already Selected",
+          description: "This team has already been drafted.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       const updatedParticipants = participants.map((p) =>
         p.name === currentParticipant
@@ -58,18 +68,18 @@ export const DraftTeamList = ({
           : p
       );
 
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('drafts')
         .update({
           participants: updatedParticipants as unknown as Json,
           draft_data: {
             ...draftData,
-            selectedTeams: [...(draftData.selectedTeams || []), team.teamNumber],
+            selectedTeams: [...selectedTeams, team.teamNumber],
           },
         })
         .eq('id', draftId);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       onTeamSelect(team);
       
