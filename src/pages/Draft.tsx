@@ -1,70 +1,19 @@
-import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
 import { DraftTimer } from "@/components/DraftTimer";
 import { TeamCard } from "@/components/TeamCard";
 import { DraftOrder } from "@/components/DraftOrder";
 import { DraftSetup } from "@/components/DraftSetup";
 import { DraftComplete } from "@/components/DraftComplete";
+import { DraftStateProvider, useDraftState } from "@/components/draft/DraftStateProvider";
+import { DraftControls } from "@/components/draft/DraftControls";
+import { useToast } from "@/components/ui/use-toast";
 
-interface DraftState {
-  participants: Participant[];
-  selectedEvent: string;
-  currentParticipantIndex: number;
-  timeRemaining: number;
-  draftComplete: boolean;
-  draftStarted: boolean;
-}
-
-interface Participant {
-  name: string;
-  teams: Array<{
-    teamNumber: number;
-    teamName: string;
-    districtPoints: number;
-    logoUrl?: string;
-    stats: {
-      wins: number;
-      losses: number;
-      opr: number;
-      autoAvg: number;
-    };
-  }>;
-}
-
-const Draft = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
+const DraftContent = () => {
+  const { draftState, setDraftState } = useDraftState();
   const { toast } = useToast();
-  const [draftState, setDraftState] = useState<DraftState>(() => {
-    const state = location.state;
-    if (!state) {
-      navigate("/dashboard");
-      return {
-        participants: [],
-        selectedEvent: "",
-        currentParticipantIndex: 0,
-        timeRemaining: 120,
-        draftComplete: false,
-        draftStarted: false,
-      };
-    }
-    return {
-      ...state,
-      participants: state.participants.map((name: string) => ({
-        name,
-        teams: [],
-      })),
-      currentParticipantIndex: 0,
-      timeRemaining: 120,
-      draftComplete: false,
-      draftStarted: false,
-    };
-  });
-
+  const { startDraft } = DraftControls();
   const [availableTeams, setAvailableTeams] = useState([]);
   const [isTimerActive, setIsTimerActive] = useState(true);
 
@@ -110,6 +59,8 @@ const Draft = () => {
   }, [draftState.selectedEvent]);
 
   const handleTimeUp = () => {
+    if (!draftState.participants.length) return;
+    
     toast({
       title: "Time's up!",
       description: `${draftState.participants[draftState.currentParticipantIndex].name}'s turn has ended`,
@@ -118,19 +69,9 @@ const Draft = () => {
     setIsTimerActive(false);
   };
 
-  const startDraft = () => {
-    setDraftState((prev) => ({
-      ...prev,
-      draftStarted: true,
-    }));
-    setIsTimerActive(true);
-    toast({
-      title: "Draft Started",
-      description: `${draftState.participants[0].name}'s turn to pick`,
-    });
-  };
-
   const selectTeam = (team: typeof availableTeams[0]) => {
+    if (!draftState.participants.length) return;
+    
     setDraftState((prev) => {
       const newParticipants = [...prev.participants];
       const currentParticipant = newParticipants[prev.currentParticipantIndex];
@@ -227,6 +168,14 @@ const Draft = () => {
         </Card>
       </motion.div>
     </div>
+  );
+};
+
+const Draft = () => {
+  return (
+    <DraftStateProvider>
+      <DraftContent />
+    </DraftStateProvider>
   );
 };
 
