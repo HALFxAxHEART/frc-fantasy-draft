@@ -7,7 +7,6 @@ import { useDraftState } from "@/components/draft/DraftStateProvider";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Json } from "@/integrations/supabase/types";
 
 interface DraftParticipant {
   name: string;
@@ -43,7 +42,7 @@ export const DraftContent = () => {
   const { toast } = useToast();
   const { draftState, setDraftState } = useDraftState();
 
-  const { data: draftData, isLoading } = useQuery({
+  const { data: draftData, isLoading, refetch } = useQuery({
     queryKey: ['draft', draftId],
     queryFn: async () => {
       if (!draftId) return null;
@@ -55,7 +54,6 @@ export const DraftContent = () => {
       
       if (error) throw error;
 
-      // Initialize draft state with participants from database
       if (data?.participants) {
         const parsedParticipants = (data.participants as any[]).map(p => ({
           name: p.name || '',
@@ -68,15 +66,10 @@ export const DraftContent = () => {
         }));
       }
 
-      console.log("Raw draft data:", data);
-
-      // Parse the draft data JSON
-      const draftDataJson = data?.draft_data as { availableTeams?: Team[] } | null;
-      
       // Create default teams if none exist
-      const defaultTeams: Team[] = Array.from({ length: 10 }, (_, i) => ({
-        teamNumber: 1000 + i,
-        teamName: `Team ${1000 + i}`,
+      const defaultTeams: Team[] = Array.from({ length: 30 }, (_, i) => ({
+        teamNumber: 254 + i,
+        teamName: `Team ${254 + i}`,
         districtPoints: Math.floor(Math.random() * 100),
         stats: {
           wins: Math.floor(Math.random() * 10),
@@ -93,12 +86,10 @@ export const DraftContent = () => {
           teams: Array.isArray(p.teams) ? p.teams : []
         })),
         draft_data: {
-          availableTeams: draftDataJson?.availableTeams || defaultTeams
+          availableTeams: data?.draft_data?.availableTeams || defaultTeams
         },
         event_name: data?.event_name || ''
       };
-
-      console.log("Parsed draft data:", typedData);
       
       return typedData;
     },
@@ -106,13 +97,56 @@ export const DraftContent = () => {
   });
 
   const handleTeamSelect = async (team: Team) => {
-    if (!team) return;
+    if (!draftId || !draftData) return;
+
+    const currentParticipant = draftState.participants[draftState.currentParticipantIndex];
     
+    // Update the participants array with the selected team
+    const updatedParticipants = draftState.participants.map(p => 
+      p.name === currentParticipant.name
+        ? { ...p, teams: [...p.teams, team] }
+        : p
+    );
+
+    // Remove the selected team from available teams
+    const updatedAvailableTeams = draftData.draft_data.availableTeams.filter(
+      t => t.teamNumber !== team.teamNumber
+    );
+
+    // Update the database
+    const { error } = await supabase
+      .from('drafts')
+      .update({
+        participants: updatedParticipants,
+        draft_data: {
+          availableTeams: updatedAvailableTeams
+        }
+      })
+      .eq('id', draftId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update draft",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Update local state
     setDraftState(prev => ({
       ...prev,
-      currentParticipantIndex: (prev.currentParticipantIndex + 1) % prev.participants.length,
-      timeRemaining: 120,
+      participants: updatedParticipants,
+      currentParticipantIndex: (prev.currentParticipantIndex + 1) % prev.participants.length
     }));
+
+    // Refetch the data to ensure everything is in sync
+    refetch();
+
+    toast({
+      title: "Team Selected",
+      description: `${team.teamName} has been drafted by ${currentParticipant.name}`
+    });
   };
 
   if (isLoading) {
@@ -123,30 +157,10 @@ export const DraftContent = () => {
     return <div className="flex items-center justify-center min-h-screen">Draft not found</div>;
   }
 
-  const participants = Array.isArray(draftState.participants) 
-    ? draftState.participants.map(p => ({
-        name: p.name || '',
-        teams: Array.isArray(p.teams) ? p.teams : []
-      }))
-    : [];
-
-  if (participants.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        No participants found in this draft
-      </div>
-    );
-  }
-
-  const currentIndex = Math.min(
-    Math.max(0, draftState.currentParticipantIndex),
-    participants.length - 1
-  );
-
+  const participants = draftState.participants;
+  const currentIndex = draftState.currentParticipantIndex;
   const currentParticipant = participants[currentIndex];
-  const availableTeams = draftData.draft_data?.availableTeams || [];
-
-  console.log("Available teams:", availableTeams);
+  const availableTeams = draftData.draft_data.availableTeams;
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -174,7 +188,7 @@ export const DraftContent = () => {
           </div>
 
           <DraftTeamList
-            draftId={draftId!}
+            draftId={draftId}
             availableTeams={availableTeams}
             currentParticipant={currentParticipant.name}
             onTeamSelect={handleTeamSelect}
