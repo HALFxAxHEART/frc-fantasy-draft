@@ -66,6 +66,18 @@ export const DraftContent = () => {
     return <div className="flex items-center justify-center min-h-screen">Draft not found</div>;
   }
 
+  // Initialize participants from draft data if not already set
+  if ((!draftState.participants || draftState.participants.length === 0) && draftData.participants) {
+    setDraftState(prev => ({
+      ...prev,
+      participants: draftData.participants.map((p: any) => ({
+        name: p.name,
+        teams: p.teams || []
+      }))
+    }));
+    return <div className="flex items-center justify-center min-h-screen">Initializing draft...</div>;
+  }
+
   if (!draftState.participants || draftState.participants.length === 0) {
     return <div className="flex items-center justify-center min-h-screen">No participants found</div>;
   }

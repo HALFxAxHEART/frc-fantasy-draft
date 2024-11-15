@@ -49,7 +49,10 @@ export const DraftStateProvider = ({ children }: { children: React.ReactNode }) 
   
   const [draftState, setDraftState] = useState<DraftState>(() => {
     const state = location.state;
-    if (!state?.participants?.length) {
+    
+    // Check if we have valid state data
+    if (!state?.participants) {
+      console.warn("No participants found in location state");
       navigate("/dashboard");
       return {
         participants: [],
@@ -60,11 +63,17 @@ export const DraftStateProvider = ({ children }: { children: React.ReactNode }) 
         draftStarted: false,
       };
     }
+
+    // Initialize participants from state
+    const initialParticipants = Array.isArray(state.participants) 
+      ? state.participants.map((participant: any) => ({
+          name: typeof participant === 'string' ? participant : participant.name,
+          teams: [],
+        }))
+      : [];
+
     return {
-      participants: state.participants.map((name: string) => ({
-        name,
-        teams: [],
-      })),
+      participants: initialParticipants,
       selectedEvent: state.selectedEvent || "",
       currentParticipantIndex: 0,
       timeRemaining: 120,
