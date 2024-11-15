@@ -1,6 +1,7 @@
 import { Card } from "./ui/card";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { motion } from "framer-motion";
+import { Team } from "@/types/draft";
 
 interface DraftOrderProps {
   participants: Array<{
@@ -11,7 +12,8 @@ interface DraftOrderProps {
       stats?: {
         wins: number;
         losses: number;
-        ranking?: number;
+        opr?: number;
+        autoAvg?: number;
       };
     }>;
   }>;
