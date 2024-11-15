@@ -32,7 +32,7 @@ interface Team {
 interface DraftData {
   participants: DraftParticipant[];
   draft_data: {
-    availableTeams?: Team[];
+    availableTeams: Team[];
   };
   event_name: string;
 }
@@ -70,8 +70,22 @@ export const DraftContent = () => {
 
       console.log("Raw draft data:", data);
 
-      const draftDataJson = data?.draft_data as { availableTeams?: any[] } | null;
+      // Parse the draft data JSON
+      const draftDataJson = data?.draft_data as { availableTeams?: Team[] } | null;
       
+      // Create default teams if none exist
+      const defaultTeams: Team[] = Array.from({ length: 10 }, (_, i) => ({
+        teamNumber: 1000 + i,
+        teamName: `Team ${1000 + i}`,
+        districtPoints: Math.floor(Math.random() * 100),
+        stats: {
+          wins: Math.floor(Math.random() * 10),
+          losses: Math.floor(Math.random() * 10),
+          opr: Math.random() * 50,
+          autoAvg: Math.random() * 10
+        }
+      }));
+
       // Parse the draft data
       const typedData: DraftData = {
         participants: (data?.participants as any[] || []).map(p => ({
@@ -79,19 +93,7 @@ export const DraftContent = () => {
           teams: Array.isArray(p.teams) ? p.teams : []
         })),
         draft_data: {
-          availableTeams: draftDataJson?.availableTeams
-            ? draftDataJson.availableTeams.map((t: any) => ({
-                teamNumber: t.teamNumber,
-                teamName: t.teamName,
-                districtPoints: t.districtPoints || 0,
-                stats: {
-                  wins: t.stats?.wins || 0,
-                  losses: t.stats?.losses || 0,
-                  opr: t.stats?.opr || 0,
-                  autoAvg: t.stats?.autoAvg || 0
-                }
-              }))
-            : []
+          availableTeams: draftDataJson?.availableTeams || defaultTeams
         },
         event_name: data?.event_name || ''
       };
