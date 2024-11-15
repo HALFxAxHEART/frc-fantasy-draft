@@ -6,24 +6,14 @@ import { Team } from "@/types/draft";
 interface DraftStatsProps {
   participants: Array<{
     name: string;
-    teams: Array<{
-      teamNumber: number;
-      teamName: string;
-      stats?: {
-        wins: number;
-        losses: number;
-        opr?: number;
-        autoAvg?: number;
-        ranking?: number;
-      };
-    }>;
+    teams: Team[];
   }>;
 }
 
 export const DraftStats = ({ participants }: DraftStatsProps) => {
-  const calculateScore = (teams: DraftStatsProps['participants'][0]['teams']) => {
+  const calculateScore = (teams: Team[]) => {
     return teams.reduce((acc, team) => {
-      if (team.stats) {
+      if (team.stats?.wins !== undefined && team.stats?.losses !== undefined) {
         return acc + (team.stats.wins / (team.stats.wins + team.stats.losses)) * 100;
       }
       return acc;
