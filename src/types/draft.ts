@@ -17,15 +17,6 @@ export interface DraftParticipant {
   teams: Team[];
 }
 
-export interface DraftState {
-  participants: DraftParticipant[];
-  selectedEvent: string;
-  currentParticipantIndex: number;
-  timeRemaining: number;
-  draftComplete: boolean;
-  draftStarted: boolean;
-}
-
 export interface DraftData {
   participants: DraftParticipant[];
   draft_data: {
