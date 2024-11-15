@@ -34,13 +34,16 @@ export const DraftComplete = ({ participants }: DraftCompleteProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-4xl">
+      <DialogContent className="sm:max-w-4xl bg-background">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="p-6"
         >
-          <h2 className="text-3xl font-bold text-center mb-6">Draft Complete!</h2>
+          <h2 className="text-3xl font-bold text-center mb-6">Congratulations! Draft Complete!</h2>
+          <p className="text-center text-muted-foreground mb-8">
+            Here's how everyone did in the draft:
+          </p>
           <DraftStats participants={participants} />
         </motion.div>
       </DialogContent>
