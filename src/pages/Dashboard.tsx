@@ -5,17 +5,16 @@ import { fetchEvents } from "@/lib/tba-api";
 import { useToast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
 import { UpcomingEvents } from "@/components/UpcomingEvents";
-import { EventSelector } from "@/components/EventSelector";
 import { DraftStats } from "@/components/DraftStats";
 import { supabase } from "@/integrations/supabase/client";
 import { UserDrafts } from "@/components/dashboard/UserDrafts";
-import { DraftControls } from "@/components/dashboard/DraftControls";
 import { DraftCreationSection } from "@/components/dashboard/DraftCreationSection";
 
 const Dashboard = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedEvent, setSelectedEvent] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -48,7 +47,7 @@ const Dashboard = () => {
   }, [navigate]);
 
   const handleEventSelect = (eventKey: string) => {
-    navigate(`/draft?event=${eventKey}`);
+    setSelectedEvent(eventKey);
   };
 
   return (
@@ -69,6 +68,8 @@ const Dashboard = () => {
               onYearChange={setSelectedYear}
               selectedDistrict={selectedDistrict}
               onDistrictChange={setSelectedDistrict}
+              selectedEvent={selectedEvent}
+              onEventChange={setSelectedEvent}
               isLoading={isLoading}
               error={error instanceof Error ? error : null}
             />

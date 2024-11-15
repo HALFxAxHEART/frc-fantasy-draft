@@ -12,6 +12,8 @@ interface DraftCreationSectionProps {
   onYearChange: (year: number) => void;
   selectedDistrict: string;
   onDistrictChange: (district: string) => void;
+  selectedEvent: string;
+  onEventChange: (event: string) => void;
   isLoading: boolean;
   error: Error | null;
 }
@@ -23,12 +25,13 @@ export const DraftCreationSection = ({
   onYearChange,
   selectedDistrict,
   onDistrictChange,
+  selectedEvent,
+  onEventChange,
   isLoading,
   error
 }: DraftCreationSectionProps) => {
   const [participants, setParticipants] = useState(2);
   const [participantNames, setParticipantNames] = useState<string[]>([]);
-  const [selectedEvent, setSelectedEvent] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -153,7 +156,7 @@ export const DraftCreationSection = ({
       <EventSelector
         events={events}
         selectedEvent={selectedEvent}
-        onEventChange={setSelectedEvent}
+        onEventChange={onEventChange}
         selectedYear={selectedYear}
         onYearChange={onYearChange}
         selectedDistrict={selectedDistrict}
