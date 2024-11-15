@@ -2,6 +2,7 @@ import { Card } from "./ui/card";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { motion } from "framer-motion";
 import { Team } from "@/types/draft";
+import { ChevronRight } from "lucide-react";
 
 interface DraftOrderProps {
   participants: Array<{
@@ -41,7 +42,7 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
 
   return (
     <Card className="p-6">
-      <h3 className="text-xl font-semibold mb-6">Draft Order</h3>
+      <h3 className="text-xl font-semibold mb-6">Draft Order - Round {round}</h3>
       <div className="flex flex-col space-y-4">
         {participants.map((participant, displayIndex) => {
           const { isPicking, isNext } = getPickingStatus(displayIndex);
@@ -54,9 +55,9 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
               transition={{ duration: 0.3 }}
               className={`p-4 rounded-lg ${
                 isPicking
-                  ? 'bg-red-500 text-white shadow-lg'
+                  ? 'bg-primary text-primary-foreground shadow-lg'
                   : isNext
-                  ? 'bg-green-500/20 text-gray-800'
+                  ? 'bg-secondary'
                   : 'bg-muted'
               }`}
             >
@@ -72,8 +73,11 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-lg font-bold">{participant.name}</span>
+                    {isNext && (
+                      <ChevronRight className="h-5 w-5 text-primary animate-pulse" />
+                    )}
                   </div>
-                  <span className={`text-sm font-semibold ${isPicking ? 'text-white' : isNext ? 'text-green-700' : ''}`}>
+                  <span className={`text-sm font-semibold ${isPicking ? 'text-primary-foreground' : isNext ? 'text-primary' : ''}`}>
                     {isPicking && '🎯 Currently Picking'}
                     {isNext && '⏳ Up Next'}
                   </span>

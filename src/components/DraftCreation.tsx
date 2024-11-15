@@ -1,6 +1,7 @@
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { Loader2 } from "lucide-react";
 
 interface DraftCreationProps {
   participants: number;
@@ -10,6 +11,7 @@ interface DraftCreationProps {
   onStartDraft: () => void;
   nickname: string;
   onNicknameChange: (value: string) => void;
+  isLoading?: boolean;
 }
 
 export const DraftCreation = ({
@@ -20,24 +22,11 @@ export const DraftCreation = ({
   onStartDraft,
   nickname,
   onNicknameChange,
+  isLoading = false,
 }: DraftCreationProps) => {
   const handleParticipantsChange = (newValue: number) => {
-    // Preserve existing names when increasing participants
-    const newNames = [...participantNames];
-    if (newValue > participants) {
-      // Add empty strings for new participants
-      while (newNames.length < newValue) {
-        newNames.push("");
-      }
-    } else {
-      // Remove extra names if decreasing
-      newNames.splice(newValue);
-    }
-    onParticipantsChange(newValue);
-    // Update names array while preserving existing names
-    newNames.forEach((name, index) => {
-      onParticipantNameChange(index, name);
-    });
+    const validValue = Math.max(2, Math.min(10, newValue));
+    onParticipantsChange(validValue);
   };
 
   return (
@@ -47,7 +36,7 @@ export const DraftCreation = ({
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-1">
-            Draft Nickname (Optional)
+            Draft Nickname
           </label>
           <Input
             value={nickname}
@@ -72,13 +61,13 @@ export const DraftCreation = ({
         </div>
 
         <div className="space-y-4">
-          {participantNames.map((name, index) => (
+          {Array.from({ length: participants }).map((_, index) => (
             <div key={index}>
               <label className="block text-sm font-medium mb-1">
                 Participant {index + 1} Name
               </label>
               <Input
-                value={name}
+                value={participantNames[index] || ""}
                 onChange={(e) => onParticipantNameChange(index, e.target.value)}
                 className="w-full max-w-xs"
               />
@@ -89,7 +78,11 @@ export const DraftCreation = ({
         <Button
           className="w-full bg-primary hover:bg-primary/90 text-white mt-4"
           onClick={onStartDraft}
+          disabled={isLoading}
         >
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          ) : null}
           Start Draft
         </Button>
       </div>

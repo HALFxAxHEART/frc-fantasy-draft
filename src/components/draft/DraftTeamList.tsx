@@ -5,6 +5,7 @@ import { TeamCard } from "../TeamCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDraftState } from "./DraftStateProvider";
 import { Json } from "@/integrations/supabase/types";
+import { Loader2 } from "lucide-react";
 
 interface Team {
   teamNumber: number;
@@ -16,19 +17,6 @@ interface Team {
     opr: number;
     autoAvg: number;
   };
-}
-
-interface DraftData {
-  selectedTeams: number[];
-  // Add other draft_data fields if needed
-}
-
-interface DraftParticipant {
-  name: string;
-  teams: Array<{
-    teamNumber: number;
-    teamName: string;
-  }>;
 }
 
 interface DraftTeamListProps {
@@ -61,12 +49,9 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      // Safely type assert the data from Supabase
-      const participants = (draft.participants as unknown as DraftParticipant[]) || [];
-      const draftData = ((draft.draft_data as unknown) as DraftData) || { selectedTeams: [] };
-      const selectedTeams = draftData.selectedTeams || [];
-
+      const participants = (draft.participants as unknown as Array<{ name: string; teams: Team[] }>) || [];
       const currentParticipantData = participants.find(p => p.name === currentParticipant);
+      
       if (!currentParticipantData) {
         throw new Error('Current participant not found');
       }
@@ -80,21 +65,7 @@ export const DraftTeamList = ({
         return;
       }
 
-      if (selectedTeams.includes(team.teamNumber)) {
-        toast({
-          title: "Team Already Selected",
-          description: "This team has already been drafted.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       onTeamSelect(team);
-      
-      toast({
-        title: "Team Selected!",
-        description: `${team.teamName} has been drafted by ${currentParticipant}`,
-      });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -110,11 +81,20 @@ export const DraftTeamList = ({
     )
   );
 
+  if (!filteredTeams.length) {
+    return (
+      <Card className="p-6 text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+        <p className="text-lg text-muted-foreground">Loading available teams...</p>
+      </Card>
+    );
+  }
+
   return (
     <Card className="p-6">
       <AnimatePresence>
         <motion.div 
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -125,7 +105,7 @@ export const DraftTeamList = ({
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
             >
               <TeamCard

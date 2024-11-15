@@ -15,6 +15,7 @@ import { DraftHeader } from "./DraftHeader";
 import { DraftLayout } from "./DraftLayout";
 import confetti from 'canvas-confetti';
 import { DraftCompleteDialog } from "./DraftCompleteDialog";
+import { Loader2 } from "lucide-react";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
@@ -67,7 +68,7 @@ export const DraftContent = () => {
 
     try {
       const { updatedParticipants } = await selectTeam(
-        draftId,
+        draftId || '',
         team,
         draftState.participants,
         currentParticipant.name,
@@ -120,16 +121,26 @@ export const DraftContent = () => {
   };
 
   if (isDraftLoading || isTeamsLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading draft...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading draft...</span>
+      </div>
+    );
   }
 
   if (!draftData) {
-    return <div className="flex items-center justify-center min-h-screen">Draft not found</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <span>Draft not found</span>
+      </div>
+    );
   }
 
   if (!draftState.participants || draftState.participants.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin" />
         <h2 className="text-2xl font-bold">Loading participants...</h2>
         <p className="text-muted-foreground">Please wait while we set up your draft.</p>
       </div>
@@ -179,7 +190,7 @@ export const DraftContent = () => {
 
       {teams && teams.length > 0 ? (
         <DraftTeamList
-          draftId={draftId}
+          draftId={draftId || ''}
           availableTeams={teams}
           currentParticipant={draftState.participants[draftState.currentParticipantIndex].name}
           onTeamSelect={handleTeamSelect}
@@ -187,7 +198,8 @@ export const DraftContent = () => {
         />
       ) : (
         <div className="text-center p-4 mt-4">
-          <p className="text-lg text-muted-foreground">No teams available for this event yet.</p>
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+          <p className="text-lg text-muted-foreground">Loading teams...</p>
         </div>
       )}
     </DraftLayout>
