@@ -15,6 +15,29 @@ export interface TBATeamStats {
   opr: number;
 }
 
+export interface TBAEvent {
+  key: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  webcasts: Array<{
+    type: string;
+    channel: string;
+  }>;
+}
+
+export const fetchEventDetails = async (eventKey: string): Promise<TBAEvent> => {
+  const headers = {
+    'X-TBA-Auth-Key': TBA_API_KEY,
+  };
+
+  const response = await fetch(
+    `${TBA_BASE_URL}/event/${eventKey}`,
+    { headers }
+  );
+  return response.json();
+};
+
 export const fetchEventTeams = async (eventKey: string): Promise<Array<{
   teamNumber: number;
   teamName: string;
@@ -44,22 +67,34 @@ export const fetchEventTeams = async (eventKey: string): Promise<Array<{
   );
   const stats = await statsResponse.json();
 
-  // Fetch district points
-  const districtPointsResponse = await fetch(
-    `${TBA_BASE_URL}/event/${eventKey}/district_points`,
-    { headers }
-  );
-  const districtPoints = await districtPointsResponse.json();
+  // For each team, fetch their last event stats
+  const teamsWithStats = await Promise.all(teams.map(async (team) => {
+    const teamEventsResponse = await fetch(
+      `${TBA_BASE_URL}/team/frc${team.team_number}/events/2024/statuses`,
+      { headers }
+    );
+    const teamEvents = await teamEventsResponse.json();
+    
+    // Find the last event's stats
+    const lastEventStats = Object.values(teamEvents).reduce((latest: any, current: any) => {
+      if (!latest || (current.last_match_time > latest.last_match_time)) {
+        return current;
+      }
+      return latest;
+    }, null);
 
-  return teams.map(team => ({
-    teamNumber: team.team_number,
-    teamName: team.nickname,
-    districtPoints: districtPoints?.points?.[`frc${team.team_number}`]?.total || 0,
-    stats: {
-      wins: 0, // These would need to be calculated from match data if needed
-      losses: 0,
-      opr: stats?.oprs?.[`frc${team.team_number}`] || 0,
-      autoAvg: 0, // This would need to be calculated from match data if needed
-    }
+    return {
+      teamNumber: team.team_number,
+      teamName: team.nickname,
+      districtPoints: 0, // This will be updated with actual district points
+      stats: {
+        wins: lastEventStats?.qual?.ranking?.record?.wins || 0,
+        losses: lastEventStats?.qual?.ranking?.record?.losses || 0,
+        opr: stats?.oprs?.[`frc${team.team_number}`] || 0,
+        autoAvg: lastEventStats?.qual?.ranking?.sort_orders?.[0] || 0, // Assuming first sort order is auto points
+      }
+    };
   }));
+
+  return teamsWithStats;
 };

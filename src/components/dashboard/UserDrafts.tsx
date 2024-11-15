@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Trash2, ArrowRight } from "lucide-react";
+import { Trash2, ArrowRight, Trophy, Eye } from "lucide-react";
+import { format } from "date-fns";
+import { fetchEventDetails } from "@/services/tbaService";
 
 export const UserDrafts = ({ userId }: { userId: string }) => {
   const { toast } = useToast();
@@ -25,6 +27,21 @@ export const UserDrafts = ({ userId }: { userId: string }) => {
     },
   });
 
+  // Fetch event details for each draft
+  const { data: eventDetails } = useQuery({
+    queryKey: ['draftEvents', drafts?.map(d => d.event_key)],
+    queryFn: async () => {
+      if (!drafts) return {};
+      const details = await Promise.all(
+        drafts.map(draft => fetchEventDetails(draft.event_key))
+      );
+      return Object.fromEntries(
+        drafts.map((draft, i) => [draft.event_key, details[i]])
+      );
+    },
+    enabled: !!drafts?.length,
+  });
+
   const handleDelete = async (draftId: string) => {
     try {
       const { error } = await supabase
@@ -39,7 +56,6 @@ export const UserDrafts = ({ userId }: { userId: string }) => {
         description: "Draft deleted successfully",
       });
 
-      // Refresh the drafts list
       queryClient.invalidateQueries({ queryKey: ['drafts', userId] });
     } catch (error: any) {
       toast({
@@ -59,39 +75,59 @@ export const UserDrafts = ({ userId }: { userId: string }) => {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {drafts.map((draft) => (
-        <Card key={draft.id} className="relative">
-          <CardHeader>
-            <CardTitle className="text-lg">{draft.event_name}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              Status: {draft.status}
-            </p>
-            <p className="text-sm text-muted-foreground mb-4">
-              Created: {new Date(draft.created_at).toLocaleDateString()}
-            </p>
-            <div className="flex justify-between items-center mt-4">
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => handleDelete(draft.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleViewDraft(draft.id)}
-                className="gap-2"
-              >
-                View Draft
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+      {drafts.map((draft) => {
+        const event = eventDetails?.[draft.event_key];
+        const isEventEnded = event && new Date(event.end_date) < new Date();
+
+        return (
+          <Card key={draft.id} className="relative">
+            <CardHeader>
+              <CardTitle className="text-lg">{draft.event_name}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Status: {draft.status}
+              </p>
+              {event && (
+                <div className="text-sm text-muted-foreground mb-4">
+                  <p>Start: {format(new Date(event.start_date), 'PPP')}</p>
+                  <p>End: {format(new Date(event.end_date), 'PPP')}</p>
+                </div>
+              )}
+              <div className="flex justify-between items-center mt-4">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDelete(draft.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+                <div className="space-x-2">
+                  {isEventEnded && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/results/${draft.id}`)}
+                    >
+                      <Trophy className="h-4 w-4 mr-2" />
+                      Results
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleViewDraft(draft.id)}
+                    className="gap-2"
+                  >
+                    <Eye className="h-4 w-4" />
+                    View Draft
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 };

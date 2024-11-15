@@ -10,10 +10,12 @@ import { useDraftData } from "@/hooks/useDraftData";
 import { selectTeam } from "@/services/draftService";
 import { Team } from "@/types/draft";
 import { useQuery } from "@tanstack/react-query";
-import { fetchEventTeams } from "@/services/tbaService";
+import { fetchEventTeams, fetchEventDetails } from "@/services/tbaService";
 import { Button } from "@/components/ui/button";
 import { DraftHeader } from "./DraftHeader";
 import { DraftLayout } from "./DraftLayout";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { format } from "date-fns";
 import confetti from 'canvas-confetti';
 
 export const DraftContent = () => {
@@ -28,24 +30,30 @@ export const DraftContent = () => {
     enabled: !!draftData?.event_key,
   });
 
+  const { data: eventDetails } = useQuery({
+    queryKey: ['eventDetails', draftData?.event_key],
+    queryFn: () => fetchEventDetails(draftData?.event_key || ''),
+    enabled: !!draftData?.event_key,
+  });
+
   const isDraftComplete = draftState.participants.every(p => p.teams.length >= 5);
 
-  const handleCompleteDraft = () => {
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
+  const handleAutoSelectTeam = async () => {
+    if (!teams) return;
+    
+    const availableTeams = teams.filter(team => 
+      !draftState.participants.some(p => 
+        p.teams.some(t => t.teamNumber === team.teamNumber)
+      )
+    );
 
-    setDraftState(prev => ({
-      ...prev,
-      draftComplete: true
-    }));
+    if (availableTeams.length > 0) {
+      // Select the first available team
+      await handleTeamSelect(availableTeams[0]);
+    }
   };
 
   const handleTeamSelect = async (team: Team) => {
-    if (!draftId || !draftData) return;
-
     const currentParticipant = draftState.participants[draftState.currentParticipantIndex];
     if (!currentParticipant) {
       toast({
@@ -132,11 +140,33 @@ export const DraftContent = () => {
     );
   }
 
-  if (draftState.draftComplete) {
-    return <DraftComplete participants={draftState.participants} />;
+  if (draftState.draftComplete && eventDetails) {
+    return (
+      <Dialog open={true}>
+        <DialogContent className="sm:max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Draft Complete!</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <DraftComplete participants={draftState.participants} />
+            <div className="p-4 bg-muted rounded-lg">
+              <h3 className="font-semibold mb-2">Event Details</h3>
+              <p>Start Date: {format(new Date(eventDetails.start_date), 'PPP')}</p>
+              <p>End Date: {format(new Date(eventDetails.end_date), 'PPP')}</p>
+              <a 
+                href={`https://www.thebluealliance.com/event/${draftData.event_key}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Watch Event on The Blue Alliance
+              </a>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
   }
-
-  const availableTeams = teams || [];
 
   return (
     <DraftLayout>
@@ -159,6 +189,7 @@ export const DraftContent = () => {
               key={draftState.currentParticipantIndex}
               onTimeUp={() => {}}
               isActive={true}
+              autoSelectTeam={handleAutoSelectTeam}
             />
           )}
           {isDraftComplete && (
@@ -174,7 +205,7 @@ export const DraftContent = () => {
 
       <DraftTeamList
         draftId={draftId}
-        availableTeams={availableTeams}
+        availableTeams={teams || []}
         currentParticipant={draftState.participants[draftState.currentParticipantIndex].name}
         onTeamSelect={handleTeamSelect}
         hidePoints={true}

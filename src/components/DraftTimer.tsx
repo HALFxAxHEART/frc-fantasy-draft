@@ -4,9 +4,10 @@ import { Card } from "./ui/card";
 interface DraftTimerProps {
   onTimeUp: () => void;
   isActive: boolean;
+  autoSelectTeam: () => void;
 }
 
-export const DraftTimer = ({ onTimeUp, isActive }: DraftTimerProps) => {
+export const DraftTimer = ({ onTimeUp, isActive, autoSelectTeam }: DraftTimerProps) => {
   const [timeRemaining, setTimeRemaining] = useState(120); // 2 minutes default
   const [hasTriggeredTimeUp, setHasTriggeredTimeUp] = useState(false);
 
@@ -19,6 +20,7 @@ export const DraftTimer = ({ onTimeUp, isActive }: DraftTimerProps) => {
           clearInterval(timer);
           setHasTriggeredTimeUp(true);
           onTimeUp();
+          autoSelectTeam(); // Auto select team when timer hits 0
           return 0;
         }
         return prev - 1;
@@ -26,7 +28,7 @@ export const DraftTimer = ({ onTimeUp, isActive }: DraftTimerProps) => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isActive, onTimeUp, hasTriggeredTimeUp]);
+  }, [isActive, onTimeUp, hasTriggeredTimeUp, autoSelectTeam]);
 
   const minutes = Math.floor(timeRemaining / 60);
   const seconds = timeRemaining % 60;
