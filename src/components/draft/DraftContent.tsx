@@ -1,31 +1,26 @@
 import { useParams } from "react-router-dom";
 import { DraftTimer } from "@/components/DraftTimer";
 import { DraftOrder } from "@/components/DraftOrder";
+import { DraftTeamList } from "@/components/draft/DraftTeamList";
 import { DraftComplete } from "@/components/DraftComplete";
 import { DraftSetup } from "@/components/DraftSetup";
 import { useDraftState } from "@/components/draft/DraftStateProvider";
 import { useToast } from "@/components/ui/use-toast";
 import { useDraftData } from "@/hooks/useDraftData";
 import { selectTeam } from "@/services/draftService";
-import { Team, DraftParticipant } from "@/types/draft";
+import { Team } from "@/types/draft";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEventTeams, fetchEventDetails } from "@/services/tbaService";
 import { DraftHeader } from "./DraftHeader";
 import { DraftLayout } from "./DraftLayout";
-import { DraftTeamGrid } from "./DraftTeamGrid";
 import confetti from 'canvas-confetti';
 import { DraftCompleteDialog } from "./DraftCompleteDialog";
-import { Loader2 } from "lucide-react";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
   const { toast } = useToast();
   const { draftState, setDraftState } = useDraftState();
-  const { data: draftData, isLoading: isDraftLoading } = useDraftData(draftId);
-
-  // Get draft settings from localStorage
-  const draftSettings = JSON.parse(localStorage.getItem("draftSettings") || "{}");
-  const timeLimit = draftSettings.draftTimeLimit || 120;
+  const { data: draftData, isLoading: isDraftLoading, refetch } = useDraftData(draftId);
 
   const { data: teams, isLoading: isTeamsLoading } = useQuery({
     queryKey: ['eventTeams', draftData?.event_key],
@@ -40,31 +35,57 @@ export const DraftContent = () => {
   });
 
   const isDraftComplete = draftState.participants.every(p => p.teams.length >= 5);
-  const isLoading = isDraftLoading || isTeamsLoading;
+
+  const handleAutoSelectTeam = async () => {
+    if (!teams) return;
+    
+    const availableTeams = teams.filter(team => 
+      !draftState.participants.some(p => 
+        p.teams.some(t => t.teamNumber === team.teamNumber)
+      )
+    );
+
+    if (availableTeams.length > 0) {
+      await handleTeamSelect(availableTeams[0]);
+    }
+  };
 
   const handleTeamSelect = async (team: Team) => {
     const currentParticipant = draftState.participants[draftState.currentParticipantIndex];
-    
+    if (!currentParticipant) {
+      toast({
+        title: "Error",
+        description: "No active participant found",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { updatedParticipants } = await selectTeam(
-        draftId || '',
+        draftId,
         team,
         draftState.participants,
         currentParticipant.name,
         teams || []
       );
 
+      // Calculate next picker based on snake draft pattern
       const totalPicks = updatedParticipants.reduce((sum, p) => sum + p.teams.length, 0);
       const round = Math.floor(totalPicks / updatedParticipants.length) + 1;
       const isReverseRound = round % 2 === 0;
 
-      let nextIndex = isReverseRound
-        ? draftState.currentParticipantIndex - 1
-        : draftState.currentParticipantIndex + 1;
-
-      if (nextIndex < 0) nextIndex = 0;
-      if (nextIndex >= updatedParticipants.length) {
-        nextIndex = updatedParticipants.length - 1;
+      let nextIndex;
+      if (isReverseRound) {
+        nextIndex = draftState.currentParticipantIndex - 1;
+        if (nextIndex < 0) {
+          nextIndex = 0;
+        }
+      } else {
+        nextIndex = draftState.currentParticipantIndex + 1;
+        if (nextIndex >= updatedParticipants.length) {
+          nextIndex = updatedParticipants.length - 1;
+        }
       }
 
       setDraftState(prev => ({
@@ -79,6 +100,8 @@ export const DraftContent = () => {
         origin: { y: 0.6 }
       });
 
+      refetch();
+
       toast({
         title: "Team Selected",
         description: `${team.teamName} has been drafted by ${currentParticipant.name}`
@@ -92,31 +115,16 @@ export const DraftContent = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Loading draft...</span>
-      </div>
-    );
+  if (isDraftLoading || isTeamsLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading draft...</div>;
   }
 
   if (!draftData) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <span>Draft not found</span>
-      </div>
-    );
+    return <div className="flex items-center justify-center min-h-screen">Draft not found</div>;
   }
 
   if (!draftState.participants || draftState.participants.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <h2 className="text-2xl font-bold">Loading participants...</h2>
-        <p className="text-muted-foreground">Please wait while we set up your draft.</p>
-      </div>
-    );
+    return <div className="flex items-center justify-center min-h-screen">No participants found</div>;
   }
 
   if (!draftState.draftStarted) {
@@ -139,35 +147,33 @@ export const DraftContent = () => {
         nickname={draftData.nickname} 
       />
       
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="lg:col-span-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="md:col-span-2">
           <DraftOrder
             participants={draftState.participants}
             currentIndex={draftState.currentParticipantIndex}
             round={Math.floor(draftState.participants.reduce((sum, p) => sum + p.teams.length, 0) / draftState.participants.length) + 1}
           />
         </div>
-        <div>
-          {!isDraftComplete && !isTeamsLoading && teams && (
+        <div className="space-y-4">
+          {!isDraftComplete && (
             <DraftTimer
               key={draftState.currentParticipantIndex}
-              onTimeUp={() => handleTeamSelect(teams[0])}
+              onTimeUp={handleAutoSelectTeam}
               isActive={true}
-              autoSelectTeam={() => handleTeamSelect(teams[0])}
-              initialTime={timeLimit}
+              autoSelectTeam={handleAutoSelectTeam}
             />
           )}
         </div>
       </div>
 
-      {teams && (
-        <DraftTeamGrid
-          teams={teams}
-          isLoading={isTeamsLoading}
-          onTeamSelect={handleTeamSelect}
-          hidePoints={true}
-        />
-      )}
+      <DraftTeamList
+        draftId={draftId}
+        availableTeams={teams || []}
+        currentParticipant={draftState.participants[draftState.currentParticipantIndex].name}
+        onTeamSelect={handleTeamSelect}
+        hidePoints={true}
+      />
     </DraftLayout>
   );
 };

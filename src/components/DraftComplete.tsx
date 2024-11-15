@@ -3,10 +3,23 @@ import { motion, AnimatePresence } from "framer-motion";
 import confetti from 'canvas-confetti';
 import { useEffect, useState } from "react";
 import { DraftStats } from "./DraftStats";
-import { DraftParticipant } from "@/types/draft";
+import { Team } from "@/types/draft";
 
 interface DraftCompleteProps {
-  participants: DraftParticipant[];
+  participants: Array<{
+    name: string;
+    teams: Array<{
+      teamNumber: number;
+      teamName: string;
+      stats?: {
+        wins: number;
+        losses: number;
+        opr?: number;
+        autoAvg?: number;
+        ranking?: number;
+      };
+    }>;
+  }>;
 }
 
 export const DraftComplete = ({ participants }: DraftCompleteProps) => {

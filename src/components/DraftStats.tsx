@@ -1,25 +1,37 @@
 import { Card } from "./ui/card";
 import { Progress } from "./ui/progress";
 import { motion } from "framer-motion";
-import { DraftParticipant } from "@/types/draft";
+import { Team } from "@/types/draft";
 
 interface DraftStatsProps {
-  participants: DraftParticipant[];
+  participants: Array<{
+    name: string;
+    teams: Array<{
+      teamNumber: number;
+      teamName: string;
+      stats?: {
+        wins: number;
+        losses: number;
+        opr?: number;
+        autoAvg?: number;
+        ranking?: number;
+      };
+    }>;
+  }>;
 }
 
 export const DraftStats = ({ participants }: DraftStatsProps) => {
-  const calculateScore = (participant: DraftParticipant) => {
-    return participant.teams.reduce((acc, team) => {
-      if (team.stats?.wins !== undefined && team.stats?.losses !== undefined) {
-        const totalGames = team.stats.wins + team.stats.losses;
-        return acc + (totalGames > 0 ? (team.stats.wins / totalGames) * 100 : 0);
+  const calculateScore = (teams: DraftStatsProps['participants'][0]['teams']) => {
+    return teams.reduce((acc, team) => {
+      if (team.stats) {
+        return acc + (team.stats.wins / (team.stats.wins + team.stats.losses)) * 100;
       }
       return acc;
-    }, 0) / (participant.teams.length || 1);
+    }, 0) / teams.length;
   };
 
   const sortedParticipants = [...participants].sort(
-    (a, b) => calculateScore(b) - calculateScore(a)
+    (a, b) => calculateScore(b.teams) - calculateScore(a.teams)
   );
 
   return (
@@ -40,10 +52,10 @@ export const DraftStats = ({ participants }: DraftStatsProps) => {
                 <span className="text-lg">{participant.name}</span>
               </div>
               <span className="text-sm text-muted-foreground">
-                {calculateScore(participant).toFixed(1)}% Win Rate
+                {calculateScore(participant.teams).toFixed(1)}% Win Rate
               </span>
             </div>
-            <Progress value={calculateScore(participant)} className="h-2" />
+            <Progress value={calculateScore(participant.teams)} className="h-2" />
             <div className="grid grid-cols-2 gap-2 mt-2">
               {participant.teams.map((team) => (
                 <div

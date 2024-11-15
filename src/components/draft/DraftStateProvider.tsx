@@ -1,8 +1,6 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Team, DraftParticipant } from "@/types/draft";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 
 interface DraftState {
   participants: DraftParticipant[];
@@ -31,67 +29,39 @@ export const useDraftState = () => {
 export const DraftStateProvider = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const draftId = location.pathname.split('/').pop();
   
-  const [draftState, setDraftState] = useState<DraftState>(() => ({
-    participants: [],
-    selectedEvent: "",
-    currentParticipantIndex: 0,
-    timeRemaining: 120,
-    draftComplete: false,
-    draftStarted: false,
-  }));
+  const [draftState, setDraftState] = useState<DraftState>(() => {
+    const state = location.state;
+    
+    if (!state?.participants) {
+      console.warn("No participants found in location state");
+      navigate("/dashboard");
+      return {
+        participants: [],
+        selectedEvent: "",
+        currentParticipantIndex: 0,
+        timeRemaining: 120,
+        draftComplete: false,
+        draftStarted: false,
+      };
+    }
 
-  useEffect(() => {
-    const fetchDraftData = async () => {
-      if (!draftId) return;
+    const initialParticipants = Array.isArray(state.participants) 
+      ? state.participants.map((participant: any) => ({
+          name: typeof participant === 'string' ? participant : participant.name,
+          teams: [],
+        }))
+      : [];
 
-      try {
-        const { data: draft, error } = await supabase
-          .from('drafts')
-          .select('*')
-          .eq('id', draftId)
-          .single();
-
-        if (error) throw error;
-
-        if (!draft) {
-          toast({
-            title: "Error",
-            description: "Draft not found",
-            variant: "destructive",
-          });
-          navigate("/dashboard");
-          return;
-        }
-
-        // Ensure participants is an array and has the correct shape
-        const participants = Array.isArray(draft.participants) 
-          ? draft.participants.map((participant: any) => ({
-              name: participant.name || '',
-              teams: Array.isArray(participant.teams) ? participant.teams : [],
-            }))
-          : [];
-
-        setDraftState(prev => ({
-          ...prev,
-          participants,
-          selectedEvent: draft.event_key || "",
-        }));
-
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to load draft data",
-          variant: "destructive",
-        });
-        console.error('Error loading draft:', error);
-      }
+    return {
+      participants: initialParticipants,
+      selectedEvent: state.selectedEvent || "",
+      currentParticipantIndex: 0,
+      timeRemaining: 120,
+      draftComplete: false,
+      draftStarted: false,
     };
-
-    fetchDraftData();
-  }, [draftId, navigate, toast]);
+  });
 
   return (
     <DraftStateContext.Provider value={{ draftState, setDraftState }}>

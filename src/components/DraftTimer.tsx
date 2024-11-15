@@ -5,11 +5,10 @@ interface DraftTimerProps {
   onTimeUp: () => void;
   isActive: boolean;
   autoSelectTeam: () => void;
-  initialTime?: number;
 }
 
-export const DraftTimer = ({ onTimeUp, isActive, autoSelectTeam, initialTime = 120 }: DraftTimerProps) => {
-  const [timeRemaining, setTimeRemaining] = useState(initialTime);
+export const DraftTimer = ({ onTimeUp, isActive, autoSelectTeam }: DraftTimerProps) => {
+  const [timeRemaining, setTimeRemaining] = useState(120); // 2 minutes default
   const [hasTriggeredTimeUp, setHasTriggeredTimeUp] = useState(false);
 
   useEffect(() => {
@@ -21,10 +20,10 @@ export const DraftTimer = ({ onTimeUp, isActive, autoSelectTeam, initialTime = 1
           clearInterval(timer);
           setHasTriggeredTimeUp(true);
           onTimeUp();
-          autoSelectTeam();
+          autoSelectTeam(); // Auto select team when timer hits 0
           return 0;
         }
-        return prev > 0 ? prev - 1 : 0;
+        return prev - 1;
       });
     }, 1000);
 

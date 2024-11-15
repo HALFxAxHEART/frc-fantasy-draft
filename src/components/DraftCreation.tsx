@@ -1,7 +1,6 @@
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Loader2 } from "lucide-react";
 
 interface DraftCreationProps {
   participants: number;
@@ -11,7 +10,6 @@ interface DraftCreationProps {
   onStartDraft: () => void;
   nickname: string;
   onNicknameChange: (value: string) => void;
-  isLoading?: boolean;
 }
 
 export const DraftCreation = ({
@@ -22,13 +20,7 @@ export const DraftCreation = ({
   onStartDraft,
   nickname,
   onNicknameChange,
-  isLoading = false,
 }: DraftCreationProps) => {
-  const handleParticipantsChange = (newValue: number) => {
-    const validValue = Math.max(2, Math.min(10, newValue));
-    onParticipantsChange(validValue);
-  };
-
   return (
     <Card className="p-6 space-y-6">
       <h2 className="text-2xl font-semibold">Create New Draft</h2>
@@ -36,7 +28,7 @@ export const DraftCreation = ({
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-1">
-            Draft Nickname
+            Draft Nickname (Optional)
           </label>
           <Input
             value={nickname}
@@ -55,19 +47,19 @@ export const DraftCreation = ({
             min="2"
             max="10"
             value={participants}
-            onChange={(e) => handleParticipantsChange(Number(e.target.value))}
+            onChange={(e) => onParticipantsChange(Number(e.target.value))}
             className="w-full max-w-xs"
           />
         </div>
 
         <div className="space-y-4">
-          {Array.from({ length: participants }).map((_, index) => (
+          {participantNames.map((name, index) => (
             <div key={index}>
               <label className="block text-sm font-medium mb-1">
                 Participant {index + 1} Name
               </label>
               <Input
-                value={participantNames[index] || ""}
+                value={name}
                 onChange={(e) => onParticipantNameChange(index, e.target.value)}
                 className="w-full max-w-xs"
               />
@@ -78,11 +70,7 @@ export const DraftCreation = ({
         <Button
           className="w-full bg-primary hover:bg-primary/90 text-white mt-4"
           onClick={onStartDraft}
-          disabled={isLoading}
         >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-          ) : null}
           Start Draft
         </Button>
       </div>

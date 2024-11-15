@@ -3,30 +3,30 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 
 interface TeamStats {
-  wins?: number;
-  losses?: number;
-  opr?: number;
-  autoAvg?: number;
-  ranking?: number;
+  wins: number;
+  losses: number;
+  opr: number;
+  autoAvg: number;
+  ranking?: number; // Made ranking optional to work with both contexts
 }
 
 interface TeamCardProps {
   teamNumber: number;
   teamName: string;
-  districtPoints?: number;
+  districtPoints: number;
   logoUrl?: string;
-  stats?: TeamStats;
+  stats: TeamStats;
   onSelect: () => void;
-  hidePoints?: boolean;
+  hidePoints?: boolean; // Added hidePoints prop
 }
 
 export const TeamCard = ({ 
   teamNumber, 
   teamName, 
-  districtPoints = 0,
-  stats = { wins: 0, losses: 0, opr: 0, autoAvg: 0 },
+  districtPoints, 
+  stats, 
   onSelect,
-  hidePoints = false
+  hidePoints = false // Default to false
 }: TeamCardProps) => {
   const logoUrl = `https://www.thebluealliance.com/api/v3/team/frc${teamNumber}/media/avatar`;
   
@@ -51,11 +51,11 @@ export const TeamCard = ({
       </HoverCardTrigger>
       <HoverCardContent className="w-80 bg-background border">
         <div className="space-y-2">
-          <h4 className="text-sm font-semibold">Team Information</h4>
+          <h4 className="text-sm font-semibold">Team Statistics</h4>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            {stats.wins !== undefined && stats.losses !== undefined && (
-              <div>Win/Loss: {stats.wins}/{stats.losses}</div>
-            )}
+            <div>Win/Loss: {stats.wins}/{stats.losses}</div>
+            <div>OPR: {stats.opr.toFixed(2)}</div>
+            <div>Auto Avg: {stats.autoAvg.toFixed(2)}</div>
             {stats.ranking && <div>Rank: {stats.ranking}</div>}
           </div>
         </div>
