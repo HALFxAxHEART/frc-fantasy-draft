@@ -12,6 +12,12 @@ export const DraftTimer = ({ onTimeUp, isActive, autoSelectTeam }: DraftTimerPro
   const [hasTriggeredTimeUp, setHasTriggeredTimeUp] = useState(false);
 
   useEffect(() => {
+    // Reset timer when becoming active
+    if (isActive) {
+      setTimeRemaining(120);
+      setHasTriggeredTimeUp(false);
+    }
+
     if (!isActive) return;
 
     const timer = setInterval(() => {
@@ -20,10 +26,10 @@ export const DraftTimer = ({ onTimeUp, isActive, autoSelectTeam }: DraftTimerPro
           clearInterval(timer);
           setHasTriggeredTimeUp(true);
           onTimeUp();
-          autoSelectTeam(); // Auto select team when timer hits 0
+          autoSelectTeam();
           return 0;
         }
-        return prev - 1;
+        return prev > 0 ? prev - 1 : 0;
       });
     }, 1000);
 

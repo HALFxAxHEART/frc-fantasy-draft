@@ -1,10 +1,5 @@
 import { UseFormReturn } from "react-hook-form";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-} from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ProfilePicture } from "@/components/ProfilePicture";
 import { useEffect, useState } from "react";
@@ -21,20 +16,24 @@ export const SettingsProfile = ({ form }: { form: UseFormReturn<any> }) => {
       if (session?.user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('display_name, profile_picture_url')
+          .select('display_name, profile_picture_url, id')
           .eq('id', session.user.id)
           .single();
         
         if (profile) {
           setDisplayName(profile.display_name);
           setProfilePicture(profile.profile_picture_url);
-          setUserId(session.user.id);
+          setUserId(profile.id);
+          
+          // Set form values
+          form.setValue('displayName', profile.display_name);
+          form.setValue('email', session.user.email);
         }
       }
     };
 
     fetchUserProfile();
-  }, []);
+  }, [form]);
 
   return (
     <div className="space-y-6">
@@ -74,7 +73,7 @@ export const SettingsProfile = ({ form }: { form: UseFormReturn<any> }) => {
           <FormItem>
             <FormLabel>Email</FormLabel>
             <FormControl>
-              <Input {...field} type="email" />
+              <Input {...field} type="email" readOnly />
             </FormControl>
           </FormItem>
         )}
