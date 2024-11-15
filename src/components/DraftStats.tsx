@@ -1,6 +1,7 @@
 import { Card } from "./ui/card";
 import { Progress } from "./ui/progress";
 import { motion } from "framer-motion";
+import { Team } from "@/types/draft";
 
 interface DraftStatsProps {
   participants: Array<{
@@ -11,7 +12,9 @@ interface DraftStatsProps {
       stats?: {
         wins: number;
         losses: number;
-        ranking: number;
+        opr?: number;
+        autoAvg?: number;
+        ranking?: number;
       };
     }>;
   }>;
@@ -60,7 +63,7 @@ export const DraftStats = ({ participants }: DraftStatsProps) => {
                   className="text-sm bg-muted p-2 rounded flex justify-between items-center"
                 >
                   <span>Team {team.teamNumber}</span>
-                  {team.stats && (
+                  {team.stats?.ranking && (
                     <span className="text-xs text-muted-foreground">
                       Rank: {team.stats.ranking}
                     </span>
