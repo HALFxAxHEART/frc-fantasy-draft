@@ -3,6 +3,7 @@ import { useToast } from "../ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TeamCard } from "../TeamCard";
 import { Json } from "@/integrations/supabase/types";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Team {
   teamNumber: number;
@@ -51,6 +52,17 @@ export const DraftTeamList = ({
       const participants = (draft.participants as unknown as DraftParticipant[]) || [];
       const draftData = (draft.draft_data as { selectedTeams?: number[] }) || {};
       const selectedTeams = draftData.selectedTeams || [];
+
+      // Find current participant's teams
+      const currentParticipantData = participants.find(p => p.name === currentParticipant);
+      if (currentParticipantData && currentParticipantData.teams.length >= 5) {
+        toast({
+          title: "Maximum Teams Reached",
+          description: "You can only select up to 5 teams per participant.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       if (selectedTeams.includes(team.teamNumber)) {
         toast({
@@ -107,15 +119,29 @@ export const DraftTeamList = ({
 
   return (
     <Card className="p-6">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {availableTeams.map((team) => (
-          <TeamCard
-            key={team.teamNumber}
-            {...team}
-            onSelect={() => handleTeamSelect(team)}
-          />
-        ))}
-      </div>
+      <AnimatePresence>
+        <motion.div 
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          {availableTeams.map((team) => (
+            <motion.div
+              key={team.teamNumber}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <TeamCard
+                {...team}
+                onSelect={() => handleTeamSelect(team)}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
+      </AnimatePresence>
     </Card>
   );
 };
