@@ -22,9 +22,11 @@ interface DraftCompleteProps {
 export const DraftComplete = ({ participants }: DraftCompleteProps) => {
   const [isOpen, setIsOpen] = useState(true);
   const [showStats, setShowStats] = useState(false);
+  const [currentParticipantIndex, setCurrentParticipantIndex] = useState(-1);
 
   useEffect(() => {
     if (isOpen) {
+      // Initial confetti burst
       const shootConfetti = () => {
         confetti({
           particleCount: 100,
@@ -32,16 +34,32 @@ export const DraftComplete = ({ participants }: DraftCompleteProps) => {
           origin: { y: 0.6 }
         });
       };
-
-      // Shoot confetti multiple times for a more dramatic effect
       shootConfetti();
-      setTimeout(shootConfetti, 300);
-      setTimeout(shootConfetti, 600);
       
-      // Show stats after a brief delay
-      setTimeout(() => setShowStats(true), 1000);
+      // Animate through participants one last time
+      let index = 0;
+      const interval = setInterval(() => {
+        if (index < participants.length) {
+          setCurrentParticipantIndex(index);
+          index++;
+          // Small confetti burst for each participant
+          confetti({
+            particleCount: 30,
+            spread: 50,
+            origin: { y: 0.7 }
+          });
+        } else {
+          clearInterval(interval);
+          setShowStats(true);
+          // Final confetti celebration
+          setTimeout(shootConfetti, 300);
+          setTimeout(shootConfetti, 600);
+        }
+      }, 800);
+
+      return () => clearInterval(interval);
     }
-  }, [isOpen]);
+  }, [isOpen, participants.length]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -62,14 +80,33 @@ export const DraftComplete = ({ participants }: DraftCompleteProps) => {
               Congratulations! Draft Complete!
             </motion.h2>
             
-            <motion.p 
-              className="text-center text-muted-foreground mb-8"
+            <motion.div 
+              className="mb-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              Here's how everyone did in the draft:
-            </motion.p>
+              <AnimatePresence mode="wait">
+                {participants.map((participant, index) => (
+                  <motion.div
+                    key={participant.name}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={index <= currentParticipantIndex ? { 
+                      opacity: 1, 
+                      x: 0,
+                      transition: { type: "spring", stiffness: 200, damping: 20 }
+                    } : {}}
+                    className={`p-4 rounded-lg mb-2 ${
+                      index === currentParticipantIndex ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                    }`}
+                  >
+                    <span className="text-lg font-semibold">
+                      {index + 1}. {participant.name} - {participant.teams.length} teams
+                    </span>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
 
             {showStats && (
               <motion.div
