@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { TeamCard } from "../TeamCard";
 import { Json } from "@/integrations/supabase/types";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDraftState } from "./DraftStateProvider";
 
 interface Team {
   teamNumber: number;
@@ -36,6 +37,7 @@ export const DraftTeamList = ({
   onTeamSelect,
 }: DraftTeamListProps) => {
   const { toast } = useToast();
+  const { draftState } = useDraftState();
 
   const handleTeamSelect = async (team: Team) => {
     try {
@@ -55,7 +57,22 @@ export const DraftTeamList = ({
 
       // Find current participant's teams
       const currentParticipantData = participants.find(p => p.name === currentParticipant);
-      if (currentParticipantData && currentParticipantData.teams.length >= 5) {
+      if (!currentParticipantData) {
+        throw new Error('Current participant not found');
+      }
+
+      // Check if it's the participant's turn
+      const currentParticipantIndex = participants.findIndex(p => p.name === currentParticipant);
+      if (currentParticipantIndex !== draftState.currentParticipantIndex) {
+        toast({
+          title: "Not Your Turn",
+          description: "Please wait for your turn to select a team.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (currentParticipantData.teams.length >= 5) {
         toast({
           title: "Maximum Teams Reached",
           description: "You can only select up to 5 teams per participant.",
@@ -84,18 +101,8 @@ export const DraftTeamList = ({
         .update({
           participants: updatedParticipants as unknown as Json,
           draft_data: {
-            selectedTeams: [...selectedTeams, team.teamNumber],
-            availableTeams: availableTeams.filter(t => t.teamNumber !== team.teamNumber).map(t => ({
-              teamNumber: t.teamNumber,
-              teamName: t.teamName,
-              districtPoints: t.districtPoints,
-              stats: {
-                wins: t.stats.wins,
-                losses: t.stats.losses,
-                opr: t.stats.opr,
-                autoAvg: t.stats.autoAvg
-              }
-            }))
+            ...draftData,
+            selectedTeams: [...selectedTeams, team.teamNumber]
           } as unknown as Json
         })
         .eq('id', draftId);
@@ -117,6 +124,13 @@ export const DraftTeamList = ({
     }
   };
 
+  // Filter out already selected teams
+  const filteredTeams = availableTeams.filter(team => 
+    !draftState.participants.some(p => 
+      p.teams.some(t => t.teamNumber === team.teamNumber)
+    )
+  );
+
   return (
     <Card className="p-6">
       <AnimatePresence>
@@ -126,7 +140,7 @@ export const DraftTeamList = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          {availableTeams.map((team) => (
+          {filteredTeams.map((team) => (
             <motion.div
               key={team.teamNumber}
               initial={{ scale: 0.9, opacity: 0 }}
