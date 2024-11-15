@@ -17,6 +17,24 @@ interface DraftParticipant {
   }>;
 }
 
+interface DraftData {
+  participants: DraftParticipant[];
+  draft_data: {
+    availableTeams?: Array<{
+      teamNumber: number;
+      teamName: string;
+      districtPoints: number;
+      stats: {
+        wins: number;
+        losses: number;
+        opr: number;
+        autoAvg: number;
+      };
+    }>;
+  };
+  event_name: string;
+}
+
 export const DraftContent = () => {
   const { draftId } = useParams();
   const navigate = useNavigate();
@@ -36,17 +54,18 @@ export const DraftContent = () => {
       if (error) throw error;
       
       // Initialize draft state with participants from database
-      if (data && Array.isArray(data.participants)) {
+      if (data && data.participants) {
+        const parsedParticipants = data.participants as DraftParticipant[];
         setDraftState(prev => ({
           ...prev,
-          participants: data.participants.map((p: any) => ({
+          participants: parsedParticipants.map(p => ({
             name: p.name || '',
             teams: Array.isArray(p.teams) ? p.teams : []
           }))
         }));
       }
       
-      return data;
+      return data as DraftData;
     },
     enabled: !!draftId,
   });
@@ -94,7 +113,7 @@ export const DraftContent = () => {
 
   const currentParticipant = participants[currentIndex];
 
-  const availableTeams = ((draftData.draft_data as { availableTeams?: any[] })?.availableTeams) || [];
+  const availableTeams = draftData.draft_data?.availableTeams || [];
 
   return (
     <div className="min-h-screen bg-background p-8">
