@@ -32,7 +32,10 @@ interface DraftData {
   event_name: string;
   status: string | null;
   participants: DraftParticipant[];
-  draft_data: Record<string, any>;
+  draft_data: {
+    selectedTeams?: number[];
+    [key: string]: any;
+  };
   created_at: string;
   updated_at: string;
   user_id: string | null;

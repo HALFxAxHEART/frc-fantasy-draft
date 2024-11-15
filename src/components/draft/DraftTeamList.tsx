@@ -42,7 +42,10 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      const updatedParticipants = draft.participants.map((p: any) =>
+      const participants = draft.participants as Array<{ name: string; teams: Team[] }>;
+      const draftData = draft.draft_data as { selectedTeams?: number[] };
+
+      const updatedParticipants = participants.map((p) =>
         p.name === currentParticipant
           ? { ...p, teams: [...p.teams, team] }
           : p
@@ -53,8 +56,8 @@ export const DraftTeamList = ({
         .update({
           participants: updatedParticipants,
           draft_data: {
-            ...draft.draft_data,
-            selectedTeams: [...(draft.draft_data?.selectedTeams || []), team.teamNumber],
+            ...draftData,
+            selectedTeams: [...(draftData.selectedTeams || []), team.teamNumber],
           },
         })
         .eq('id', draftId);
