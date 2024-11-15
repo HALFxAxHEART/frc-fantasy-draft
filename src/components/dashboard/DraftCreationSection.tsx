@@ -35,22 +35,36 @@ export const DraftCreationSection = ({
   // Check if profile exists when component mounts
   useEffect(() => {
     const checkProfile = async () => {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .maybeSingle();
 
-      if (profileError || !profile) {
+        if (profileError) {
+          throw profileError;
+        }
+
+        if (!profile) {
+          toast({
+            title: "Error",
+            description: "Profile not found. Please try logging out and back in.",
+            variant: "destructive",
+          });
+        }
+      } catch (error: any) {
         toast({
           title: "Error",
-          description: "Profile not found. Please try logging out and back in.",
+          description: error.message || "Failed to check profile. Please try again.",
           variant: "destructive",
         });
       }
     };
 
-    checkProfile();
+    if (userId) {
+      checkProfile();
+    }
   }, [userId, toast]);
 
   const handleStartDraft = async () => {
@@ -78,9 +92,13 @@ export const DraftCreationSection = ({
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
-      if (profileError || !profile) {
+      if (profileError) {
+        throw profileError;
+      }
+
+      if (!profile) {
         toast({
           title: "Error",
           description: "Profile not found. Please try logging out and back in.",
