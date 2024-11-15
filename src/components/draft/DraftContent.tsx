@@ -67,6 +67,8 @@ export const DraftContent = () => {
         }));
       }
 
+      console.log("Raw draft data:", data); // Debug log
+
       // Parse the draft data
       const typedData: DraftData = {
         participants: (data?.participants as any[] || []).map(p => ({
@@ -74,8 +76,8 @@ export const DraftContent = () => {
           teams: Array.isArray(p.teams) ? p.teams : []
         })),
         draft_data: {
-          availableTeams: Array.isArray((data?.draft_data as any)?.availableTeams) 
-            ? (data?.draft_data as any).availableTeams.map((t: any) => ({
+          availableTeams: data?.draft_data?.availableTeams 
+            ? (data.draft_data.availableTeams as any[]).map((t: any) => ({
                 teamNumber: t.teamNumber,
                 teamName: t.teamName,
                 districtPoints: t.districtPoints || 0,
@@ -90,6 +92,8 @@ export const DraftContent = () => {
         },
         event_name: data?.event_name || ''
       };
+
+      console.log("Parsed draft data:", typedData); // Debug log
       
       return typedData;
     },
@@ -136,6 +140,8 @@ export const DraftContent = () => {
 
   const currentParticipant = participants[currentIndex];
   const availableTeams = draftData.draft_data?.availableTeams || [];
+
+  console.log("Available teams:", availableTeams); // Debug log
 
   return (
     <div className="min-h-screen bg-background p-8">
