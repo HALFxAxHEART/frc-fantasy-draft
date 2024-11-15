@@ -48,29 +48,30 @@ export const DraftContent = () => {
   };
 
   if (isLoading) {
-    return <div>Loading draft...</div>;
+    return <div className="flex items-center justify-center min-h-screen">Loading draft...</div>;
   }
 
   if (!draftData) {
-    return <div>Draft not found</div>;
+    return <div className="flex items-center justify-center min-h-screen">Draft not found</div>;
   }
 
-  // Parse and validate participants data
-  let participants: DraftParticipant[] = [];
-  try {
-    const rawParticipants = draftData.participants as Json[];
-    if (Array.isArray(rawParticipants)) {
-      participants = rawParticipants.map(p => ({
-        name: (p as any).name || '',
-        teams: Array.isArray((p as any).teams) ? (p as any).teams : []
-      }));
-    }
-  } catch (e) {
-    console.error("Error parsing participants:", e);
-  }
+  // Parse and validate participants data with proper type checking
+  const participants: DraftParticipant[] = Array.isArray(draftData.participants) 
+    ? (draftData.participants as any[]).map(p => ({
+        name: p.name || '',
+        teams: Array.isArray(p.teams) ? p.teams.map(t => ({
+          teamNumber: t.teamNumber || 0,
+          teamName: t.teamName || ''
+        })) : []
+      }))
+    : [];
 
   if (participants.length === 0) {
-    return <div>No participants found in this draft.</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        No participants found in this draft
+      </div>
+    );
   }
 
   // Ensure currentParticipantIndex is within bounds
@@ -81,9 +82,12 @@ export const DraftContent = () => {
 
   const currentParticipant = participants[currentIndex];
   
-  // Add safety check for currentParticipant
   if (!currentParticipant) {
-    return <div>Error: Could not determine current participant</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        Error: Could not determine current participant. Please try refreshing the page.
+      </div>
+    );
   }
 
   const availableTeams = ((draftData.draft_data as { availableTeams?: any[] })?.availableTeams) || [];
