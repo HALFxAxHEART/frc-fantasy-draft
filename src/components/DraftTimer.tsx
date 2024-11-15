@@ -24,7 +24,7 @@ export const DraftTimer = ({ onTimeUp, isActive, autoSelectTeam, initialTime = 1
           autoSelectTeam();
           return 0;
         }
-        return prev - 1;
+        return prev > 0 ? prev - 1 : 0;
       });
     }, 1000);
 

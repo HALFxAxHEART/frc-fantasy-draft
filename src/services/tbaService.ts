@@ -9,12 +9,6 @@ export interface TBATeam {
   country: string;
 }
 
-export interface TBATeamStats {
-  wins: number;
-  losses: number;
-  opr: number;
-}
-
 export interface TBAEvent {
   key: string;
   name: string;
@@ -26,19 +20,6 @@ export interface TBAEvent {
   }>;
 }
 
-interface TBAEventStatus {
-  qual?: {
-    ranking?: {
-      record?: {
-        wins: number;
-        losses: number;
-      };
-      sort_orders?: number[];
-    };
-  };
-  last_match_time?: number;
-}
-
 export const fetchEventDetails = async (eventKey: string): Promise<TBAEvent> => {
   const headers = {
     'X-TBA-Auth-Key': TBA_API_KEY,
@@ -48,6 +29,11 @@ export const fetchEventDetails = async (eventKey: string): Promise<TBAEvent> => 
     `${TBA_BASE_URL}/event/${eventKey}`,
     { headers }
   );
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch event details');
+  }
+  
   return response.json();
 };
 
@@ -56,10 +42,10 @@ export const fetchEventTeams = async (eventKey: string): Promise<Array<{
   teamName: string;
   districtPoints: number;
   stats: {
-    wins: number;
-    losses: number;
-    opr: number;
-    autoAvg: number;
+    wins?: number;
+    losses?: number;
+    opr?: number;
+    autoAvg?: number;
   };
 }>> => {
   const headers = {
@@ -71,43 +57,23 @@ export const fetchEventTeams = async (eventKey: string): Promise<Array<{
     `${TBA_BASE_URL}/event/${eventKey}/teams`,
     { headers }
   );
+  
+  if (!teamsResponse.ok) {
+    throw new Error('Failed to fetch teams');
+  }
+
   const teams: TBATeam[] = await teamsResponse.json();
 
-  // Fetch event stats
-  const statsResponse = await fetch(
-    `${TBA_BASE_URL}/event/${eventKey}/oprs`,
-    { headers }
-  );
-  const stats = await statsResponse.json();
-
-  // For each team, fetch their last event stats
-  const teamsWithStats = await Promise.all(teams.map(async (team) => {
-    const teamEventsResponse = await fetch(
-      `${TBA_BASE_URL}/team/frc${team.team_number}/events/2024/statuses`,
-      { headers }
-    );
-    const teamEvents: Record<string, TBAEventStatus> = await teamEventsResponse.json();
-    
-    // Find the last event's stats
-    const lastEventStats = Object.values(teamEvents).reduce((latest: TBAEventStatus | null, current: TBAEventStatus) => {
-      if (!latest || (current.last_match_time && latest.last_match_time && current.last_match_time > latest.last_match_time)) {
-        return current;
-      }
-      return latest;
-    }, null);
-
-    return {
-      teamNumber: team.team_number,
-      teamName: team.nickname,
-      districtPoints: 0, // This will be updated with actual district points
-      stats: {
-        wins: lastEventStats?.qual?.ranking?.record?.wins || 0,
-        losses: lastEventStats?.qual?.ranking?.record?.losses || 0,
-        opr: stats?.oprs?.[`frc${team.team_number}`] || 0,
-        autoAvg: lastEventStats?.qual?.ranking?.sort_orders?.[0] || 0,
-      }
-    };
+  // Map teams to our format
+  return teams.map((team) => ({
+    teamNumber: team.team_number,
+    teamName: team.nickname,
+    districtPoints: 0,
+    stats: {
+      wins: 0,
+      losses: 0,
+      opr: 0,
+      autoAvg: 0
+    }
   }));
-
-  return teamsWithStats;
 };

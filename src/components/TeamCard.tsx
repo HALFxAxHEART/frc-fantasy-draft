@@ -3,19 +3,19 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 
 interface TeamStats {
-  wins: number;
-  losses: number;
-  opr: number;
-  autoAvg: number;
+  wins?: number;
+  losses?: number;
+  opr?: number;
+  autoAvg?: number;
   ranking?: number;
 }
 
 interface TeamCardProps {
   teamNumber: number;
   teamName: string;
-  districtPoints?: number; // Made optional by adding ?
+  districtPoints?: number;
   logoUrl?: string;
-  stats: TeamStats;
+  stats?: TeamStats;
   onSelect: () => void;
   hidePoints?: boolean;
 }
@@ -23,8 +23,8 @@ interface TeamCardProps {
 export const TeamCard = ({ 
   teamNumber, 
   teamName, 
-  districtPoints = 0, // Added default value
-  stats, 
+  districtPoints = 0,
+  stats = { wins: 0, losses: 0, opr: 0, autoAvg: 0 },
   onSelect,
   hidePoints = false
 }: TeamCardProps) => {
@@ -51,11 +51,11 @@ export const TeamCard = ({
       </HoverCardTrigger>
       <HoverCardContent className="w-80 bg-background border">
         <div className="space-y-2">
-          <h4 className="text-sm font-semibold">Team Statistics</h4>
+          <h4 className="text-sm font-semibold">Team Information</h4>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <div>Win/Loss: {stats.wins}/{stats.losses}</div>
-            <div>OPR: {stats.opr.toFixed(2)}</div>
-            <div>Auto Avg: {stats.autoAvg.toFixed(2)}</div>
+            {stats.wins !== undefined && stats.losses !== undefined && (
+              <div>Win/Loss: {stats.wins}/{stats.losses}</div>
+            )}
             {stats.ranking && <div>Rank: {stats.ranking}</div>}
           </div>
         </div>
