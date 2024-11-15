@@ -15,6 +15,9 @@ import {
 import { UpcomingEvents } from "@/components/UpcomingEvents";
 import { DraftCreation } from "@/components/DraftCreation";
 import { EventSelector } from "@/components/EventSelector";
+import { DraftStats } from "@/components/DraftStats";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 const Dashboard = () => {
   const [participants, setParticipants] = useState(2);
@@ -22,6 +25,7 @@ const Dashboard = () => {
   const [selectedEvent, setSelectedEvent] = useState("");
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [userDrafts, setUserDrafts] = useState([]);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -34,7 +38,39 @@ const Dashboard = () => {
     setParticipantNames(Array(participants).fill(""));
   }, [participants]);
 
-  const handleStartDraft = () => {
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/login');
+        return;
+      }
+      fetchUserDrafts(session.user.id);
+    };
+
+    checkAuth();
+  }, [navigate]);
+
+  const fetchUserDrafts = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('drafts')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch your drafts",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUserDrafts(data || []);
+  };
+
+  const handleStartDraft = async () => {
     if (participantNames.some(name => !name.trim())) {
       toast({
         title: "Error",
@@ -53,17 +89,50 @@ const Dashboard = () => {
       return;
     }
 
-    const shuffledParticipants = [...participantNames]
-      .map(value => ({ value, sort: Math.random() }))
-      .sort((a, b) => a.sort - b.sort)
-      .map(({ value }) => value);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast({
+        title: "Error",
+        description: "Please sign in to create a draft",
+        variant: "destructive",
+      });
+      navigate('/login');
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('drafts')
+      .insert({
+        user_id: session.user.id,
+        event_key: selectedEvent,
+        event_name: events?.find(e => e.key === selectedEvent)?.name || selectedEvent,
+        status: 'active',
+        participants: participantNames.map(name => ({ name, teams: [] })),
+      })
+      .select()
+      .single();
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create draft",
+        variant: "destructive",
+      });
+      return;
+    }
 
     navigate("/draft", {
       state: {
-        participants: shuffledParticipants,
+        draftId: data.id,
+        participants: participantNames,
         selectedEvent,
       },
     });
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/login');
   };
 
   return (
@@ -88,15 +157,15 @@ const Dashboard = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="gap-2">
                   <User className="h-4 w-4" />
-                  John Doe
+                  Profile
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/settings")}>
                   <Settings className="mr-2 h-4 w-4" />
                   Settings
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign Out
                 </DropdownMenuItem>
@@ -133,6 +202,16 @@ const Dashboard = () => {
           </div>
 
           <div className="space-y-8">
+            {userDrafts.length > 0 && (
+              <DraftStats
+                participants={userDrafts.flatMap(draft => 
+                  draft.participants.map((p: any) => ({
+                    name: p.name,
+                    teams: p.teams || [],
+                  }))
+                )}
+              />
+            )}
             <UpcomingEvents
               events={events}
               onEventSelect={setSelectedEvent}
