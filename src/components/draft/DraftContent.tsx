@@ -124,7 +124,12 @@ export const DraftContent = () => {
   }
 
   if (!draftState.participants || draftState.participants.length === 0) {
-    return <div className="flex items-center justify-center min-h-screen">No participants found</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+        <h2 className="text-2xl font-bold">Loading participants...</h2>
+        <p className="text-muted-foreground">Please wait while we set up your draft.</p>
+      </div>
+    );
   }
 
   if (!draftState.draftStarted) {
