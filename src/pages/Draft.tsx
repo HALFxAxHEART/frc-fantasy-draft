@@ -8,6 +8,7 @@ import { DraftStateProvider, useDraftState } from "@/components/draft/DraftState
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { Json } from "@/integrations/supabase/types";
 
 interface Team {
   teamNumber: number;
@@ -60,7 +61,15 @@ const DraftContent = () => {
         .single();
       
       if (error) throw error;
-      return data as DraftData;
+      
+      // Cast the data to the correct type
+      const typedData: DraftData = {
+        ...data,
+        participants: data.participants as DraftParticipant[],
+        draft_data: data.draft_data as DraftData['draft_data']
+      };
+      
+      return typedData;
     },
     enabled: !!draftId,
   });
