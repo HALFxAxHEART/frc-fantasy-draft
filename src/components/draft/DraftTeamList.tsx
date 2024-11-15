@@ -72,10 +72,19 @@ export const DraftTeamList = ({
         .update({
           participants: updatedParticipants as unknown as Json,
           draft_data: {
-            ...draftData,
             selectedTeams: [...selectedTeams, team.teamNumber],
-            availableTeams: availableTeams.filter(t => t.teamNumber !== team.teamNumber)
-          }
+            availableTeams: availableTeams.filter(t => t.teamNumber !== team.teamNumber).map(t => ({
+              teamNumber: t.teamNumber,
+              teamName: t.teamName,
+              districtPoints: t.districtPoints,
+              stats: {
+                wins: t.stats.wins,
+                losses: t.stats.losses,
+                opr: t.stats.opr,
+                autoAvg: t.stats.autoAvg
+              }
+            }))
+          } as unknown as Json
         })
         .eq('id', draftId);
 
