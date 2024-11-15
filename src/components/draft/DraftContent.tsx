@@ -80,6 +80,12 @@ export const DraftContent = () => {
   );
 
   const currentParticipant = participants[currentIndex];
+  
+  // Add safety check for currentParticipant
+  if (!currentParticipant) {
+    return <div>Error: Could not determine current participant</div>;
+  }
+
   const availableTeams = ((draftData.draft_data as { availableTeams?: any[] })?.availableTeams) || [];
 
   return (
