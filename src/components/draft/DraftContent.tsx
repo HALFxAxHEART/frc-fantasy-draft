@@ -57,10 +57,27 @@ export const DraftContent = () => {
         teams || []
       );
 
+      // Calculate current round (1-based)
+      const totalPicks = updatedParticipants.reduce((sum, p) => sum + p.teams.length, 0);
+      const round = Math.floor(totalPicks / updatedParticipants.length) + 1;
+      const isReverseRound = round % 2 === 0;
+
+      // Calculate next picker index based on snake draft pattern
+      let nextIndex;
+      if (isReverseRound) {
+        // Moving backwards in even rounds
+        nextIndex = draftState.currentParticipantIndex - 1;
+        if (nextIndex < 0) nextIndex = 1; // Start next forward round
+      } else {
+        // Moving forwards in odd rounds
+        nextIndex = draftState.currentParticipantIndex + 1;
+        if (nextIndex >= updatedParticipants.length) nextIndex = updatedParticipants.length - 2; // Start next reverse round
+      }
+
       setDraftState(prev => ({
         ...prev,
         participants: updatedParticipants,
-        currentParticipantIndex: (prev.currentParticipantIndex + 1) % prev.participants.length
+        currentParticipantIndex: nextIndex
       }));
 
       refetch();
@@ -153,6 +170,7 @@ export const DraftContent = () => {
               <DraftOrder
                 participants={participants}
                 currentIndex={currentIndex}
+                round={Math.floor(participants.reduce((sum, p) => sum + p.teams.length, 0) / participants.length) + 1}
               />
             </div>
             <div className="space-y-4">
