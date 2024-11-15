@@ -7,7 +7,7 @@ import { useDraftState } from "@/components/draft/DraftStateProvider";
 import { useToast } from "@/components/ui/use-toast";
 import { useDraftData } from "@/hooks/useDraftData";
 import { selectTeam } from "@/services/draftService";
-import { Team } from "@/types/draft";
+import { Team, DraftParticipant } from "@/types/draft";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEventTeams, fetchEventDetails } from "@/services/tbaService";
 import { DraftHeader } from "./DraftHeader";
