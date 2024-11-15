@@ -15,28 +15,24 @@ interface DraftOrderProps {
 }
 
 export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrderProps) => {
-  // Determine if we're going in reverse order based on the round number
   const isReverseRound = round % 2 === 0;
   
-  // Calculate the display order based on current picker
   const getDisplayOrder = () => {
     if (currentIndex === -1) {
-      // Initial random order display
+      // Initial random order display with animation
       return participants.map((p, i) => ({ participant: p, index: i }));
     }
     
-    // Reorder based on current picker
+    // Calculate picking order based on snake draft pattern
     return participants.map((participant, originalIndex) => {
       let newIndex;
       if (isReverseRound) {
-        // Reverse order for even rounds
-        newIndex = (participants.length - 1 + originalIndex - currentIndex) % participants.length;
+        newIndex = participants.length - 1 - originalIndex;
       } else {
-        // Normal order for odd rounds
-        newIndex = (originalIndex - currentIndex + participants.length) % participants.length;
+        newIndex = originalIndex;
       }
       return { participant, index: newIndex };
-    }).sort((a, b) => a.index - b.index);
+    });
   };
 
   const displayOrder = getDisplayOrder();
@@ -44,29 +40,32 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
   return (
     <Card className="p-6">
       <h3 className="text-xl font-semibold mb-6">Draft Order</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {displayOrder.map(({ participant, index }, displayIndex) => {
-          const isCurrentPicker = index === 0;
-          const isNextPicker = index === 1;
+      <div className="grid grid-cols-1 gap-4">
+        {displayOrder.map(({ participant }, displayIndex) => {
+          const isPicking = isReverseRound 
+            ? displayIndex === participants.length - 1 - currentIndex
+            : displayIndex === currentIndex;
+          const isNext = isReverseRound
+            ? displayIndex === participants.length - 2 - currentIndex
+            : displayIndex === currentIndex + 1;
           
           return (
             <motion.div
               key={participant.name}
               initial={currentIndex === -1 ? { scale: 0.9, opacity: 0 } : false}
               animate={{ 
-                scale: isCurrentPicker ? 1.05 : 1,
                 opacity: 1,
-                y: 0
+                scale: 1
               }}
               transition={{ 
                 duration: 0.3,
                 delay: currentIndex === -1 ? displayIndex * 0.2 : 0
               }}
               className={`p-4 rounded-lg ${
-                isCurrentPicker
-                  ? 'bg-primary text-primary-foreground shadow-lg'
-                  : isNextPicker
-                  ? 'bg-secondary text-secondary-foreground'
+                isPicking
+                  ? 'bg-red-500 text-white shadow-lg'
+                  : isNext
+                  ? 'bg-gray-200 text-gray-800'
                   : 'bg-muted'
               }`}
             >
@@ -86,8 +85,8 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
                     <span className="text-lg font-bold">{participant.name}</span>
                   </div>
                   <span className="text-sm">
-                    {isCurrentPicker && '(Picking)'}
-                    {isNextPicker && '(Next)'}
+                    {isPicking && '(Picking)'}
+                    {isNext && '(Next)'}
                   </span>
                 </div>
                 {participant.teams.length > 0 && (

@@ -8,6 +8,8 @@ interface DraftCreationProps {
   onParticipantsChange: (value: number) => void;
   onParticipantNameChange: (index: number, value: string) => void;
   onStartDraft: () => void;
+  nickname: string;
+  onNicknameChange: (value: string) => void;
 }
 
 export const DraftCreation = ({
@@ -16,12 +18,26 @@ export const DraftCreation = ({
   onParticipantsChange,
   onParticipantNameChange,
   onStartDraft,
+  nickname,
+  onNicknameChange,
 }: DraftCreationProps) => {
   return (
     <Card className="p-6 space-y-6">
       <h2 className="text-2xl font-semibold">Create New Draft</h2>
       
       <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Draft Nickname (Optional)
+          </label>
+          <Input
+            value={nickname}
+            onChange={(e) => onNicknameChange(e.target.value)}
+            placeholder="Enter a nickname for your draft"
+            className="w-full max-w-xs"
+          />
+        </div>
+
         <div>
           <label className="block text-sm font-medium mb-1">
             Number of Participants
