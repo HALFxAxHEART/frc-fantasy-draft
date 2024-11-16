@@ -22,6 +22,20 @@ export const ProfilePicture = ({ userId, displayName, currentUrl, onUpdate }: {
   const [previewUrl, setPreviewUrl] = useState(currentUrl);
   const { toast } = useToast();
 
+  const deleteOldProfilePicture = async (oldUrl: string) => {
+    try {
+      // Extract the file path from the URL
+      const urlParts = oldUrl.split('/');
+      const filePath = urlParts.slice(-2).join('/'); // Gets "userId/filename"
+
+      await supabase.storage
+        .from('profile_pictures')
+        .remove([filePath]);
+    } catch (error) {
+      console.error('Error deleting old profile picture:', error);
+    }
+  };
+
   const uploadProfilePicture = async (file: File) => {
     try {
       setIsUploading(true);
@@ -38,6 +52,11 @@ export const ProfilePicture = ({ userId, displayName, currentUrl, onUpdate }: {
       const { data: { publicUrl } } = supabase.storage
         .from('profile_pictures')
         .getPublicUrl(filePath);
+
+      // If there's an existing profile picture, delete it
+      if (previewUrl) {
+        await deleteOldProfilePicture(previewUrl);
+      }
 
       const { error: updateError } = await supabase
         .from('profiles')
