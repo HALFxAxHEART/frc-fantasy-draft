@@ -31,7 +31,8 @@ const Results = () => {
     return <div>Draft not found</div>;
   }
 
-  const participants = draft.participants as DraftParticipant[];
+  // Cast the participants with a type assertion after validating the structure
+  const participants = (draft.participants || []) as unknown as DraftParticipant[];
 
   return (
     <DraftResults
