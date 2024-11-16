@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import confetti from 'canvas-confetti';
 import { useEffect, useState } from "react";
 import { DraftStats } from "./DraftStats";
-import { DraftCompletionActions } from "./draft/DraftCompletionActions";
+import { useNavigate } from "react-router-dom";
+import { Button } from "./ui/button";
 
 interface DraftCompleteProps {
   draftId: string;
@@ -27,6 +28,7 @@ export const DraftComplete = ({ draftId, participants }: DraftCompleteProps) => 
   const [isOpen, setIsOpen] = useState(true);
   const [showStats, setShowStats] = useState(false);
   const [currentParticipantIndex, setCurrentParticipantIndex] = useState(-1);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isOpen) {
@@ -60,6 +62,10 @@ export const DraftComplete = ({ draftId, participants }: DraftCompleteProps) => 
       return () => clearInterval(interval);
     }
   }, [isOpen, participants.length]);
+
+  const handleViewResults = () => {
+    navigate(`/results/${draftId}`);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -116,7 +122,14 @@ export const DraftComplete = ({ draftId, participants }: DraftCompleteProps) => 
                 className="space-y-6"
               >
                 <DraftStats participants={participants} />
-                <DraftCompletionActions draftId={draftId} />
+                <div className="flex justify-center gap-4">
+                  <Button onClick={() => navigate('/dashboard')}>
+                    Return to Dashboard
+                  </Button>
+                  <Button onClick={handleViewResults} variant="default">
+                    View Results
+                  </Button>
+                </div>
               </motion.div>
             )}
           </motion.div>
