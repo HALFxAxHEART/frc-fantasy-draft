@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import confetti from 'canvas-confetti';
 import { useEffect, useState } from "react";
 import { DraftStats } from "./DraftStats";
-import { Team } from "@/types/draft";
+import { DraftCompletionActions } from "./draft/DraftCompletionActions";
 
 interface DraftCompleteProps {
+  draftId: string;
   participants: Array<{
     name: string;
     teams: Array<{
@@ -22,14 +23,13 @@ interface DraftCompleteProps {
   }>;
 }
 
-export const DraftComplete = ({ participants }: DraftCompleteProps) => {
+export const DraftComplete = ({ draftId, participants }: DraftCompleteProps) => {
   const [isOpen, setIsOpen] = useState(true);
   const [showStats, setShowStats] = useState(false);
   const [currentParticipantIndex, setCurrentParticipantIndex] = useState(-1);
 
   useEffect(() => {
     if (isOpen) {
-      // Initial confetti burst
       const shootConfetti = () => {
         confetti({
           particleCount: 100,
@@ -39,13 +39,11 @@ export const DraftComplete = ({ participants }: DraftCompleteProps) => {
       };
       shootConfetti();
       
-      // Animate through participants one last time
       let index = 0;
       const interval = setInterval(() => {
         if (index < participants.length) {
           setCurrentParticipantIndex(index);
           index++;
-          // Small confetti burst for each participant
           confetti({
             particleCount: 30,
             spread: 50,
@@ -54,7 +52,6 @@ export const DraftComplete = ({ participants }: DraftCompleteProps) => {
         } else {
           clearInterval(interval);
           setShowStats(true);
-          // Final confetti celebration
           setTimeout(shootConfetti, 300);
           setTimeout(shootConfetti, 600);
         }
@@ -116,8 +113,10 @@ export const DraftComplete = ({ participants }: DraftCompleteProps) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 }}
+                className="space-y-6"
               >
                 <DraftStats participants={participants} />
+                <DraftCompletionActions draftId={draftId} />
               </motion.div>
             )}
           </motion.div>
