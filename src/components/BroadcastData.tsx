@@ -20,17 +20,17 @@ export const BroadcastData = ({ eventName, participants }: BroadcastDataProps) =
         animate={{ opacity: 1 }}
         className="space-y-4"
       >
-        <h2 className="text-2xl font-bold">{eventName} Draft Results</h2>
+        <h2 className="text-2xl font-bold text-foreground">{eventName} Draft Results</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {participants.map((participant) => (
             <div
               key={participant.name}
               className="bg-background/60 p-4 rounded-lg border border-border"
             >
-              <h3 className="font-semibold mb-2">{participant.name}</h3>
+              <h3 className="font-semibold mb-2 text-foreground">{participant.name}</h3>
               <div className="space-y-1">
                 {participant.teams.map((team) => (
-                  <div key={team.teamNumber} className="text-sm">
+                  <div key={team.teamNumber} className="text-sm text-muted-foreground">
                     {team.teamNumber} - {team.teamName}
                   </div>
                 ))}

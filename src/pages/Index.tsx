@@ -38,19 +38,19 @@ const Index = () => {
           className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8"
         >
           <div className="p-6 rounded-lg border bg-card">
-            <h3 className="text-xl font-semibold mb-4">1. Create Your Draft</h3>
+            <h3 className="text-xl font-semibold mb-4 text-foreground">1. Create Your Draft</h3>
             <p className="text-muted-foreground">
               Start by selecting an FRC event and inviting participants to join your draft. Each participant will get a chance to pick teams in a predetermined order.
             </p>
           </div>
           <div className="p-6 rounded-lg border bg-card">
-            <h3 className="text-xl font-semibold mb-4">2. Draft Teams</h3>
+            <h3 className="text-xl font-semibold mb-4 text-foreground">2. Draft Teams</h3>
             <p className="text-muted-foreground">
               When it's your turn, pick from the available teams. Each participant gets 5 picks, and teams can only be selected once. Choose wisely based on team statistics and performance!
             </p>
           </div>
           <div className="p-6 rounded-lg border bg-card">
-            <h3 className="text-xl font-semibold mb-4">3. Compete</h3>
+            <h3 className="text-xl font-semibold mb-4 text-foreground">3. Compete</h3>
             <p className="text-muted-foreground">
               After the draft, follow your teams through the event. Your score will be based on your teams' performance throughout the competition.
             </p>

@@ -41,7 +41,7 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
 
   return (
     <Card className="p-6">
-      <h3 className="text-xl font-semibold mb-6">Draft Order</h3>
+      <h3 className="text-xl font-semibold mb-6 text-foreground">Draft Order</h3>
       <div className="grid grid-cols-1 gap-4">
         {participants.map((participant, displayIndex) => {
           const { isPicking, isNext } = getPickingStatus(displayIndex);
@@ -56,8 +56,8 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
                 isPicking
                   ? 'bg-red-500 text-white shadow-lg'
                   : isNext
-                  ? 'bg-gray-200 text-gray-800'
-                  : 'bg-muted'
+                  ? 'bg-gray-200 dark:bg-gray-700 text-foreground'
+                  : 'bg-muted text-foreground'
               }`}
             >
               <div className="space-y-3">
@@ -73,7 +73,7 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
                     </Avatar>
                     <span className="text-lg font-bold">{participant.name}</span>
                   </div>
-                  <span className="text-sm">
+                  <span className="text-sm text-muted-foreground">
                     {isPicking && '(Picking)'}
                     {isNext && '(Next)'}
                   </span>
@@ -81,7 +81,7 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
                 {participant.teams.length > 0 && (
                   <div className="text-sm grid grid-cols-2 gap-2">
                     {participant.teams.map((team, idx) => (
-                      <div key={idx} className="bg-background/10 p-2 rounded">
+                      <div key={idx} className="bg-background/10 p-2 rounded text-foreground">
                         Team {team.teamNumber}
                       </div>
                     ))}

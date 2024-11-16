@@ -36,7 +36,7 @@ export const DraftStats = ({ participants }: DraftStatsProps) => {
 
   return (
     <Card className="p-6">
-      <h2 className="text-2xl font-bold mb-6">Draft Standings</h2>
+      <h2 className="text-2xl font-bold mb-6 text-foreground">Draft Standings</h2>
       <div className="space-y-6">
         {sortedParticipants.map((participant, index) => (
           <motion.div
@@ -48,8 +48,8 @@ export const DraftStats = ({ participants }: DraftStatsProps) => {
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-lg font-semibold">{index + 1}.</span>
-                <span className="text-lg">{participant.name}</span>
+                <span className="text-lg font-semibold text-foreground">{index + 1}.</span>
+                <span className="text-lg text-foreground">{participant.name}</span>
               </div>
               <span className="text-sm text-muted-foreground">
                 {calculateScore(participant.teams).toFixed(1)}% Win Rate
@@ -62,7 +62,7 @@ export const DraftStats = ({ participants }: DraftStatsProps) => {
                   key={team.teamNumber}
                   className="text-sm bg-muted p-2 rounded flex justify-between items-center"
                 >
-                  <span>Team {team.teamNumber}</span>
+                  <span className="text-foreground">Team {team.teamNumber}</span>
                   {team.stats?.ranking && (
                     <span className="text-xs text-muted-foreground">
                       Rank: {team.stats.ranking}
