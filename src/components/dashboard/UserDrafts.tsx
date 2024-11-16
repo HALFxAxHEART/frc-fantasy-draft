@@ -90,8 +90,8 @@ export const UserDrafts = ({ userId }: { userId: string }) => {
               </p>
               {event && (
                 <div className="text-sm text-muted-foreground mb-4">
-                  <p>Start: {format(new Date(event.start_date), 'PPP')}</p>
-                  <p>End: {format(new Date(event.end_date), 'PPP')}</p>
+                  <p className="text-gray-100">Start: {format(new Date(event.start_date), 'PPP')}</p>
+                  <p className="text-gray-100">End: {format(new Date(event.end_date), 'PPP')}</p>
                 </div>
               )}
               <div className="flex justify-between items-center mt-4">
