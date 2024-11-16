@@ -27,7 +27,7 @@ export const UpcomingEvents = ({ events, onEventSelect, isLoading }: UpcomingEve
         {events?.slice(0, 5).map((event) => (
           <div key={event.key} className="flex items-center justify-between p-4 bg-muted rounded-lg">
             <div>
-              <h3 className="font-semibold">{event.name}</h3>
+              <h3 className="text-lg font-medium text-foreground">{event.name}</h3>
               <p className="text-sm text-muted-foreground">
                 {event.city}, {event.state_prov}
               </p>
