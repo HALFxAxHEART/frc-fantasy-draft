@@ -85,7 +85,7 @@ export const UserDrafts = ({ userId }: { userId: string }) => {
               <CardTitle className="text-lg">{draft.event_name}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="text-sm text-gray-100 mb-4">
                 Status: {draft.status}
               </p>
               {event && (
