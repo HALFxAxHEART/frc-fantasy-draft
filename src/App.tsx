@@ -90,6 +90,10 @@ const AppContent = () => {
     });
   };
 
+  const handleProfilePictureUpdate = (newUrl: string) => {
+    setProfilePicture(newUrl);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
@@ -114,6 +118,7 @@ const AppContent = () => {
                   userId={userId}
                   displayName={displayName}
                   currentUrl={profilePicture || undefined}
+                  onUpdate={handleProfilePictureUpdate}
                 />
               )}
               {displayName || 'Profile'}

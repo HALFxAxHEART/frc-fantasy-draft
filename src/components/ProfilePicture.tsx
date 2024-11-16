@@ -12,12 +12,14 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
-export const ProfilePicture = ({ userId, displayName, currentUrl }: { 
+export const ProfilePicture = ({ userId, displayName, currentUrl, onUpdate }: { 
   userId: string;
   displayName: string;
   currentUrl?: string;
+  onUpdate?: (newUrl: string) => void;
 }) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(currentUrl);
   const { toast } = useToast();
 
   const uploadProfilePicture = async (file: File) => {
@@ -44,12 +46,13 @@ export const ProfilePicture = ({ userId, displayName, currentUrl }: {
 
       if (updateError) throw updateError;
 
+      setPreviewUrl(publicUrl);
+      if (onUpdate) onUpdate(publicUrl);
+
       toast({
         title: "Success",
         description: "Profile picture updated successfully",
       });
-
-      window.location.reload();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -66,7 +69,7 @@ export const ProfilePicture = ({ userId, displayName, currentUrl }: {
       <DialogTrigger asChild>
         <Button variant="ghost" className="p-0 h-auto">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={currentUrl} />
+            <AvatarImage src={previewUrl} />
             <AvatarFallback>{displayName?.[0]?.toUpperCase()}</AvatarFallback>
           </Avatar>
         </Button>
@@ -78,7 +81,7 @@ export const ProfilePicture = ({ userId, displayName, currentUrl }: {
         <div className="space-y-4">
           <div className="flex justify-center">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={currentUrl} />
+              <AvatarImage src={previewUrl} />
               <AvatarFallback>{displayName?.[0]?.toUpperCase()}</AvatarFallback>
             </Avatar>
           </div>
