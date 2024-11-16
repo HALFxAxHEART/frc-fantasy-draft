@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DraftResults } from "@/components/DraftResults";
+import { DraftParticipant } from "@/types/draft";
 
 const Results = () => {
   const { draftId } = useParams();
@@ -30,10 +31,12 @@ const Results = () => {
     return <div>Draft not found</div>;
   }
 
+  const participants = draft.participants as DraftParticipant[];
+
   return (
     <DraftResults
       draftId={draftId || ''}
-      participants={draft.participants || []}
+      participants={participants}
       eventName={draft.event_name}
     />
   );

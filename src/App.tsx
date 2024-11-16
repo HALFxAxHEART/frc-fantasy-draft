@@ -9,7 +9,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Draft from "./pages/Draft";
 import Settings from "./pages/Settings";
-import { DraftResults } from "./components/DraftResults";
+import Results from "./pages/Results";
 import { useEffect, useState } from "react";
 import { Moon, Sun, Settings as SettingsIcon, LogOut } from "lucide-react";
 import { Button } from "./components/ui/button";
@@ -139,7 +139,7 @@ const AppContent = () => {
         <Route path="/draft" element={<Draft />} />
         <Route path="/draft/:draftId" element={<Draft />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/results/:draftId" element={<DraftResults />} />
+        <Route path="/results/:draftId" element={<Results />} />
       </Routes>
       <Footer />
     </div>
