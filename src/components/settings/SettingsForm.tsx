@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const settingsSchema = z.object({
   displayName: z.string().min(2, "Display name must be at least 2 characters"),
@@ -29,17 +30,54 @@ export const SettingsForm = () => {
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
-    defaultValues: {
-      displayName: "",
-      email: "",
-      draftTimeLimit: 60,
-      showTeamStats: true,
-      enableSoundEffects: true,
-      showTeamRankings: true,
-      autoAdvancePicks: true, // Changed to true by default
-      darkMode: document.documentElement.classList.contains('dark'),
+    defaultValues: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/login');
+        return {
+          displayName: "",
+          email: "",
+          draftTimeLimit: 60,
+          showTeamStats: true,
+          enableSoundEffects: true,
+          showTeamRankings: true,
+          autoAdvancePicks: true,
+          darkMode: document.documentElement.classList.contains('dark'),
+        };
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      // Get stored draft settings from localStorage
+      const storedDraftSettings = localStorage.getItem('draftSettings');
+      const draftSettings = storedDraftSettings ? JSON.parse(storedDraftSettings) : {};
+
+      return {
+        displayName: profile?.display_name || "",
+        email: session.user.email || "",
+        draftTimeLimit: draftSettings.draftTimeLimit || 60,
+        showTeamStats: draftSettings.showTeamStats ?? true,
+        enableSoundEffects: draftSettings.enableSoundEffects ?? true,
+        showTeamRankings: draftSettings.showTeamRankings ?? true,
+        autoAdvancePicks: draftSettings.autoAdvancePicks ?? true,
+        darkMode: document.documentElement.classList.contains('dark'),
+      };
     },
   });
+
+  // Subscribe to dark mode changes
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'darkMode') {
+        document.documentElement.classList.toggle('dark', value.darkMode);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
 
   const onSubmit = async (data: SettingsFormValues) => {
     try {
@@ -49,13 +87,17 @@ export const SettingsForm = () => {
         return;
       }
 
+      // Update profile in database
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ display_name: data.displayName })
+        .update({ 
+          display_name: data.displayName,
+        })
         .eq('id', session.user.id);
 
       if (profileError) throw profileError;
 
+      // Update email if changed
       if (data.email !== session.user.email) {
         const { error: emailError } = await supabase.auth.updateUser({
           email: data.email,
@@ -63,9 +105,11 @@ export const SettingsForm = () => {
         if (emailError) throw emailError;
       }
 
+      // Save dark mode preference
       localStorage.setItem('darkMode', data.darkMode.toString());
       document.documentElement.classList.toggle('dark', data.darkMode);
 
+      // Save draft settings
       localStorage.setItem("draftSettings", JSON.stringify({
         draftTimeLimit: data.draftTimeLimit,
         showTeamStats: data.showTeamStats,
