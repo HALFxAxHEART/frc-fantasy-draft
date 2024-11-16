@@ -27,40 +27,13 @@ export const useDraftState = () => {
 };
 
 export const DraftStateProvider = ({ children }: { children: React.ReactNode }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  
-  const [draftState, setDraftState] = useState<DraftState>(() => {
-    const state = location.state;
-    
-    if (!state?.participants) {
-      console.warn("No participants found in location state");
-      navigate("/dashboard");
-      return {
-        participants: [],
-        selectedEvent: "",
-        currentParticipantIndex: 0,
-        timeRemaining: 120,
-        draftComplete: false,
-        draftStarted: false,
-      };
-    }
-
-    const initialParticipants = Array.isArray(state.participants) 
-      ? state.participants.map((participant: any) => ({
-          name: typeof participant === 'string' ? participant : participant.name,
-          teams: [],
-        }))
-      : [];
-
-    return {
-      participants: initialParticipants,
-      selectedEvent: state.selectedEvent || "",
-      currentParticipantIndex: 0,
-      timeRemaining: 120,
-      draftComplete: false,
-      draftStarted: false,
-    };
+  const [draftState, setDraftState] = useState<DraftState>({
+    participants: [],
+    selectedEvent: "",
+    currentParticipantIndex: 0,
+    timeRemaining: 120,
+    draftComplete: false,
+    draftStarted: false,
   });
 
   return (

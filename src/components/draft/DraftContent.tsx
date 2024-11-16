@@ -14,6 +14,7 @@ import { fetchEventTeams } from "@/services/tbaService";
 import { DraftLoadingState } from "./DraftLoadingState";
 import { DraftLayout } from "./DraftLayout";
 import confetti from 'canvas-confetti';
+import { useEffect } from "react";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
@@ -36,11 +37,26 @@ export const DraftContent = () => {
     enabled: !!draftData?.event_key,
   });
 
+  // Initialize draft state when data is loaded
+  useEffect(() => {
+    if (draftData && draftData.participants) {
+      setDraftState(prev => ({
+        ...prev,
+        participants: draftData.participants,
+        currentParticipantIndex: 0,
+        draftStarted: false,
+        draftComplete: false
+      }));
+    }
+  }, [draftData, setDraftState]);
+
   if (isDraftLoading || isTeamsLoading) {
     return <DraftLoadingState />;
   }
 
   if (draftError || teamsError) {
+    console.error('Draft Error:', draftError);
+    console.error('Teams Error:', teamsError);
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center space-y-4">
@@ -55,18 +71,20 @@ export const DraftContent = () => {
     );
   }
 
-  if (!draftData || !teams) {
+  if (!draftData) {
+    console.error('No draft data available');
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center space-y-4">
-          <p className="text-lg text-muted-foreground">No data available</p>
+      <DraftLayout>
+        <div className="text-center p-8">
+          <p className="text-lg text-muted-foreground">Draft not found. Please return to dashboard.</p>
         </div>
-      </div>
+      </DraftLayout>
     );
   }
 
-  // Check if there are participants before accessing the current participant
-  if (!draftState.participants.length) {
+  // Check if there are participants in the draft data
+  if (!draftData.participants || draftData.participants.length === 0) {
+    console.error('No participants in draft data:', draftData);
     return (
       <DraftLayout>
         <div className="space-y-8">
@@ -75,6 +93,23 @@ export const DraftContent = () => {
           </h1>
           <div className="text-center p-8">
             <p className="text-lg text-muted-foreground">No participants found. Please return to dashboard and try again.</p>
+          </div>
+        </div>
+      </DraftLayout>
+    );
+  }
+
+  // Check if there are participants in the draft state
+  if (!draftState.participants.length) {
+    console.error('No participants in draft state:', draftState);
+    return (
+      <DraftLayout>
+        <div className="space-y-8">
+          <h1 className="text-3xl font-bold">
+            {draftData.nickname ? `${draftData.nickname} - ${draftData.event_name}` : draftData.event_name}
+          </h1>
+          <div className="text-center p-8">
+            <p className="text-lg text-muted-foreground">Draft state not initialized. Please refresh the page.</p>
           </div>
         </div>
       </DraftLayout>
