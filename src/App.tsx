@@ -96,7 +96,11 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+      <div className="fixed top-0 right-0 z-50 flex items-center gap-2 p-4 w-full md:w-auto md:top-4 md:right-4 bg-background/80 backdrop-blur-sm md:bg-transparent">
+        <div className="flex-1 md:hidden">
+          {/* Mobile title */}
+          <h1 className="text-lg font-semibold">FRC Fantasy</h1>
+        </div>
         <Button
           variant="outline"
           size="icon"
@@ -121,7 +125,7 @@ const AppContent = () => {
                   onUpdate={handleProfilePictureUpdate}
                 />
               )}
-              {displayName || 'Profile'}
+              <span className="hidden md:inline">{displayName || 'Profile'}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -137,15 +141,17 @@ const AppContent = () => {
         </DropdownMenu>
       </div>
       
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/draft" element={<Draft />} />
-        <Route path="/draft/:draftId" element={<Draft />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/results/:draftId" element={<Results />} />
-      </Routes>
+      <div className="pt-16 md:pt-0">
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/draft" element={<Draft />} />
+          <Route path="/draft/:draftId" element={<Draft />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/results/:draftId" element={<Results />} />
+        </Routes>
+      </div>
       <Footer />
     </div>
   );

@@ -3,7 +3,7 @@ import { ExternalLink } from "lucide-react";
 export const Footer = () => {
   return (
     <footer className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-sm border-t">
-      <div className="container flex justify-center items-center text-sm text-muted-foreground">
+      <div className="container flex flex-col md:flex-row justify-center items-center gap-2 text-xs md:text-sm text-muted-foreground">
         <a
           href="https://www.thebluealliance.com"
           target="_blank"

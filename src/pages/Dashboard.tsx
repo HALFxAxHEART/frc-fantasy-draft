@@ -51,15 +51,15 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/20 to-background p-8">
+    <div className="min-h-screen bg-gradient-to-b from-primary/20 to-background p-4 md:p-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-7xl mx-auto space-y-8"
+        className="max-w-7xl mx-auto space-y-6 md:space-y-8"
       >
-        <h1 className="text-4xl font-bold">Dashboard</h1>
+        <h1 className="text-3xl md:text-4xl font-bold px-2">Dashboard</h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
           {userId && (
             <DraftCreationSection
               userId={userId}
@@ -75,7 +75,7 @@ const Dashboard = () => {
             />
           )}
 
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8">
             {userId && <UserDrafts userId={userId} />}
             <UpcomingEvents
               events={events}
