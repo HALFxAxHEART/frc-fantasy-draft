@@ -22,7 +22,7 @@ interface LeaderboardEntry {
   profiles: {
     display_name: string | null;
     profile_picture_url: string | null;
-  };
+  } | null;
 }
 
 const GlobalDrafts = () => {
@@ -61,7 +61,7 @@ const GlobalDrafts = () => {
         .limit(10);
 
       if (error) throw error;
-      return data as LeaderboardEntry[];
+      return (data || []) as LeaderboardEntry[];
     },
   });
 
@@ -138,7 +138,7 @@ const GlobalDrafts = () => {
                 >
                   <div className="flex items-center gap-2">
                     <span className="font-bold">{entry.rank}</span>
-                    <span>{entry.profiles?.display_name}</span>
+                    <span>{entry.profiles?.display_name ?? 'Unknown User'}</span>
                   </div>
                   <span>{entry.total_points} pts</span>
                 </motion.div>
