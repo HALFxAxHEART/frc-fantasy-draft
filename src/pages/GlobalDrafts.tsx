@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 
 interface GlobalDraft {
   id: string;
@@ -28,6 +29,24 @@ interface LeaderboardEntry {
 const GlobalDrafts = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+        
+        setIsAdmin(profile?.is_admin || false);
+      }
+    };
+
+    checkAdminStatus();
+  }, []);
 
   const { data: activeDraft, isLoading: isDraftLoading } = useQuery({
     queryKey: ['globalDraft', 'active'],
@@ -35,11 +54,11 @@ const GlobalDrafts = () => {
       const { data, error } = await supabase
         .from('global_drafts')
         .select('*, global_draft_participants(*)')
-        .eq('status', 'active');
+        .eq('status', 'active')
+        .maybeSingle();
 
       if (error) throw error;
-      // Return the first draft or null if none exists
-      return (data && data.length > 0 ? data[0] : null) as GlobalDraft | null;
+      return data as GlobalDraft | null;
     },
   });
 
@@ -64,6 +83,42 @@ const GlobalDrafts = () => {
       return data as LeaderboardEntry[];
     },
   });
+
+  const handleCreateGlobalDraft = async () => {
+    if (!isAdmin) {
+      toast({
+        title: "Error",
+        description: "Only admins can create global drafts",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const currentYear = new Date().getFullYear();
+      const { error } = await supabase
+        .from('global_drafts')
+        .insert({
+          season_year: currentYear,
+          start_date: new Date().toISOString(),
+          end_date: new Date(currentYear, 11, 31).toISOString(),
+          status: 'active'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Global draft created successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleJoinDraft = async () => {
     try {
@@ -115,10 +170,16 @@ const GlobalDrafts = () => {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        <h1 className="text-3xl font-bold">Global Drafts</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Global Drafts</h1>
+          {isAdmin && (
+            <Button onClick={handleCreateGlobalDraft}>
+              Create Global Draft
+            </Button>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Active Draft Section */}
           <Card className="p-6">
             <h2 className="text-2xl font-semibold mb-4">Current Season Draft</h2>
             {activeDraft ? (
@@ -133,7 +194,6 @@ const GlobalDrafts = () => {
             )}
           </Card>
 
-          {/* Leaderboard Section */}
           <Card className="p-6">
             <h2 className="text-2xl font-semibold mb-4">Top Drafters</h2>
             <div className="space-y-4">

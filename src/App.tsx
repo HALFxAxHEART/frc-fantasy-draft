@@ -12,6 +12,7 @@ import Draft from "./pages/Draft";
 import Settings from "./pages/Settings";
 import Results from "./pages/Results";
 import GlobalDrafts from "./pages/GlobalDrafts";
+import DraftSelection from "./pages/DraftSelection";
 import { useEffect, useState } from "react";
 import { Moon, Sun, Settings as SettingsIcon, LogOut } from "lucide-react";
 import { Button } from "./components/ui/button";
@@ -51,7 +52,7 @@ const AppContent = () => {
       if (session?.user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('display_name, profile_picture_url')
+          .select('display_name, profile_picture_url, is_admin')
           .eq('id', session.user.id)
           .single();
         
@@ -71,8 +72,9 @@ const AppContent = () => {
         setProfilePicture(null);
         setUserId(null);
         navigate('/login');
-      } else if (session) {
+      } else if (event === 'SIGNED_IN') {
         fetchUserProfile();
+        navigate('/select-draft');
       }
     });
 
@@ -147,6 +149,7 @@ const AppContent = () => {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/select-draft" element={<DraftSelection />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/draft" element={<Draft />} />
           <Route path="/draft/:draftId" element={<Draft />} />

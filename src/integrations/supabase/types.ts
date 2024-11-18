@@ -18,6 +18,7 @@ export type Database = {
           id: string
           nickname: string | null
           participants: Json | null
+          share_code: string | null
           status: string | null
           updated_at: string
           user_id: string | null
@@ -30,6 +31,7 @@ export type Database = {
           id?: string
           nickname?: string | null
           participants?: Json | null
+          share_code?: string | null
           status?: string | null
           updated_at?: string
           user_id?: string | null
@@ -42,6 +44,7 @@ export type Database = {
           id?: string
           nickname?: string | null
           participants?: Json | null
+          share_code?: string | null
           status?: string | null
           updated_at?: string
           user_id?: string | null
@@ -133,18 +136,21 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          is_admin: boolean | null
           profile_picture_url: string | null
         }
         Insert: {
           created_at?: string
           display_name?: string | null
           id: string
+          is_admin?: boolean | null
           profile_picture_url?: string | null
         }
         Update: {
           created_at?: string
           display_name?: string | null
           id?: string
+          is_admin?: boolean | null
           profile_picture_url?: string | null
         }
         Relationships: []
