@@ -56,6 +56,78 @@ export type Database = {
           },
         ]
       }
+      global_draft_participants: {
+        Row: {
+          created_at: string
+          global_draft_id: string | null
+          id: string
+          rank: number | null
+          teams: Json | null
+          total_points: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          global_draft_id?: string | null
+          id?: string
+          rank?: number | null
+          teams?: Json | null
+          total_points?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          global_draft_id?: string | null
+          id?: string
+          rank?: number | null
+          teams?: Json | null
+          total_points?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "global_draft_participants_global_draft_id_fkey"
+            columns: ["global_draft_id"]
+            isOneToOne: false
+            referencedRelation: "global_drafts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "global_draft_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      global_drafts: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          season_year: number
+          start_date: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          season_year: number
+          start_date: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          season_year?: number
+          start_date?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -76,6 +148,44 @@ export type Database = {
           profile_picture_url?: string | null
         }
         Relationships: []
+      }
+      support_tickets: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          status: string | null
+          subject: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          status?: string | null
+          subject: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          status?: string | null
+          subject?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

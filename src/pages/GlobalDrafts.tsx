@@ -6,6 +6,25 @@ import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
+interface GlobalDraft {
+  id: string;
+  season_year: number;
+  status: string;
+  global_draft_participants: {
+    id: string;
+  }[];
+}
+
+interface LeaderboardEntry {
+  id: string;
+  total_points: number;
+  rank: number;
+  profiles: {
+    display_name: string | null;
+    profile_picture_url: string | null;
+  };
+}
+
 const GlobalDrafts = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -20,7 +39,7 @@ const GlobalDrafts = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as GlobalDraft;
     },
   });
 
@@ -42,7 +61,7 @@ const GlobalDrafts = () => {
         .limit(10);
 
       if (error) throw error;
-      return data;
+      return data as LeaderboardEntry[];
     },
   });
 
