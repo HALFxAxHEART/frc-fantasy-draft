@@ -4,12 +4,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { Footer } from "./components/Footer";
+import { SupportTicketButton } from "./components/SupportTicketButton";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Draft from "./pages/Draft";
 import Settings from "./pages/Settings";
 import Results from "./pages/Results";
+import GlobalDrafts from "./pages/GlobalDrafts";
 import { useEffect, useState } from "react";
 import { Moon, Sun, Settings as SettingsIcon, LogOut } from "lucide-react";
 import { Button } from "./components/ui/button";
@@ -150,9 +152,11 @@ const AppContent = () => {
           <Route path="/draft/:draftId" element={<Draft />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/results/:draftId" element={<Results />} />
+          <Route path="/global-drafts" element={<GlobalDrafts />} />
         </Routes>
       </div>
       <Footer />
+      <SupportTicketButton />
     </div>
   );
 };
