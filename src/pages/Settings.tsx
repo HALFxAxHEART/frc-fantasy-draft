@@ -1,30 +1,24 @@
+import { SettingsForm } from "@/components/settings/SettingsForm";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { SettingsForm } from "@/components/settings/SettingsForm";
 
 const Settings = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/20 to-background p-8">
-      <div className="max-w-2xl mx-auto space-y-8">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="rounded-full"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-4xl font-bold">Settings</h1>
-        </div>
-
-        <Card className="p-6">
-          <SettingsForm />
-        </Card>
+    <div className="container mx-auto py-8 px-4">
+      <Button 
+        variant="outline" 
+        onClick={() => navigate(-1)}
+        className="gap-2 mb-6"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </Button>
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8">Settings</h1>
+        <SettingsForm />
       </div>
     </div>
   );
