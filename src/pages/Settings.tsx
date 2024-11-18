@@ -1,24 +1,34 @@
 import { SettingsForm } from "@/components/settings/SettingsForm";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { SettingsAdmin } from "@/components/settings/SettingsAdmin";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Settings = () => {
-  const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+        
+        setIsAdmin(profile?.is_admin || false);
+      }
+    };
+
+    checkAdminStatus();
+  }, []);
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <Button 
-        variant="outline" 
-        onClick={() => navigate(-1)}
-        className="gap-2 mb-6"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </Button>
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Settings</h1>
+    <div className="container mx-auto py-8">
+      <div className="max-w-2xl mx-auto space-y-8">
+        <h1 className="text-3xl font-bold">Settings</h1>
         <SettingsForm />
+        {isAdmin && <SettingsAdmin />}
       </div>
     </div>
   );
