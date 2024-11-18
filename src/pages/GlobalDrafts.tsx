@@ -29,21 +29,21 @@ const GlobalDrafts = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const { data: activeDraft, isLoading } = useQuery({
+  const { data: activeDraft, isLoading: isDraftLoading } = useQuery({
     queryKey: ['globalDraft', 'active'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('global_drafts')
         .select('*, global_draft_participants(*)')
-        .eq('status', 'active')
-        .single();
+        .eq('status', 'active');
 
       if (error) throw error;
-      return data as GlobalDraft;
+      // Return the first draft or null if none exists
+      return (data && data.length > 0 ? data[0] : null) as GlobalDraft | null;
     },
   });
 
-  const { data: leaderboard } = useQuery({
+  const { data: leaderboard, isLoading: isLeaderboardLoading } = useQuery({
     queryKey: ['globalDraftLeaderboard'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -52,7 +52,7 @@ const GlobalDrafts = () => {
           id,
           total_points,
           rank,
-          profiles:user_id (
+          profiles (
             display_name,
             profile_picture_url
           )
@@ -61,7 +61,7 @@ const GlobalDrafts = () => {
         .limit(10);
 
       if (error) throw error;
-      return (data || []) as LeaderboardEntry[];
+      return data as LeaderboardEntry[];
     },
   });
 
@@ -77,10 +77,19 @@ const GlobalDrafts = () => {
         return;
       }
 
+      if (!activeDraft) {
+        toast({
+          title: "Error",
+          description: "No active draft available to join",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('global_draft_participants')
         .insert({
-          global_draft_id: activeDraft?.id,
+          global_draft_id: activeDraft.id,
           user_id: session.user.id,
         });
 
@@ -99,8 +108,8 @@ const GlobalDrafts = () => {
     }
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
+  if (isDraftLoading || isLeaderboardLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   return (
@@ -143,6 +152,9 @@ const GlobalDrafts = () => {
                   <span>{entry.total_points} pts</span>
                 </motion.div>
               ))}
+              {(!leaderboard || leaderboard.length === 0) && (
+                <p className="text-muted-foreground">No rankings available yet</p>
+              )}
             </div>
           </Card>
         </div>
