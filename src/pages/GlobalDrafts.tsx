@@ -5,9 +5,13 @@ import { GlobalDraftHeader } from "@/components/global-draft/GlobalDraftHeader";
 import { CreateGlobalDraftDialog } from "@/components/global-draft/CreateGlobalDraftDialog";
 import { GlobalDraftCard } from "@/components/global-draft/GlobalDraftCard";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const GlobalDrafts = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -53,6 +57,20 @@ const GlobalDrafts = () => {
         return;
       }
 
+      // First check if user is already in the draft
+      const { data: existingParticipant } = await supabase
+        .from('global_draft_participants')
+        .select('id')
+        .eq('global_draft_id', draftId)
+        .eq('user_id', userId)
+        .single();
+
+      if (existingParticipant) {
+        // User is already in the draft, navigate to draft page
+        navigate(`/global-drafts/${draftId}`);
+        return;
+      }
+
       const { error } = await supabase
         .from('global_draft_participants')
         .insert({
@@ -66,6 +84,8 @@ const GlobalDrafts = () => {
         title: "Success",
         description: "You've joined the global draft!",
       });
+      
+      navigate(`/global-drafts/${draftId}`);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -82,6 +102,15 @@ const GlobalDrafts = () => {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
+        <Button 
+          variant="outline" 
+          className="mb-4"
+          onClick={() => navigate(-1)}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+
         <div className="flex justify-between items-center">
           <GlobalDraftHeader title="Global Drafts" />
           {isAdmin && <CreateGlobalDraftDialog />}
@@ -91,7 +120,12 @@ const GlobalDrafts = () => {
           {activeDraft?.map((draft) => (
             <GlobalDraftCard
               key={draft.id}
-              draft={draft}
+              draft={{
+                ...draft,
+                settings: {
+                  eventType: (draft.settings as any)?.eventType || 'all'
+                }
+              }}
               onJoin={handleJoinDraft}
             />
           ))}
