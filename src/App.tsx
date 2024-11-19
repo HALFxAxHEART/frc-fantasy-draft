@@ -4,7 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { SupportTicketButton } from "@/components/SupportTicketButton";
 import { FeatureRequestButton } from "@/components/FeatureRequestButton";
-import { BackButton } from "@/components/BackButton";
+import { SettingsButton } from "@/components/SettingsButton";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
@@ -13,6 +13,7 @@ import DraftSelection from "@/pages/DraftSelection";
 import GlobalDrafts from "@/pages/GlobalDrafts";
 import GlobalDraft from "@/pages/GlobalDraft";
 import Results from "@/pages/Results";
+import Settings from "@/pages/Settings";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,9 +38,11 @@ function App() {
             <Route path="/global-drafts" element={<GlobalDrafts />} />
             <Route path="/global-drafts/:draftId" element={<GlobalDraft />} />
             <Route path="/results/:draftId" element={<Results />} />
+            <Route path="/settings" element={<Settings />} />
           </Routes>
           <SupportTicketButton />
           <FeatureRequestButton />
+          <SettingsButton />
           <Toaster />
         </div>
       </ThemeProvider>
