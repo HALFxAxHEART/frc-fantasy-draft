@@ -65,6 +65,7 @@ export type Database = {
           global_draft_id: string | null
           id: string
           rank: number | null
+          selected_teams: Json | null
           teams: Json | null
           total_points: number | null
           user_id: string | null
@@ -74,6 +75,7 @@ export type Database = {
           global_draft_id?: string | null
           id?: string
           rank?: number | null
+          selected_teams?: Json | null
           teams?: Json | null
           total_points?: number | null
           user_id?: string | null
@@ -83,6 +85,7 @@ export type Database = {
           global_draft_id?: string | null
           id?: string
           rank?: number | null
+          selected_teams?: Json | null
           teams?: Json | null
           total_points?: number | null
           user_id?: string | null
@@ -109,7 +112,9 @@ export type Database = {
           created_at: string
           end_date: string
           id: string
+          name: string | null
           season_year: number
+          settings: Json | null
           start_date: string
           status: string | null
         }
@@ -117,7 +122,9 @@ export type Database = {
           created_at?: string
           end_date: string
           id?: string
+          name?: string | null
           season_year: number
+          settings?: Json | null
           start_date: string
           status?: string | null
         }
@@ -125,7 +132,9 @@ export type Database = {
           created_at?: string
           end_date?: string
           id?: string
+          name?: string | null
           season_year?: number
+          settings?: Json | null
           start_date?: string
           status?: string | null
         }
