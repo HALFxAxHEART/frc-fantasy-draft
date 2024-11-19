@@ -11,9 +11,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { useToast } from "./ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { LifeBuoy } from "lucide-react";
+import { Lightbulb } from "lucide-react";
 
-export const SupportTicketButton = () => {
+export const FeatureRequestButton = () => {
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [isOpen, setIsOpen] = useState(false);
@@ -29,27 +29,16 @@ export const SupportTicketButton = () => {
       if (!session) {
         toast({
           title: "Error",
-          description: "You must be logged in to submit a support ticket",
+          description: "You must be logged in to submit a feature request",
           variant: "destructive",
         });
         return;
       }
 
-      // Create support ticket in database
-      const { error: dbError } = await supabase
-        .from('support_tickets')
-        .insert({
-          user_id: session.user.id,
-          subject,
-          description,
-        });
-
-      if (dbError) throw dbError;
-
       // Send email notification
       const { error: emailError } = await supabase.functions.invoke('send-email', {
         body: {
-          type: "support",
+          type: "feature",
           subject,
           description,
           userId: session.user.id,
@@ -60,7 +49,7 @@ export const SupportTicketButton = () => {
 
       toast({
         title: "Success",
-        description: "Your support ticket has been submitted",
+        description: "Your feature request has been submitted",
       });
 
       setSubject("");
@@ -80,18 +69,18 @@ export const SupportTicketButton = () => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon" className="fixed bottom-4 right-4 rounded-full">
-          <LifeBuoy className="h-5 w-5" />
+        <Button variant="outline" size="icon" className="fixed bottom-20 right-4 rounded-full">
+          <Lightbulb className="h-5 w-5" />
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Submit Support Ticket</DialogTitle>
+          <DialogTitle>Submit Feature Request</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Input
-              placeholder="Subject"
+              placeholder="Feature Title"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               required
@@ -99,7 +88,7 @@ export const SupportTicketButton = () => {
           </div>
           <div>
             <Textarea
-              placeholder="Description"
+              placeholder="Feature Description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required

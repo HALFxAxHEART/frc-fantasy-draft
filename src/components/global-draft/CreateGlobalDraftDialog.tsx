@@ -13,7 +13,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import {
@@ -23,14 +23,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
+import { fetchEvents } from "@/lib/tba-api";
 
 export const CreateGlobalDraftDialog = () => {
   const [name, setName] = useState("");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [eventType, setEventType] = useState<string>("all");
+  const [selectedDistrict, setSelectedDistrict] = useState<string>("all");
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { data: events, isLoading: isEventsLoading } = useQuery({
+    queryKey: ['events', new Date().getFullYear()],
+    queryFn: () => fetchEvents(new Date().getFullYear()),
+  });
+
+  const districts = events 
+    ? [...new Set(events.filter(e => e.district).map(e => e.district?.abbreviation))]
+    : [];
 
   const handleCreate = async () => {
     try {
@@ -43,6 +56,8 @@ export const CreateGlobalDraftDialog = () => {
         return;
       }
 
+      setIsLoading(true);
+
       const { error } = await supabase
         .from("global_drafts")
         .insert({
@@ -50,7 +65,10 @@ export const CreateGlobalDraftDialog = () => {
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
           season_year: new Date().getFullYear(),
-          settings: { eventType },
+          settings: { 
+            eventType,
+            district: selectedDistrict 
+          },
         });
 
       if (error) throw error;
@@ -66,6 +84,8 @@ export const CreateGlobalDraftDialog = () => {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -152,8 +172,38 @@ export const CreateGlobalDraftDialog = () => {
             </Select>
           </div>
 
-          <Button onClick={handleCreate} className="w-full">
-            Create Draft
+          {eventType === "district" && (
+            <div className="space-y-2">
+              <Label>District</Label>
+              <Select value={selectedDistrict} onValueChange={setSelectedDistrict}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select district" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Districts</SelectItem>
+                  {districts.map((district) => (
+                    district && <SelectItem key={district} value={district}>
+                      {district}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <Button 
+            onClick={handleCreate} 
+            className="w-full"
+            disabled={isLoading || isEventsLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              "Create Draft"
+            )}
           </Button>
         </div>
       </DialogContent>
