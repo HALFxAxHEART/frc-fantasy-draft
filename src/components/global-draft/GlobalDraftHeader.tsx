@@ -6,7 +6,7 @@ export const GlobalDraftHeader = ({ title }: { title: string }) => {
   const navigate = useNavigate();
   
   return (
-    <div className="flex items-center gap-4 mb-8">
+    <div className="flex items-center gap-4">
       <Button
         variant="ghost"
         size="icon"

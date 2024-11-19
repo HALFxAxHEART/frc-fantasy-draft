@@ -28,7 +28,6 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <div className="min-h-screen bg-background">
-          <BackButton />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />

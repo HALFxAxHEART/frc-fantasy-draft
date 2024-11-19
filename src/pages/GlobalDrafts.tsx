@@ -6,8 +6,6 @@ import { CreateGlobalDraftDialog } from "@/components/global-draft/CreateGlobalD
 import { GlobalDraftCard } from "@/components/global-draft/GlobalDraftCard";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 
 const GlobalDrafts = () => {
   const { toast } = useToast();
@@ -57,7 +55,6 @@ const GlobalDrafts = () => {
         return;
       }
 
-      // First check if user is already in the draft
       const { data: existingParticipant } = await supabase
         .from('global_draft_participants')
         .select('id')
@@ -66,7 +63,6 @@ const GlobalDrafts = () => {
         .single();
 
       if (existingParticipant) {
-        // User is already in the draft, navigate to draft page
         navigate(`/global-drafts/${draftId}`);
         return;
       }
@@ -102,15 +98,6 @@ const GlobalDrafts = () => {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        <Button 
-          variant="outline" 
-          className="mb-4"
-          onClick={() => navigate(-1)}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-
         <div className="flex justify-between items-center">
           <GlobalDraftHeader title="Global Drafts" />
           {isAdmin && <CreateGlobalDraftDialog />}
