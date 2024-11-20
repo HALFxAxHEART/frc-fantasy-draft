@@ -4,7 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { SupportTicketButton } from "@/components/SupportTicketButton";
 import { FeatureRequestButton } from "@/components/FeatureRequestButton";
-import { SettingsButton } from "@/components/SettingsButton";
+import { UserProfileButton } from "@/components/UserProfileButton";
 import Index from "@/pages/Index";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
@@ -29,6 +29,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <div className="min-h-screen bg-background">
+          <div className="fixed top-4 left-4 z-50">
+            <UserProfileButton />
+          </div>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
@@ -42,7 +45,6 @@ function App() {
           </Routes>
           <SupportTicketButton />
           <FeatureRequestButton />
-          <SettingsButton />
           <Toaster />
         </div>
       </ThemeProvider>
