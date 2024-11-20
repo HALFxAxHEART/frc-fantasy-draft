@@ -29,7 +29,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <div className="min-h-screen bg-background">
-          <div className="fixed top-4 left-4 z-50">
+          <div className="fixed top-4 right-4 z-50">
             <UserProfileButton />
           </div>
           <Routes>
