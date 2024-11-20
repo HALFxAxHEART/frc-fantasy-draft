@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchEvents } from "@/lib/tba-api";
 
 export const CreateGlobalDraftDialog = () => {
@@ -35,6 +35,7 @@ export const CreateGlobalDraftDialog = () => {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: events, isLoading: isEventsLoading } = useQuery({
     queryKey: ['events', new Date().getFullYear()],
@@ -58,26 +59,39 @@ export const CreateGlobalDraftDialog = () => {
 
       setIsLoading(true);
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("global_drafts")
         .insert({
           name,
+          season_year: new Date().getFullYear(),
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
-          season_year: new Date().getFullYear(),
+          status: 'active',
           settings: { 
             eventType,
             district: selectedDistrict 
           },
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Invalidate the global drafts query to refresh the list
+      await queryClient.invalidateQueries({ queryKey: ['globalDraft'] });
 
       toast({
         title: "Success",
         description: "Global draft created successfully",
       });
+      
       setOpen(false);
+      // Reset form
+      setName("");
+      setStartDate(undefined);
+      setEndDate(undefined);
+      setEventType("all");
+      setSelectedDistrict("all");
     } catch (error: any) {
       toast({
         title: "Error",

@@ -41,7 +41,11 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      const participants = draft.participants as DraftParticipant[];
+      const participants = draft.participants as Array<{
+        name: string;
+        teams: Team[];
+      }>;
+      
       const currentParticipantData = participants.find(p => p.name === currentParticipant);
       
       if (!currentParticipantData) {
