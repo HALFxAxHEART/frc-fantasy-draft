@@ -1,7 +1,6 @@
-import { Card } from "./ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy } from "lucide-react";
+import { Card } from "./ui/card";
 
 interface DraftLeaderboardProps {
   draftId: string;
@@ -28,26 +27,36 @@ export const DraftLeaderboard = ({ draftId }: DraftLeaderboardProps) => {
       if (error) throw error;
       return data as LeaderboardEntry[];
     },
+    enabled: !!draftId, // Only run query if draftId exists
   });
 
   if (isLoading) {
-    return <div>Loading leaderboard...</div>;
+    return (
+      <Card className="p-4">
+        <div className="text-center text-muted-foreground">Loading leaderboard...</div>
+      </Card>
+    );
+  }
+
+  if (!leaderboard || leaderboard.length === 0) {
+    return (
+      <Card className="p-4">
+        <div className="text-center text-muted-foreground">No leaderboard data available</div>
+      </Card>
+    );
   }
 
   return (
-    <Card className="p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <Trophy className="h-5 w-5 text-yellow-500" />
-        <h2 className="text-xl font-bold">Draft Leaderboard</h2>
-      </div>
+    <Card className="p-4">
+      <h3 className="text-lg font-semibold mb-4">Leaderboard</h3>
       <div className="space-y-2">
-        {leaderboard?.map((entry) => (
-          <div 
+        {leaderboard.map((entry) => (
+          <div
             key={entry.id}
-            className="flex items-center justify-between p-3 bg-muted rounded-lg"
+            className="flex justify-between items-center p-2 rounded-lg hover:bg-accent"
           >
-            <div className="flex items-center gap-3">
-              <span className="font-bold">{entry.rank}</span>
+            <div className="flex items-center gap-2">
+              <span className="font-medium">#{entry.rank}</span>
               <span>{entry.participant_name}</span>
             </div>
             <span className="font-semibold">{entry.total_points} pts</span>

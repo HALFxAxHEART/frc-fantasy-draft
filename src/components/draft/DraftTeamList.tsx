@@ -30,17 +30,19 @@ export const DraftTeamList = ({
 
   const handleTeamSelect = async (team: Team) => {
     try {
-      const { data: draft } = await supabase
+      const { data: draft, error } = await supabase
         .from('drafts')
         .select('participants, draft_data')
         .eq('id', draftId)
         .single();
 
+      if (error) throw error;
       if (!draft) {
         throw new Error('Draft not found');
       }
 
-      const participants = draft.participants as DraftParticipant[];
+      // Type assertion with unknown as intermediate step
+      const participants = (draft.participants as unknown) as DraftParticipant[];
       const currentParticipantData = participants.find(p => p.name === currentParticipant);
       
       if (!currentParticipantData) {
@@ -126,6 +128,7 @@ export const DraftTeamList = ({
             >
               <TeamCard
                 {...team}
+                districtPoints={0} // Add default district points
                 hidePoints={hidePoints}
                 onSelect={() => handleTeamSelect(team)}
               />
