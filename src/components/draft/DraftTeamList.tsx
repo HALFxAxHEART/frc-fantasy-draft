@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useDraftState } from "./DraftStateProvider";
 import { Input } from "../ui/input";
 import { useState } from "react";
-import { DraftParticipant, Team } from "@/types/draft";
+import { Team } from "@/types/draft";
 
 interface DraftTeamListProps {
   draftId: string;
@@ -41,10 +41,13 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      const participants = draft.participants as Array<{
+      // Type assertion with proper interface
+      interface DraftParticipant {
         name: string;
         teams: Team[];
-      }>;
+      }
+
+      const participants = (draft.participants as unknown) as DraftParticipant[];
       
       const currentParticipantData = participants.find(p => p.name === currentParticipant);
       

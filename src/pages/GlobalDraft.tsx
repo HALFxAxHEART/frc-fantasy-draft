@@ -7,6 +7,16 @@ import { useToast } from "@/components/ui/use-toast";
 import { UserMinus } from "lucide-react";
 import { useState, useEffect } from "react";
 
+interface Profile {
+  id: string;
+  display_name: string | null;
+}
+
+interface Participant {
+  id: string;
+  profiles?: Profile;
+}
+
 const GlobalDraft = () => {
   const { draftId } = useParams();
   const { toast } = useToast();
@@ -55,7 +65,7 @@ const GlobalDraft = () => {
         .from('global_draft_participants')
         .select(`
           *,
-          profiles:user_id (
+          profiles (
             id,
             display_name
           )
@@ -63,7 +73,7 @@ const GlobalDraft = () => {
         .eq('global_draft_id', draftId);
 
       if (error) throw error;
-      return data;
+      return data as Participant[];
     },
   });
 
