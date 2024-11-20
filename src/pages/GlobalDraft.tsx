@@ -56,6 +56,7 @@ const GlobalDraft = () => {
         .select(`
           *,
           profiles:user_id (
+            id,
             display_name
           )
         `)

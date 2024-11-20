@@ -41,8 +41,7 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      // Type assertion with unknown as intermediate step
-      const participants = (draft.participants as unknown) as DraftParticipant[];
+      const participants = draft.participants as DraftParticipant[];
       const currentParticipantData = participants.find(p => p.name === currentParticipant);
       
       if (!currentParticipantData) {
@@ -128,9 +127,16 @@ export const DraftTeamList = ({
             >
               <TeamCard
                 {...team}
-                districtPoints={0} // Add default district points
+                districtPoints={0}
                 hidePoints={hidePoints}
                 onSelect={() => handleTeamSelect(team)}
+                stats={team.stats ? {
+                  wins: team.stats.wins,
+                  losses: team.stats.losses,
+                  opr: team.stats.opr || 0,
+                  autoAvg: team.stats.autoAvg || 0,
+                  ranking: team.stats.ranking
+                } : undefined}
               />
             </motion.div>
           ))}
