@@ -6,18 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useDraftState } from "./DraftStateProvider";
 import { Input } from "../ui/input";
 import { useState } from "react";
-
-interface Team {
-  teamNumber: number;
-  teamName: string;
-  districtPoints: number;
-  stats: {
-    wins: number;
-    losses: number;
-    opr: number;
-    autoAvg: number;
-  };
-}
+import { DraftParticipant, Team } from "@/types/draft";
 
 interface DraftTeamListProps {
   draftId: string;
@@ -51,7 +40,9 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      const currentParticipantData = draft.participants.find(p => p.name === currentParticipant);
+      const participants = draft.participants as DraftParticipant[];
+      const currentParticipantData = participants.find(p => p.name === currentParticipant);
+      
       if (!currentParticipantData) {
         throw new Error('Current participant not found');
       }
@@ -88,7 +79,7 @@ export const DraftTeamList = ({
     const matchesSearch = team.teamName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       team.teamNumber.toString().includes(searchQuery);
     
-    const winRate = team.stats.wins / (team.stats.wins + team.stats.losses) * 100;
+    const winRate = team.stats?.wins ? (team.stats.wins / (team.stats.wins + (team.stats.losses || 0)) * 100) : 0;
     const meetsWinRate = winRate >= minWinRate;
 
     return isNotDrafted && matchesSearch && meetsWinRate;

@@ -7,6 +7,14 @@ interface DraftLeaderboardProps {
   draftId: string;
 }
 
+interface LeaderboardEntry {
+  id: string;
+  draft_id: string;
+  participant_name: string;
+  total_points: number;
+  rank: number;
+}
+
 export const DraftLeaderboard = ({ draftId }: DraftLeaderboardProps) => {
   const { data: leaderboard, isLoading } = useQuery({
     queryKey: ['draftLeaderboard', draftId],
@@ -18,7 +26,7 @@ export const DraftLeaderboard = ({ draftId }: DraftLeaderboardProps) => {
         .order('rank', { ascending: true });
       
       if (error) throw error;
-      return data;
+      return data as LeaderboardEntry[];
     },
   });
 
