@@ -1,5 +1,4 @@
 import { useParams } from "react-router-dom";
-import { DraftTimer } from "@/components/DraftTimer";
 import { DraftOrder } from "@/components/DraftOrder";
 import { DraftTeamList } from "./DraftTeamList";
 import { DraftComplete } from "@/components/DraftComplete";
@@ -13,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchEventTeams } from "@/services/tbaService";
 import { DraftLoadingState } from "./DraftLoadingState";
 import { DraftLayout } from "./DraftLayout";
+import { DraftLeaderboard } from "@/components/DraftLeaderboard";
 import { useEffect } from "react";
 
 export const DraftContent = () => {
@@ -130,14 +130,21 @@ export const DraftContent = () => {
   };
 
   if (draftState.draftComplete) {
-    return <DraftComplete draftId={draftId || ''} participants={draftState.participants} />;
+    return (
+      <>
+        <DraftComplete draftId={draftId || ''} participants={draftState.participants} />
+        <div className="mt-8">
+          <DraftLeaderboard draftId={draftId || ''} />
+        </div>
+      </>
+    );
   }
 
   return (
     <DraftLayout>
       <div className="space-y-8">
         <h1 className="text-3xl font-bold">
-          {draftData.nickname ? `${draftData.nickname} - ${draftData.event_name}` : draftData.event_name}
+          {draftData?.nickname ? `${draftData.nickname} - ${draftData.event_name}` : draftData?.event_name}
         </h1>
         
         {!draftState.draftStarted ? (
@@ -155,11 +162,7 @@ export const DraftContent = () => {
                 />
               </div>
               <div>
-                <DraftTimer
-                  onTimeUp={() => {}}
-                  isActive={!draftState.draftComplete}
-                  autoSelectTeam={() => teams && handleTeamSelect(teams[0])}
-                />
+                <DraftLeaderboard draftId={draftId || ''} />
               </div>
             </div>
 

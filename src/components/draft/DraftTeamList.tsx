@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { TeamCard } from "../TeamCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDraftState } from "./DraftStateProvider";
-import { Json } from "@/integrations/supabase/types";
+import { Input } from "../ui/input";
+import { useState } from "react";
 
 interface Team {
   teamNumber: number;
@@ -16,19 +17,6 @@ interface Team {
     opr: number;
     autoAvg: number;
   };
-}
-
-interface DraftData {
-  selectedTeams: number[];
-  // Add other draft_data fields if needed
-}
-
-interface DraftParticipant {
-  name: string;
-  teams: Array<{
-    teamNumber: number;
-    teamName: string;
-  }>;
 }
 
 interface DraftTeamListProps {
@@ -48,6 +36,8 @@ export const DraftTeamList = ({
 }: DraftTeamListProps) => {
   const { toast } = useToast();
   const { draftState } = useDraftState();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [minWinRate, setMinWinRate] = useState(0);
 
   const handleTeamSelect = async (team: Team) => {
     try {
@@ -61,12 +51,7 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      // Safely type assert the data from Supabase
-      const participants = (draft.participants as unknown as DraftParticipant[]) || [];
-      const draftData = ((draft.draft_data as unknown) as DraftData) || { selectedTeams: [] };
-      const selectedTeams = draftData.selectedTeams || [];
-
-      const currentParticipantData = participants.find(p => p.name === currentParticipant);
+      const currentParticipantData = draft.participants.find(p => p.name === currentParticipant);
       if (!currentParticipantData) {
         throw new Error('Current participant not found');
       }
@@ -75,15 +60,6 @@ export const DraftTeamList = ({
         toast({
           title: "Maximum Teams Reached",
           description: "You can only select up to 5 teams per participant.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (selectedTeams.includes(team.teamNumber)) {
-        toast({
-          title: "Team Already Selected",
-          description: "This team has already been drafted.",
           variant: "destructive",
         });
         return;
@@ -104,14 +80,43 @@ export const DraftTeamList = ({
     }
   };
 
-  const filteredTeams = availableTeams.filter(team => 
-    !draftState.participants.some(p => 
+  const filteredTeams = availableTeams.filter(team => {
+    const isNotDrafted = !draftState.participants.some(p => 
       p.teams.some(t => t.teamNumber === team.teamNumber)
-    )
-  );
+    );
+    
+    const matchesSearch = team.teamName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      team.teamNumber.toString().includes(searchQuery);
+    
+    const winRate = team.stats.wins / (team.stats.wins + team.stats.losses) * 100;
+    const meetsWinRate = winRate >= minWinRate;
+
+    return isNotDrafted && matchesSearch && meetsWinRate;
+  });
 
   return (
     <Card className="p-6">
+      <div className="mb-6 space-y-4">
+        <Input
+          placeholder="Search teams..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-md"
+        />
+        <div className="flex items-center gap-2">
+          <span className="text-sm">Min Win Rate:</span>
+          <Input
+            type="number"
+            min="0"
+            max="100"
+            value={minWinRate}
+            onChange={(e) => setMinWinRate(Number(e.target.value))}
+            className="w-24"
+          />
+          <span className="text-sm">%</span>
+        </div>
+      </div>
+
       <AnimatePresence>
         <motion.div 
           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
