@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,11 +18,11 @@ export const DraftControls = ({
   return (
     <div className="space-y-4">
       <div>
-        <Label>Number of Participants</Label>
+        <Label>Number of Participants (Max: 200)</Label>
         <Input
           type="number"
           min="2"
-          max="10"
+          max="200"
           value={participants}
           onChange={(e) => onParticipantsChange(parseInt(e.target.value))}
         />

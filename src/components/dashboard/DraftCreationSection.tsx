@@ -35,10 +35,20 @@ export const DraftCreationSection = ({
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Check if profile exists when component mounts
   useEffect(() => {
     const checkProfile = async () => {
       try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          toast({
+            title: "Error",
+            description: "Please log in to create drafts.",
+            variant: "destructive",
+          });
+          navigate('/login');
+          return;
+        }
+
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
@@ -68,7 +78,7 @@ export const DraftCreationSection = ({
     if (userId) {
       checkProfile();
     }
-  }, [userId, toast]);
+  }, [userId, toast, navigate]);
 
   const handleStartDraft = async () => {
     if (participantNames.some(name => !name.trim())) {
@@ -89,28 +99,27 @@ export const DraftCreationSection = ({
       return;
     }
 
+    if (participants > 200) {
+      toast({
+        title: "Error",
+        description: "Maximum number of participants is 200",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      // First, verify that the user profile exists
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (profileError) {
-        throw profileError;
-      }
-
-      if (!profile) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         toast({
           title: "Error",
-          description: "Profile not found. Please try logging out and back in.",
+          description: "Please log in to create drafts.",
           variant: "destructive",
         });
+        navigate('/login');
         return;
       }
 
-      // Now create the draft
       const { data, error: draftError } = await supabase
         .from('drafts')
         .insert({
@@ -142,8 +151,16 @@ export const DraftCreationSection = ({
         participants={participants}
         participantNames={participantNames}
         onParticipantsChange={(value) => {
-          setParticipants(value);
-          setParticipantNames(Array(value).fill(""));
+          if (value <= 200) {
+            setParticipants(value);
+            setParticipantNames(Array(value).fill(""));
+          } else {
+            toast({
+              title: "Error",
+              description: "Maximum number of participants is 200",
+              variant: "destructive",
+            });
+          }
         }}
         onParticipantNameChange={(index, value) => {
           const newNames = [...participantNames];
