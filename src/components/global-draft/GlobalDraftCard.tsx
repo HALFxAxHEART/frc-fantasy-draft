@@ -2,6 +2,20 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
+import { Trash2, UserMinus } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface GlobalDraftCardProps {
   draft: {
@@ -16,10 +30,34 @@ interface GlobalDraftCardProps {
     };
   };
   onJoin: (draftId: string) => void;
+  isAdmin?: boolean;
 }
 
-export const GlobalDraftCard = ({ draft, onJoin }: GlobalDraftCardProps) => {
+export const GlobalDraftCard = ({ draft, onJoin, isAdmin = false }: GlobalDraftCardProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleDelete = async () => {
+    try {
+      const { error } = await supabase
+        .from('global_drafts')
+        .delete()
+        .eq('id', draft.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Draft deleted successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <Card className="p-6">
@@ -39,6 +77,27 @@ export const GlobalDraftCard = ({ draft, onJoin }: GlobalDraftCardProps) => {
           <Button variant="outline" onClick={() => navigate(`/global-drafts/${draft.id}`)}>
             View Draft
           </Button>
+          {isAdmin && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="icon">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Draft</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this draft? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
       </div>
     </Card>
