@@ -16,10 +16,13 @@ import { DraftResults } from "@/components/DraftResults";
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types/draft";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { draftState, setDraftState } = useDraftState();
   const stateInitialized = useRef(false);
   
@@ -66,8 +69,11 @@ export const DraftContent = () => {
   if (!draftData) {
     return (
       <DraftLayout>
-        <div className="text-center p-8">
-          <p className="text-lg text-muted-foreground">Draft not found. Please return to dashboard.</p>
+        <div className="text-center p-8 space-y-4">
+          <p className="text-lg text-muted-foreground">Draft not found.</p>
+          <Button onClick={() => navigate('/dashboard')} variant="default">
+            Return to Dashboard
+          </Button>
         </div>
       </DraftLayout>
     );
@@ -85,12 +91,28 @@ export const DraftContent = () => {
     );
   }
 
+  if (!teams || teams.length === 0) {
+    return (
+      <DraftLayout>
+        <div className="text-center p-8 space-y-4">
+          <p className="text-lg text-muted-foreground">No teams found for this event.</p>
+          <Button onClick={() => navigate('/dashboard')} variant="default">
+            Return to Dashboard
+          </Button>
+        </div>
+      </DraftLayout>
+    );
+  }
+
   const currentTeam = draftState.teams[draftState.currentTeamIndex];
   if (!currentTeam || draftState.teams.length === 0) {
     return (
       <DraftLayout>
-        <div className="text-center p-8">
-          <p className="text-lg text-muted-foreground">No teams found. Please return to dashboard.</p>
+        <div className="text-center p-8 space-y-4">
+          <p className="text-lg text-muted-foreground">No participants found for this draft.</p>
+          <Button onClick={() => navigate('/dashboard')} variant="default">
+            Return to Dashboard
+          </Button>
         </div>
       </DraftLayout>
     );
@@ -197,4 +219,3 @@ export const DraftContent = () => {
       </div>
     </DraftLayout>
   );
-};
