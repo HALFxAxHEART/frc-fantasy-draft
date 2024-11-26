@@ -30,13 +30,13 @@ export const DraftContent = () => {
 
   useEffect(() => {
     if (draftData && draftData.participants) {
-      const isComplete = draftData.participants.every(p => p.teams.length >= 5);
+      const isComplete = draftData.participants.every(p => p.teams && p.teams.length >= 5);
       setDraftState(prev => ({
         ...prev,
         teams: draftData.participants,
         currentTeamIndex: 0,
-        draftStarted: false,
-        draftComplete: isComplete
+        draftStarted: draftData.status === 'active',
+        draftComplete: isComplete || draftData.status === 'completed'
       }));
     }
   }, [draftData, setDraftState]);
@@ -102,7 +102,7 @@ export const DraftContent = () => {
       );
 
       const nextIndex = (draftState.currentTeamIndex + 1) % draftState.teams.length;
-      const isComplete = updatedParticipants.every(t => t.teams.length >= 5);
+      const isComplete = updatedParticipants.every(t => t.teams && t.teams.length >= 5);
 
       setDraftState(prev => ({
         ...prev,
@@ -139,7 +139,13 @@ export const DraftContent = () => {
               name: team.name,
               participants: [team.name]
             }))}
-            onStartDraft={() => setDraftState(prev => ({ ...prev, draftStarted: true }))}
+            onStartDraft={() => {
+              setDraftState(prev => ({ ...prev, draftStarted: true }));
+              toast({
+                title: "Draft Started",
+                description: "Let the draft begin!"
+              });
+            }}
           />
         ) : (
           <>
