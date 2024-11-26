@@ -5,15 +5,15 @@ import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 interface TeamStats {
   wins: number;
   losses: number;
-  opr: number;
-  autoAvg: number;
+  opr?: number;
+  autoAvg?: number;
   ranking?: number;
 }
 
 interface TeamCardProps {
   teamNumber: number;
   teamName: string;
-  districtPoints: number;
+  districtPoints?: number;
   logoUrl?: string;
   stats?: TeamStats;
   onSelect: () => void;
@@ -23,7 +23,7 @@ interface TeamCardProps {
 export const TeamCard = ({ 
   teamNumber, 
   teamName, 
-  districtPoints, 
+  districtPoints = 0, 
   stats, 
   onSelect,
   hidePoints = false,
@@ -56,8 +56,8 @@ export const TeamCard = ({
             {stats && (
               <>
                 <div>Win/Loss: {stats.wins}/{stats.losses}</div>
-                <div>OPR: {stats.opr.toFixed(2)}</div>
-                <div>Auto Avg: {stats.autoAvg.toFixed(2)}</div>
+                {stats.opr && <div>OPR: {stats.opr.toFixed(2)}</div>}
+                {stats.autoAvg && <div>Auto Avg: {stats.autoAvg.toFixed(2)}</div>}
                 {stats.ranking && <div>Rank: {stats.ranking}</div>}
               </>
             )}
