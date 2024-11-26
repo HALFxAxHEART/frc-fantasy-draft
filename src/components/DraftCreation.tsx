@@ -119,7 +119,7 @@ export const DraftCreation = ({
     if (hasEmptyParticipants) {
       toast({
         title: "Missing participants",
-        description: "Please fill in all participant names",
+        description: "Please fill in all participant names for each team",
         variant: "destructive",
       });
       return;
