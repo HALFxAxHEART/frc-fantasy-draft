@@ -93,20 +93,20 @@ export const DraftContent = () => {
 
   const handleTeamSelect = async (team: Team) => {
     try {
-      const { updatedTeams } = await selectTeam(
+      const { updatedParticipants, updatedAvailableTeams } = await selectTeam(
         draftId || '',
         team,
         draftState.teams,
         currentTeam.name,
-        teams
+        teams || []
       );
 
       const nextIndex = (draftState.currentTeamIndex + 1) % draftState.teams.length;
-      const isComplete = updatedTeams.every(t => t.teams.length >= 5);
+      const isComplete = updatedParticipants.every(t => t.teams.length >= 5);
 
       setDraftState(prev => ({
         ...prev,
-        teams: updatedTeams,
+        teams: updatedParticipants,
         currentTeamIndex: nextIndex,
         draftComplete: isComplete
       }));
@@ -155,7 +155,7 @@ export const DraftContent = () => {
             <DraftTeamList
               draftId={draftId || ''}
               availableTeams={teams || []}
-              currentTeam={currentTeam.name}
+              currentParticipant={currentTeam.name}
               onTeamSelect={handleTeamSelect}
             />
           </>
