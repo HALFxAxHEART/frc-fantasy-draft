@@ -28,7 +28,7 @@ export const TeamList = ({
           </div>
           
           <div className="space-y-3">
-            <Label>Participants</Label>
+            <Label>Team Participants</Label>
             {team.participants.map((participant, participantIndex) => (
               <Input
                 key={participantIndex}
