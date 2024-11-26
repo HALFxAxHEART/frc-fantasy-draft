@@ -1,32 +1,20 @@
 import { Card } from "./ui/card";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { motion } from "framer-motion";
-import { Team } from "@/types/draft";
+import { DraftTeam } from "@/types/draftCreation";
 
 interface DraftOrderProps {
-  participants: Array<{
-    name: string;
-    teams: Array<{
-      teamNumber: number;
-      teamName: string;
-      stats?: {
-        wins: number;
-        losses: number;
-        opr?: number;
-        autoAvg?: number;
-      };
-    }>;
-  }>;
+  teams: DraftTeam[];
   currentIndex: number;
   round?: number;
 }
 
-export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrderProps) => {
+export const DraftOrder = ({ teams, currentIndex, round = 1 }: DraftOrderProps) => {
   const isReverseRound = round % 2 === 0;
   
   const getPickingStatus = (displayIndex: number) => {
     const effectiveIndex = isReverseRound 
-      ? participants.length - 1 - currentIndex
+      ? teams.length - 1 - currentIndex
       : currentIndex;
     
     const nextIndex = isReverseRound
@@ -43,12 +31,12 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
     <Card className="p-6">
       <h3 className="text-xl font-semibold mb-6 text-foreground">Draft Order</h3>
       <div className="grid grid-cols-1 gap-4">
-        {participants.map((participant, displayIndex) => {
+        {teams.map((team, displayIndex) => {
           const { isPicking, isNext } = getPickingStatus(displayIndex);
           
           return (
             <motion.div
-              key={participant.name}
+              key={team.name}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
@@ -68,21 +56,21 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
                     </span>
                     <Avatar className="h-12 w-12 border-2 border-background">
                       <AvatarFallback className="text-lg">
-                        {participant.name[0]?.toUpperCase()}
+                        {team.name[0]?.toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-lg font-bold">{participant.name}</span>
+                    <span className="text-lg font-bold">{team.name}</span>
                   </div>
                   <span className="text-sm text-muted-foreground">
                     {isPicking && '(Picking)'}
                     {isNext && '(Next)'}
                   </span>
                 </div>
-                {participant.teams.length > 0 && (
+                {team.participants.length > 0 && (
                   <div className="text-sm grid grid-cols-2 gap-2">
-                    {participant.teams.map((team, idx) => (
+                    {team.participants.map((participant, idx) => (
                       <div key={idx} className="bg-background/10 p-2 rounded text-foreground">
-                        Team {team.teamNumber}
+                        {participant}
                       </div>
                     ))}
                   </div>

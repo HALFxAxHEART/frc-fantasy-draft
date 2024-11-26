@@ -33,8 +33,8 @@ export const DraftContent = () => {
       const isComplete = draftData.participants.every(p => p.teams.length >= 5);
       setDraftState(prev => ({
         ...prev,
-        participants: draftData.participants,
-        currentParticipantIndex: 0,
+        teams: draftData.participants,
+        currentTeamIndex: 0,
         draftStarted: false,
         draftComplete: isComplete
       }));
@@ -70,52 +70,51 @@ export const DraftContent = () => {
     );
   }
 
-  // Check if draft is completed based on status
   if (draftData.status === 'completed' || draftState.draftComplete) {
     return (
       <DraftLayout>
         <DraftResults 
           draftId={draftId || ''} 
-          participants={draftState.participants}
+          participants={draftState.teams}
           eventName={draftData.event_name}
         />
       </DraftLayout>
     );
   }
 
-  const currentParticipant = draftState.participants[draftState.currentParticipantIndex];
-  if (!currentParticipant) {
+  const currentTeam = draftState.teams[draftState.currentTeamIndex];
+  if (!currentTeam) {
     setDraftState(prev => ({
       ...prev,
-      currentParticipantIndex: 0
+      currentTeamIndex: 0
     }));
     return null;
   }
 
   const handleTeamSelect = async (team: Team) => {
     try {
-      const { updatedParticipants } = await selectTeam(
+      const { updatedTeams } = await selectTeam(
         draftId || '',
         team,
-        draftState.participants,
-        currentParticipant.name,
+        draftState.teams,
+        currentTeam.name,
         teams
       );
 
-      const nextIndex = (draftState.currentParticipantIndex + 1) % draftState.participants.length;
-      const isComplete = updatedParticipants.every(p => p.teams.length >= 5);
+      const nextIndex = (draftState.currentTeamIndex + 1) % draftState.teams.length;
+      const isComplete = updatedTeams.every(t => t.teams.length >= 5);
 
       setDraftState(prev => ({
         ...prev,
-        participants: updatedParticipants,
-        currentParticipantIndex: nextIndex,
+        teams: updatedTeams,
+        currentTeamIndex: nextIndex,
         draftComplete: isComplete
       }));
 
       if (!isComplete) {
         toast({
           title: "Team Selected",
-          description: `${team.teamName} has been drafted`
+          description: `${team.teamName} has been drafted by ${currentTeam.name}`
         });
       }
     } catch (error: any) {
@@ -127,17 +126,6 @@ export const DraftContent = () => {
     }
   };
 
-  if (draftState.draftComplete) {
-    return (
-      <>
-        <DraftComplete draftId={draftId || ''} participants={draftState.participants} />
-        <div className="mt-8">
-          <DraftLeaderboard draftId={draftId || ''} />
-        </div>
-      </>
-    );
-  }
-
   return (
     <DraftLayout>
       <div className="space-y-8">
@@ -147,7 +135,7 @@ export const DraftContent = () => {
         
         {!draftState.draftStarted ? (
           <DraftSetup
-            participants={draftState.participants}
+            teams={draftState.teams}
             onStartDraft={() => setDraftState(prev => ({ ...prev, draftStarted: true }))}
           />
         ) : (
@@ -155,8 +143,8 @@ export const DraftContent = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-2">
                 <DraftOrder
-                  participants={draftState.participants}
-                  currentIndex={draftState.currentParticipantIndex}
+                  teams={draftState.teams}
+                  currentIndex={draftState.currentTeamIndex}
                 />
               </div>
               <div>
@@ -167,7 +155,7 @@ export const DraftContent = () => {
             <DraftTeamList
               draftId={draftId || ''}
               availableTeams={teams || []}
-              currentParticipant={currentParticipant.name}
+              currentTeam={currentTeam.name}
               onTeamSelect={handleTeamSelect}
             />
           </>
