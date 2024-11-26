@@ -8,11 +8,7 @@ import { Users } from "lucide-react";
 import { useToast } from "./ui/use-toast";
 import { TeamSettings } from "./draft/TeamSettings";
 import { TeamList } from "./draft/TeamList";
-
-interface Team {
-  name: string;
-  participants: string[];
-}
+import { DraftTeam } from "@/types/draftCreation";
 
 interface DraftCreationProps {
   onStartDraft: () => void;
@@ -27,7 +23,7 @@ export const DraftCreation = ({
 }: DraftCreationProps) => {
   const [numberOfTeams, setNumberOfTeams] = useState(2);
   const [participantsPerTeam, setParticipantsPerTeam] = useState(1);
-  const [teams, setTeams] = useState<Team[]>([
+  const [teams, setTeams] = useState<DraftTeam[]>([
     { name: "Team 1", participants: [""] },
     { name: "Team 2", participants: [""] },
   ]);

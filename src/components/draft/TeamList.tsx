@@ -1,10 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Team } from "@/types/draft";
+import { DraftTeam } from "@/types/draftCreation";
 
 interface TeamListProps {
-  teams: Team[];
+  teams: DraftTeam[];
   onTeamNameChange: (index: number, value: string) => void;
   onParticipantChange: (teamIndex: number, participantIndex: number, value: string) => void;
 }
