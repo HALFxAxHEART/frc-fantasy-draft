@@ -1,154 +1,97 @@
-import { Card } from "../ui/card";
-import { useToast } from "../ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { TeamCard } from "../TeamCard";
-import { motion, AnimatePresence } from "framer-motion";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { DraftTeam } from "@/types/draftCreation";
+import { Users, Plus, Minus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 import { useDraftState } from "./DraftStateProvider";
-import { Input } from "../ui/input";
-import { useState } from "react";
-import { Team } from "@/types/draft";
 
-interface DraftTeamListProps {
-  draftId: string;
-  availableTeams: Team[];
-  currentParticipant: string;
-  onTeamSelect: (team: Team) => void;
-  hidePoints?: boolean;
+interface TeamListProps {
+  teams: DraftTeam[];
+  onTeamNameChange: (index: number, value: string) => void;
+  onParticipantChange: (teamIndex: number, participantIndex: number, value: string) => void;
+  onParticipantCountChange: (teamIndex: number, change: number) => void;
 }
 
 export const DraftTeamList = ({
-  draftId,
-  availableTeams,
-  currentParticipant,
-  onTeamSelect,
-  hidePoints = false,
-}: DraftTeamListProps) => {
+  teams,
+  onTeamNameChange,
+  onParticipantChange,
+  onParticipantCountChange,
+}: TeamListProps) => {
   const { toast } = useToast();
   const { draftState } = useDraftState();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [minWinRate, setMinWinRate] = useState(0);
 
-  const handleTeamSelect = async (team: Team) => {
-    try {
-      const { data: draft, error } = await supabase
-        .from('drafts')
-        .select('participants, draft_data')
-        .eq('id', draftId)
-        .single();
-
-      if (error) throw error;
-      if (!draft) {
-        throw new Error('Draft not found');
-      }
-
-      // Type assertion with proper interface
-      interface DraftParticipant {
-        name: string;
-        teams: Team[];
-      }
-
-      const participants = (draft.participants as unknown) as DraftParticipant[];
-      
-      const currentParticipantData = participants.find(p => p.name === currentParticipant);
-      
-      if (!currentParticipantData) {
-        throw new Error('Current participant not found');
-      }
-
-      if (currentParticipantData.teams?.length >= 5) {
-        toast({
-          title: "Maximum Teams Reached",
-          description: "You can only select up to 5 teams per participant.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      onTeamSelect(team);
-      
+  const handleParticipantCountChange = (teamIndex: number, change: number) => {
+    const newCount = teams[teamIndex].participants.length + change;
+    if (newCount < 1) {
       toast({
-        title: "Team Selected!",
-        description: `${team.teamName} has been drafted by ${currentParticipant}`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
+        title: "Invalid number of participants",
+        description: "Each team must have at least 1 participant",
         variant: "destructive",
       });
+      return;
     }
+    if (newCount > 5) {
+      toast({
+        title: "Invalid number of participants",
+        description: "Maximum number of participants per team is 5",
+        variant: "destructive",
+      });
+      return;
+    }
+    onParticipantCountChange(teamIndex, change);
   };
 
-  const filteredTeams = availableTeams.filter(team => {
-    const isNotDrafted = !draftState.participants.some(p => 
-      p.teams.some(t => t.teamNumber === team.teamNumber)
-    );
-    
-    const matchesSearch = team.teamName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      team.teamNumber.toString().includes(searchQuery);
-    
-    const winRate = team.stats?.wins ? (team.stats.wins / (team.stats.wins + (team.stats.losses || 0)) * 100) : 0;
-    const meetsWinRate = winRate >= minWinRate;
-
-    return isNotDrafted && matchesSearch && meetsWinRate;
-  });
-
   return (
-    <Card className="p-6">
-      <div className="mb-6 space-y-4">
-        <Input
-          placeholder="Search teams..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-md"
-        />
-        <div className="flex items-center gap-2">
-          <span className="text-sm">Min Win Rate:</span>
-          <Input
-            type="number"
-            min="0"
-            max="100"
-            value={minWinRate}
-            onChange={(e) => setMinWinRate(Number(e.target.value))}
-            className="w-24"
-          />
-          <span className="text-sm">%</span>
-        </div>
-      </div>
-
-      <AnimatePresence>
-        <motion.div 
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          {filteredTeams.map((team) => (
-            <motion.div
-              key={team.teamNumber}
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.2 }}
-            >
-              <TeamCard
-                {...team}
-                districtPoints={0}
-                hidePoints={hidePoints}
-                onSelect={() => handleTeamSelect(team)}
-                stats={team.stats ? {
-                  wins: team.stats.wins,
-                  losses: team.stats.losses,
-                  opr: team.stats.opr || 0,
-                  autoAvg: team.stats.autoAvg || 0,
-                  ranking: team.stats.ranking
-                } : undefined}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {teams.map((team, teamIndex) => (
+        <Card key={teamIndex} className="p-4 space-y-4">
+          <div>
+            <Label className="text-sm font-medium">Team Name</Label>
+            <Input
+              value={team.name}
+              onChange={(e) => onTeamNameChange(teamIndex, e.target.value)}
+              placeholder={`Team ${teamIndex + 1}`}
+              className="mt-1"
+            />
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Team Participants ({team.participants.length})
+              </Label>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleParticipantCountChange(teamIndex, -1)}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleParticipantCountChange(teamIndex, 1)}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            {team.participants.map((participant, participantIndex) => (
+              <Input
+                key={participantIndex}
+                value={participant}
+                onChange={(e) => onParticipantChange(teamIndex, participantIndex, e.target.value)}
+                placeholder={`Participant ${participantIndex + 1}`}
               />
-            </motion.div>
-          ))}
-        </motion.div>
-      </AnimatePresence>
-    </Card>
+            ))}
+          </div>
+        </Card>
+      ))}
+    </div>
   );
 };

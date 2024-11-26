@@ -135,7 +135,10 @@ export const DraftContent = () => {
         
         {!draftState.draftStarted ? (
           <DraftSetup
-            teams={draftState.teams}
+            teams={draftState.teams.map(team => ({
+              name: team.name,
+              participants: [team.name]
+            }))}
             onStartDraft={() => setDraftState(prev => ({ ...prev, draftStarted: true }))}
           />
         ) : (
@@ -143,7 +146,10 @@ export const DraftContent = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-2">
                 <DraftOrder
-                  teams={draftState.teams}
+                  teams={draftState.teams.map(team => ({
+                    name: team.name,
+                    participants: [team.name]
+                  }))}
                   currentIndex={draftState.currentTeamIndex}
                 />
               </div>
