@@ -219,3 +219,4 @@ export const DraftContent = () => {
       </div>
     </DraftLayout>
   );
+};
