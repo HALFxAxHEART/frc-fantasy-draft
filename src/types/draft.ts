@@ -1,6 +1,7 @@
 export interface Team {
   teamNumber: number;
   teamName: string;
+  districtPoints?: number;
   stats?: {
     wins: number;
     losses: number;
