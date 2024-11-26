@@ -12,37 +12,76 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 export const UserProfileButton = () => {
   const [profile, setProfile] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate('/login');
-        return;
-      }
+      try {
+        setIsLoading(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          navigate('/login');
+          return;
+        }
 
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
 
-      if (data) {
-        setProfile(data);
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          setProfile(data);
+        }
+      } catch (error: any) {
+        console.error('Error fetching profile:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load profile. Please try refreshing the page.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchProfile();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/login');
+    try {
+      await supabase.auth.signOut();
+      navigate('/login');
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+        <Avatar className="h-10 w-10">
+          <AvatarFallback>
+            <User className="h-6 w-6" />
+          </AvatarFallback>
+        </Avatar>
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>
