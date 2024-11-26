@@ -6,8 +6,6 @@ import { DraftSetup } from "@/components/DraftSetup";
 import { useDraftState } from "./DraftStateProvider";
 import { useToast } from "@/components/ui/use-toast";
 import { useDraftData } from "@/hooks/useDraftData";
-import { selectTeam } from "@/services/draftService";
-import { Team } from "@/types/draft";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEventTeams } from "@/services/tbaService";
 import { DraftLoadingState } from "./DraftLoadingState";
@@ -16,6 +14,7 @@ import { DraftLeaderboard } from "@/components/DraftLeaderboard";
 import { DraftResults } from "@/components/DraftResults";
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Team } from "@/types/draft";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
@@ -86,8 +85,14 @@ export const DraftContent = () => {
   }
 
   const currentTeam = draftState.teams[draftState.currentTeamIndex];
-  if (!currentTeam) {
-    return null;
+  if (!currentTeam || draftState.teams.length === 0) {
+    return (
+      <DraftLayout>
+        <div className="text-center p-8">
+          <p className="text-lg text-muted-foreground">No teams found. Please return to dashboard.</p>
+        </div>
+      </DraftLayout>
+    );
   }
 
   const handleTeamSelect = async (team: Team) => {
