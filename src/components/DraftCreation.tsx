@@ -4,8 +4,10 @@ import { Button } from "./ui/button";
 import { useState } from "react";
 import { Label } from "./ui/label";
 import { Separator } from "./ui/separator";
-import { Plus, Minus, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { useToast } from "./ui/use-toast";
+import { TeamSettings } from "./draft/TeamSettings";
+import { TeamList } from "./draft/TeamList";
 
 interface Team {
   name: string;
@@ -13,10 +15,6 @@ interface Team {
 }
 
 interface DraftCreationProps {
-  participants: number;
-  participantNames: string[];
-  onParticipantsChange: (value: number) => void;
-  onParticipantNameChange: (index: number, value: string) => void;
   onStartDraft: () => void;
   nickname: string;
   onNicknameChange: (value: string) => void;
@@ -155,50 +153,12 @@ export const DraftCreation = ({
 
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Team Settings</h3>
-          
-          <div className="flex items-center gap-4">
-            <div className="space-y-2">
-              <Label>Number of Teams</Label>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => updateNumberOfTeams(numberOfTeams - 1)}
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="w-8 text-center">{numberOfTeams}</span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => updateNumberOfTeams(numberOfTeams + 1)}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Participants per Team</Label>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => updateParticipantsPerTeam(participantsPerTeam - 1)}
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="w-8 text-center">{participantsPerTeam}</span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => updateParticipantsPerTeam(participantsPerTeam + 1)}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
+          <TeamSettings
+            numberOfTeams={numberOfTeams}
+            participantsPerTeam={participantsPerTeam}
+            onTeamsChange={updateNumberOfTeams}
+            onParticipantsPerTeamChange={updateParticipantsPerTeam}
+          />
         </div>
 
         <Separator />
@@ -209,32 +169,11 @@ export const DraftCreation = ({
             Teams and Participants
           </h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {teams.map((team, teamIndex) => (
-              <Card key={teamIndex} className="p-4 space-y-4">
-                <div>
-                  <Label>Team Name</Label>
-                  <Input
-                    value={team.name}
-                    onChange={(e) => handleTeamNameChange(teamIndex, e.target.value)}
-                    placeholder={`Team ${teamIndex + 1}`}
-                  />
-                </div>
-                
-                <div className="space-y-3">
-                  <Label>Participants</Label>
-                  {team.participants.map((participant, participantIndex) => (
-                    <Input
-                      key={participantIndex}
-                      value={participant}
-                      onChange={(e) => handleParticipantChange(teamIndex, participantIndex, e.target.value)}
-                      placeholder={`Participant ${participantIndex + 1}`}
-                    />
-                  ))}
-                </div>
-              </Card>
-            ))}
-          </div>
+          <TeamList
+            teams={teams}
+            onTeamNameChange={handleTeamNameChange}
+            onParticipantChange={handleParticipantChange}
+          />
         </div>
 
         <Button
