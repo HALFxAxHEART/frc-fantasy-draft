@@ -13,6 +13,7 @@ import { fetchEventTeams } from "@/services/tbaService";
 import { DraftLoadingState } from "./DraftLoadingState";
 import { DraftLayout } from "./DraftLayout";
 import { DraftLeaderboard } from "@/components/DraftLeaderboard";
+import { DraftResults } from "@/components/DraftResults";
 import { useEffect } from "react";
 
 export const DraftContent = () => {
@@ -29,12 +30,13 @@ export const DraftContent = () => {
 
   useEffect(() => {
     if (draftData && draftData.participants) {
+      const isComplete = draftData.participants.every(p => p.teams.length >= 5);
       setDraftState(prev => ({
         ...prev,
         participants: draftData.participants,
         currentParticipantIndex: 0,
         draftStarted: false,
-        draftComplete: false
+        draftComplete: isComplete
       }));
     }
   }, [draftData, setDraftState]);
@@ -59,7 +61,6 @@ export const DraftContent = () => {
   }
 
   if (!draftData) {
-    console.error('No draft data available');
     return (
       <DraftLayout>
         <div className="text-center p-8">
@@ -69,18 +70,15 @@ export const DraftContent = () => {
     );
   }
 
-  if (!draftData.participants || draftData.participants.length === 0) {
-    console.error('No participants in draft data:', draftData);
+  // Check if draft is completed based on status
+  if (draftData.status === 'completed' || draftState.draftComplete) {
     return (
       <DraftLayout>
-        <div className="space-y-8">
-          <h1 className="text-3xl font-bold">
-            {draftData.nickname ? `${draftData.nickname} - ${draftData.event_name}` : draftData.event_name}
-          </h1>
-          <div className="text-center p-8">
-            <p className="text-lg text-muted-foreground">No participants found. Please return to dashboard and try again.</p>
-          </div>
-        </div>
+        <DraftResults 
+          draftId={draftId || ''} 
+          participants={draftState.participants}
+          eventName={draftData.event_name}
+        />
       </DraftLayout>
     );
   }
@@ -177,4 +175,3 @@ export const DraftContent = () => {
       </div>
     </DraftLayout>
   );
-};

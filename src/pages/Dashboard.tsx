@@ -9,6 +9,8 @@ import { DraftStats } from "@/components/DraftStats";
 import { supabase } from "@/integrations/supabase/client";
 import { UserDrafts } from "@/components/dashboard/UserDrafts";
 import { DraftCreationSection } from "@/components/dashboard/DraftCreationSection";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 const Dashboard = () => {
   const [userId, setUserId] = useState<string | null>(null);
@@ -61,27 +63,37 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
           {userId && (
-            <DraftCreationSection
-              userId={userId}
-              events={events}
-              selectedYear={selectedYear}
-              onYearChange={setSelectedYear}
-              selectedDistrict={selectedDistrict}
-              onDistrictChange={setSelectedDistrict}
-              selectedEvent={selectedEvent}
-              onEventChange={setSelectedEvent}
-              isLoading={isLoading}
-              error={error instanceof Error ? error : null}
-            />
+            <div className="space-y-6">
+              <Card className="p-6">
+                <h2 className="text-2xl font-semibold mb-4">Create New Draft</h2>
+                <Separator className="my-4" />
+                <DraftCreationSection
+                  userId={userId}
+                  events={events}
+                  selectedYear={selectedYear}
+                  onYearChange={setSelectedYear}
+                  selectedDistrict={selectedDistrict}
+                  onDistrictChange={setSelectedDistrict}
+                  selectedEvent={selectedEvent}
+                  onEventChange={setSelectedEvent}
+                  isLoading={isLoading}
+                  error={error instanceof Error ? error : null}
+                />
+              </Card>
+            </div>
           )}
 
           <div className="space-y-6 md:space-y-8">
             {userId && <UserDrafts userId={userId} />}
-            <UpcomingEvents
-              events={events}
-              onEventSelect={handleEventSelect}
-              isLoading={isLoading}
-            />
+            <Card className="p-6">
+              <h2 className="text-2xl font-semibold mb-4">Upcoming Events</h2>
+              <Separator className="my-4" />
+              <UpcomingEvents
+                events={events}
+                onEventSelect={handleEventSelect}
+                isLoading={isLoading}
+              />
+            </Card>
           </div>
         </div>
       </motion.div>
