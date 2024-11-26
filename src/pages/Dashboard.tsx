@@ -63,24 +63,18 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
           {userId && (
-            <div className="space-y-6">
-              <Card className="p-6">
-                <h2 className="text-2xl font-semibold mb-4">Create New Draft</h2>
-                <Separator className="my-4" />
-                <DraftCreationSection
-                  userId={userId}
-                  events={events}
-                  selectedYear={selectedYear}
-                  onYearChange={setSelectedYear}
-                  selectedDistrict={selectedDistrict}
-                  onDistrictChange={setSelectedDistrict}
-                  selectedEvent={selectedEvent}
-                  onEventChange={setSelectedEvent}
-                  isLoading={isLoading}
-                  error={error instanceof Error ? error : null}
-                />
-              </Card>
-            </div>
+            <DraftCreationSection
+              userId={userId}
+              events={events}
+              selectedYear={selectedYear}
+              onYearChange={setSelectedYear}
+              selectedDistrict={selectedDistrict}
+              onDistrictChange={setSelectedDistrict}
+              selectedEvent={selectedEvent}
+              onEventChange={setSelectedEvent}
+              isLoading={isLoading}
+              error={error instanceof Error ? error : null}
+            />
           )}
 
           <div className="space-y-6 md:space-y-8">
