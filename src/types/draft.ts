@@ -23,4 +23,5 @@ export interface DraftData {
   event_name: string;
   event_key: string;
   nickname?: string;
+  status?: 'pending' | 'active' | 'completed';
 }
