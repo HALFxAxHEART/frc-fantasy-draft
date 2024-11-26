@@ -13,6 +13,7 @@ import { DraftErrorState } from "./DraftErrorState";
 import { DraftGameInterface } from "./DraftGameInterface";
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types/draft";
+import { useEffect } from "react";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
@@ -25,6 +26,17 @@ export const DraftContent = () => {
     queryFn: () => fetchEventTeams(draftData?.event_key || ''),
     enabled: !!draftData?.event_key,
   });
+
+  // Initialize draft state with participants from draft data
+  useEffect(() => {
+    if (draftData?.participants) {
+      setDraftState(prev => ({
+        ...prev,
+        teams: draftData.participants,
+        selectedEvent: draftData.event_key
+      }));
+    }
+  }, [draftData, setDraftState]);
 
   if (isDraftLoading || isTeamsLoading) {
     return <DraftLoadingState />;
