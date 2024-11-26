@@ -1,6 +1,4 @@
 import { useParams } from "react-router-dom";
-import { DraftOrder } from "@/components/DraftOrder";
-import { DraftTeamList } from "./DraftTeamList";
 import { DraftComplete } from "@/components/DraftComplete";
 import { DraftSetup } from "@/components/DraftSetup";
 import { useDraftState } from "./DraftStateProvider";
@@ -11,20 +9,15 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchEventTeams } from "@/services/tbaService";
 import { DraftLoadingState } from "./DraftLoadingState";
 import { DraftLayout } from "./DraftLayout";
-import { DraftLeaderboard } from "@/components/DraftLeaderboard";
-import { DraftResults } from "@/components/DraftResults";
-import { useEffect, useRef } from "react";
+import { DraftErrorState } from "./DraftErrorState";
+import { DraftGameInterface } from "./DraftGameInterface";
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types/draft";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
   const { toast } = useToast();
-  const navigate = useNavigate();
   const { draftState, setDraftState } = useDraftState();
-  const stateInitialized = useRef(false);
   
   const { data: draftData, isLoading: isDraftLoading, error: draftError } = useDraftData(draftId);
   const { data: teams, isLoading: isTeamsLoading, error: teamsError } = useQuery({
@@ -33,88 +26,44 @@ export const DraftContent = () => {
     enabled: !!draftData?.event_key,
   });
 
-  useEffect(() => {
-    if (draftData && draftData.participants && !stateInitialized.current) {
-      const isComplete = draftData.status === 'completed';
-      setDraftState(prev => ({
-        ...prev,
-        teams: draftData.participants,
-        currentTeamIndex: 0,
-        draftStarted: draftData.status === 'active',
-        draftComplete: isComplete
-      }));
-      stateInitialized.current = true;
-    }
-  }, [draftData, setDraftState]);
-
   if (isDraftLoading || isTeamsLoading) {
     return <DraftLoadingState />;
   }
 
   if (draftError || teamsError) {
-    console.error('Draft Error:', draftError);
-    console.error('Teams Error:', teamsError);
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center space-y-4">
-          <p className="text-lg text-red-600">
-            {draftError ? 'Error loading draft data' : 'Error loading teams data'}
-          </p>
-          <p className="text-sm text-muted-foreground">Please try refreshing the page</p>
-        </div>
-      </div>
+      <DraftErrorState
+        title="Error Loading Draft"
+        message="There was an error loading the draft data. Please try again later."
+      />
     );
   }
 
   if (!draftData) {
     return (
-      <DraftLayout>
-        <div className="text-center p-8 space-y-4">
-          <p className="text-lg text-muted-foreground">Draft not found.</p>
-          <Button onClick={() => navigate('/dashboard')} variant="default">
-            Return to Dashboard
-          </Button>
-        </div>
-      </DraftLayout>
-    );
-  }
-
-  if (draftState.draftComplete) {
-    return (
-      <DraftLayout>
-        <DraftResults 
-          draftId={draftId || ''} 
-          participants={draftState.teams}
-          eventName={draftData.event_name}
-        />
-      </DraftLayout>
+      <DraftErrorState
+        title="Draft Not Found"
+        message="The requested draft could not be found."
+      />
     );
   }
 
   if (!teams || teams.length === 0) {
     return (
-      <DraftLayout>
-        <div className="text-center p-8 space-y-4">
-          <p className="text-lg text-muted-foreground">No teams found for this event.</p>
-          <Button onClick={() => navigate('/dashboard')} variant="default">
-            Return to Dashboard
-          </Button>
-        </div>
-      </DraftLayout>
+      <DraftErrorState
+        title="No Teams Available"
+        message="No teams were found for this event. Please try again later."
+      />
     );
   }
 
   const currentTeam = draftState.teams[draftState.currentTeamIndex];
   if (!currentTeam || draftState.teams.length === 0) {
     return (
-      <DraftLayout>
-        <div className="text-center p-8 space-y-4">
-          <p className="text-lg text-muted-foreground">No participants found for this draft.</p>
-          <Button onClick={() => navigate('/dashboard')} variant="default">
-            Return to Dashboard
-          </Button>
-        </div>
-      </DraftLayout>
+      <DraftErrorState
+        title="No Participants Found"
+        message="No participants were found for this draft. Please check the draft settings and try again."
+      />
     );
   }
 
@@ -183,7 +132,13 @@ export const DraftContent = () => {
           {draftData?.nickname ? `${draftData.nickname} - ${draftData.event_name}` : draftData?.event_name}
         </h1>
         
-        {!draftState.draftStarted ? (
+        {draftState.draftComplete ? (
+          <DraftComplete 
+            draftId={draftId || ''} 
+            participants={draftState.teams}
+            eventName={draftData.event_name}
+          />
+        ) : !draftState.draftStarted ? (
           <DraftSetup
             teams={draftState.teams.map(team => ({
               name: team.name,
@@ -192,29 +147,13 @@ export const DraftContent = () => {
             onStartDraft={handleStartDraft}
           />
         ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="md:col-span-2">
-                <DraftOrder
-                  teams={draftState.teams.map(team => ({
-                    name: team.name,
-                    participants: [team.name]
-                  }))}
-                  currentIndex={draftState.currentTeamIndex}
-                />
-              </div>
-              <div>
-                <DraftLeaderboard draftId={draftId || ''} />
-              </div>
-            </div>
-
-            <DraftTeamList
-              draftId={draftId || ''}
-              availableTeams={teams || []}
-              currentParticipant={currentTeam.name}
-              onTeamSelect={handleTeamSelect}
-            />
-          </>
+          <DraftGameInterface
+            draftId={draftId || ''}
+            teams={teams}
+            draftState={draftState}
+            currentTeam={currentTeam}
+            onTeamSelect={handleTeamSelect}
+          />
         )}
       </div>
     </DraftLayout>
