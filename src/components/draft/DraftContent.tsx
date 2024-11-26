@@ -31,13 +31,13 @@ export const DraftContent = () => {
 
   useEffect(() => {
     if (draftData && draftData.participants) {
-      const isComplete = draftData.participants.every(p => p.teams && p.teams.length >= 5);
+      const isComplete = draftData.status === 'completed';
       setDraftState(prev => ({
         ...prev,
         teams: draftData.participants,
         currentTeamIndex: 0,
         draftStarted: draftData.status === 'active',
-        draftComplete: isComplete || draftData.status === 'completed'
+        draftComplete: isComplete
       }));
     }
   }, [draftData, setDraftState]);
@@ -71,7 +71,7 @@ export const DraftContent = () => {
     );
   }
 
-  if (draftData.status === 'completed' || draftState.draftComplete) {
+  if (draftState.draftComplete) {
     return (
       <DraftLayout>
         <DraftResults 
