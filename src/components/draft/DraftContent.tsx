@@ -14,13 +14,14 @@ import { DraftLoadingState } from "./DraftLoadingState";
 import { DraftLayout } from "./DraftLayout";
 import { DraftLeaderboard } from "@/components/DraftLeaderboard";
 import { DraftResults } from "@/components/DraftResults";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
   const { toast } = useToast();
   const { draftState, setDraftState } = useDraftState();
+  const stateInitialized = useRef(false);
   
   const { data: draftData, isLoading: isDraftLoading, error: draftError } = useDraftData(draftId);
   const { data: teams, isLoading: isTeamsLoading, error: teamsError } = useQuery({
@@ -30,7 +31,7 @@ export const DraftContent = () => {
   });
 
   useEffect(() => {
-    if (draftData && draftData.participants) {
+    if (draftData && draftData.participants && !stateInitialized.current) {
       const isComplete = draftData.status === 'completed';
       setDraftState(prev => ({
         ...prev,
@@ -39,6 +40,7 @@ export const DraftContent = () => {
         draftStarted: draftData.status === 'active',
         draftComplete: isComplete
       }));
+      stateInitialized.current = true;
     }
   }, [draftData, setDraftState]);
 
@@ -85,10 +87,6 @@ export const DraftContent = () => {
 
   const currentTeam = draftState.teams[draftState.currentTeamIndex];
   if (!currentTeam) {
-    setDraftState(prev => ({
-      ...prev,
-      currentTeamIndex: 0
-    }));
     return null;
   }
 
