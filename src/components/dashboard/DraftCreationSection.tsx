@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { DraftControls } from "./DraftControls";
 import { EventSelector } from "@/components/EventSelector";
 import { supabase } from "@/integrations/supabase/client";
+import { DraftCreation } from "@/components/DraftCreation";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { DraftTeam } from "@/types/draftCreation";
 
 interface DraftCreationSectionProps {
   userId: string;
@@ -30,8 +33,7 @@ export const DraftCreationSection = ({
   isLoading,
   error
 }: DraftCreationSectionProps) => {
-  const [participants, setParticipants] = useState(2);
-  const [participantNames, setParticipantNames] = useState<string[]>([]);
+  const [nickname, setNickname] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -55,9 +57,7 @@ export const DraftCreationSection = ({
           .eq('id', userId)
           .maybeSingle();
 
-        if (profileError) {
-          throw profileError;
-        }
+        if (profileError) throw profileError;
 
         if (!profile) {
           toast({
@@ -81,28 +81,10 @@ export const DraftCreationSection = ({
   }, [userId, toast, navigate]);
 
   const handleStartDraft = async () => {
-    if (participantNames.some(name => !name.trim())) {
-      toast({
-        title: "Error",
-        description: "All participants must have names",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (!selectedEvent) {
       toast({
         title: "Error",
         description: "Please select an event",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (participants > 200) {
-      toast({
-        title: "Error",
-        description: "Maximum number of participants is 200",
         variant: "destructive",
       });
       return;
@@ -127,7 +109,7 @@ export const DraftCreationSection = ({
           event_key: selectedEvent,
           event_name: events?.find(e => e.key === selectedEvent)?.name || selectedEvent,
           status: 'active',
-          participants: participantNames.map(name => ({ name, teams: [] })),
+          nickname: nickname || null,
         })
         .select()
         .single();
@@ -147,40 +129,29 @@ export const DraftCreationSection = ({
 
   return (
     <div className="space-y-8">
-      <DraftControls
-        participants={participants}
-        participantNames={participantNames}
-        onParticipantsChange={(value) => {
-          if (value <= 200) {
-            setParticipants(value);
-            setParticipantNames(Array(value).fill(""));
-          } else {
-            toast({
-              title: "Error",
-              description: "Maximum number of participants is 200",
-              variant: "destructive",
-            });
-          }
-        }}
-        onParticipantNameChange={(index, value) => {
-          const newNames = [...participantNames];
-          newNames[index] = value;
-          setParticipantNames(newNames);
-        }}
-        onStartDraft={handleStartDraft}
-      />
-      
-      <EventSelector
-        events={events}
-        selectedEvent={selectedEvent}
-        onEventChange={onEventChange}
-        selectedYear={selectedYear}
-        onYearChange={onYearChange}
-        selectedDistrict={selectedDistrict}
-        onDistrictChange={onDistrictChange}
-        isLoading={isLoading}
-        error={error}
-      />
+      <Card className="p-6">
+        <h2 className="text-2xl font-semibold mb-4">Create New Draft</h2>
+        <Separator className="my-4" />
+        <div className="space-y-6">
+          <DraftCreation
+            onStartDraft={handleStartDraft}
+            nickname={nickname}
+            onNicknameChange={setNickname}
+          />
+          
+          <EventSelector
+            events={events}
+            selectedEvent={selectedEvent}
+            onEventChange={onEventChange}
+            selectedYear={selectedYear}
+            onYearChange={onYearChange}
+            selectedDistrict={selectedDistrict}
+            onDistrictChange={onDistrictChange}
+            isLoading={isLoading}
+            error={error}
+          />
+        </div>
+      </Card>
     </div>
   );
 };
