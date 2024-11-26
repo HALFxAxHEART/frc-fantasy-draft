@@ -4,16 +4,12 @@ import { Plus, Minus } from "lucide-react";
 
 interface TeamSettingsProps {
   numberOfTeams: number;
-  participantsPerTeam: number;
   onTeamsChange: (value: number) => void;
-  onParticipantsPerTeamChange: (value: number) => void;
 }
 
 export const TeamSettings = ({
   numberOfTeams,
-  participantsPerTeam,
   onTeamsChange,
-  onParticipantsPerTeamChange,
 }: TeamSettingsProps) => {
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
@@ -34,29 +30,6 @@ export const TeamSettings = ({
             size="icon"
             onClick={() => onTeamsChange(numberOfTeams + 1)}
             disabled={numberOfTeams >= 10}
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label>Participants per Team (1-5)</Label>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onParticipantsPerTeamChange(participantsPerTeam - 1)}
-            disabled={participantsPerTeam <= 1}
-          >
-            <Minus className="h-4 w-4" />
-          </Button>
-          <span className="w-8 text-center font-medium">{participantsPerTeam}</span>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => onParticipantsPerTeamChange(participantsPerTeam + 1)}
-            disabled={participantsPerTeam >= 5}
           >
             <Plus className="h-4 w-4" />
           </Button>

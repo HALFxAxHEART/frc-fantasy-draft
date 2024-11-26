@@ -22,7 +22,6 @@ export const DraftCreation = ({
   onNicknameChange,
 }: DraftCreationProps) => {
   const [numberOfTeams, setNumberOfTeams] = useState(2);
-  const [participantsPerTeam, setParticipantsPerTeam] = useState(1);
   const [teams, setTeams] = useState<DraftTeam[]>([
     { name: "Team 1", participants: [""] },
     { name: "Team 2", participants: [""] },
@@ -38,6 +37,16 @@ export const DraftCreation = ({
   const handleParticipantChange = (teamIndex: number, participantIndex: number, value: string) => {
     const newTeams = [...teams];
     newTeams[teamIndex].participants[participantIndex] = value;
+    setTeams(newTeams);
+  };
+
+  const handleParticipantCountChange = (teamIndex: number, change: number) => {
+    const newTeams = [...teams];
+    if (change > 0) {
+      newTeams[teamIndex].participants.push("");
+    } else {
+      newTeams[teamIndex].participants.pop();
+    }
     setTeams(newTeams);
   };
 
@@ -65,7 +74,7 @@ export const DraftCreation = ({
       for (let i = teams.length; i < newNumber; i++) {
         newTeams.push({
           name: `Team ${i + 1}`,
-          participants: Array(participantsPerTeam).fill(""),
+          participants: [""],
         });
       }
       setTeams(newTeams);
@@ -73,31 +82,6 @@ export const DraftCreation = ({
       // Remove teams
       setTeams(teams.slice(0, newNumber));
     }
-  };
-
-  const updateParticipantsPerTeam = (newNumber: number) => {
-    if (newNumber < 1) {
-      toast({
-        title: "Invalid number of participants",
-        description: "Each team must have at least 1 participant",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (newNumber > 5) {
-      toast({
-        title: "Invalid number of participants",
-        description: "Maximum number of participants per team is 5",
-        variant: "destructive",
-      });
-      return;
-    }
-    setParticipantsPerTeam(newNumber);
-    const newTeams = teams.map(team => ({
-      ...team,
-      participants: Array(newNumber).fill("").map((_, i) => team.participants[i] || ""),
-    }));
-    setTeams(newTeams);
   };
 
   const handleStartDraft = () => {
@@ -130,8 +114,6 @@ export const DraftCreation = ({
 
   return (
     <Card className="p-6 space-y-6">
-      <h2 className="text-2xl font-semibold">Create New Draft</h2>
-      
       <div className="space-y-6">
         <div>
           <Label className="text-sm font-medium mb-1">
@@ -151,9 +133,7 @@ export const DraftCreation = ({
           <h3 className="text-lg font-medium">Team Settings</h3>
           <TeamSettings
             numberOfTeams={numberOfTeams}
-            participantsPerTeam={participantsPerTeam}
             onTeamsChange={updateNumberOfTeams}
-            onParticipantsPerTeamChange={updateParticipantsPerTeam}
           />
         </div>
 
@@ -169,6 +149,7 @@ export const DraftCreation = ({
             teams={teams}
             onTeamNameChange={handleTeamNameChange}
             onParticipantChange={handleParticipantChange}
+            onParticipantCountChange={handleParticipantCountChange}
           />
         </div>
 
