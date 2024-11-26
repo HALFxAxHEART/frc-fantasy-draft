@@ -15,6 +15,7 @@ import { DraftLayout } from "./DraftLayout";
 import { DraftLeaderboard } from "@/components/DraftLeaderboard";
 import { DraftResults } from "@/components/DraftResults";
 import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
@@ -126,6 +127,29 @@ export const DraftContent = () => {
     }
   };
 
+  const handleStartDraft = async () => {
+    try {
+      const { error } = await supabase
+        .from('drafts')
+        .update({ status: 'active' })
+        .eq('id', draftId);
+
+      if (error) throw error;
+
+      setDraftState(prev => ({ ...prev, draftStarted: true }));
+      toast({
+        title: "Draft Started",
+        description: "Let the draft begin!"
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to start the draft",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <DraftLayout>
       <div className="space-y-8">
@@ -139,13 +163,7 @@ export const DraftContent = () => {
               name: team.name,
               participants: [team.name]
             }))}
-            onStartDraft={() => {
-              setDraftState(prev => ({ ...prev, draftStarted: true }));
-              toast({
-                title: "Draft Started",
-                description: "Let the draft begin!"
-              });
-            }}
+            onStartDraft={handleStartDraft}
           />
         ) : (
           <>
