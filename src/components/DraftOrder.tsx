@@ -6,16 +6,7 @@ import { Team } from "@/types/draft";
 interface DraftOrderProps {
   participants: Array<{
     name: string;
-    teams: Array<{
-      teamNumber: number;
-      teamName: string;
-      stats?: {
-        wins: number;
-        losses: number;
-        opr?: number;
-        autoAvg?: number;
-      };
-    }>;
+    teams: Array<Team>;
   }>;
   currentIndex: number;
   round?: number;
@@ -40,8 +31,8 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
   };
 
   return (
-    <Card className="p-6">
-      <h3 className="text-xl font-semibold mb-6 text-foreground">Draft Order</h3>
+    <Card className="p-6 space-y-4">
+      <h3 className="text-xl font-semibold mb-4 text-foreground">Draft Order</h3>
       <div className="grid grid-cols-1 gap-4">
         {participants.map((participant, displayIndex) => {
           const { isPicking, isNext } = getPickingStatus(displayIndex);
