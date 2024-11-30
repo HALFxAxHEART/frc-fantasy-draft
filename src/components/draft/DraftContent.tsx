@@ -68,10 +68,20 @@ export const DraftContent = () => {
     );
   }
 
+  // Check if we have participants in the draft state
+  if (!draftState.teams || draftState.teams.length === 0) {
+    return (
+      <DraftErrorState
+        title="Loading Participants"
+        message="Please wait while we load the participants..."
+      />
+    );
+  }
+
   const currentTeam = draftState.teams[draftState.currentTeamIndex];
 
-  // Only show no participants error if we have teams but no participants
-  if (!currentTeam && teams.length > 0 && (!draftState.teams || draftState.teams.length === 0)) {
+  // Only show no participants error if we still don't have a current team
+  if (!currentTeam) {
     return (
       <DraftErrorState
         title="No Participants Found"
