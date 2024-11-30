@@ -5,8 +5,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 interface TeamStats {
   wins: number;
   losses: number;
-  opr?: number; // Made optional
-  autoAvg?: number; // Made optional
+  opr?: number;
+  autoAvg?: number;
   ranking?: number;
 }
 
@@ -15,7 +15,7 @@ interface TeamCardProps {
   teamName: string;
   districtPoints: number;
   logoUrl?: string;
-  stats: TeamStats;
+  stats?: TeamStats;
   onSelect: () => void;
   hidePoints?: boolean;
 }
@@ -24,7 +24,7 @@ export const TeamCard = ({
   teamNumber, 
   teamName, 
   districtPoints, 
-  stats, 
+  stats = { wins: 0, losses: 0 }, 
   onSelect,
   hidePoints = false
 }: TeamCardProps) => {
