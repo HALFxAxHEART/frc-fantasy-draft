@@ -7,6 +7,7 @@ import { DraftOrder } from "./DraftOrder";
 interface Team {
   name: string;
   participantCount: number;
+  participants: string[];
 }
 
 interface DraftCreationProps {
@@ -24,7 +25,7 @@ export const DraftCreation = ({
 
   const draftTeams = teams.map(team => ({
     name: team.name,
-    participants: Array(team.participantCount).fill(team.name),
+    participants: team.participants,
     selectedTeams: []
   }));
 
