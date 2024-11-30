@@ -33,35 +33,41 @@ export interface TBAEvent {
   }>;
 }
 
-export const fetchEventDetails = async (eventKey: string): Promise<TBAEvent> => {
+const fetchWithTBAAuth = async (url: string) => {
   if (!TBA_API_KEY) {
     throw new Error('TBA API key is not configured. Please check your environment variables.');
   }
 
-  if (!eventKey) {
-    throw new Error('Event key is required');
-  }
-
-  const headers = {
-    'X-TBA-Auth-Key': TBA_API_KEY,
-    'Accept': 'application/json',
-  };
-
   try {
-    const response = await fetch(
-      `${TBA_BASE_URL}/event/${eventKey}`,
-      { headers }
-    );
+    const response = await fetch(url, {
+      headers: {
+        'X-TBA-Auth-Key': TBA_API_KEY,
+        'Accept': 'application/json',
+      },
+      mode: 'cors',
+    });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch event details: ${response.statusText}`);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     return response.json();
   } catch (error) {
-    console.error('Error fetching event details:', error);
-    throw new Error('Failed to fetch event details. Please check your internet connection and try again.');
+    console.error(`Error fetching from TBA API (${url}):`, error);
+    throw error;
   }
+};
+
+export const fetchEventDetails = async (eventKey: string): Promise<TBAEvent> => {
+  if (!eventKey) {
+    throw new Error('Event key is required');
+  }
+
+  return fetchWithTBAAuth(`${TBA_BASE_URL}/event/${eventKey}`);
+};
+
+export const fetchEvents = async (year: number) => {
+  return fetchWithTBAAuth(`${TBA_BASE_URL}/events/${year}`);
 };
 
 export const fetchEventTeams = async (eventKey: string): Promise<Array<{
@@ -79,69 +85,38 @@ export const fetchEventTeams = async (eventKey: string): Promise<Array<{
     throw new Error('Event key is required');
   }
 
-  if (!TBA_API_KEY) {
-    throw new Error('TBA API key is not configured. Please check your environment variables.');
-  }
-
-  const headers = {
-    'X-TBA-Auth-Key': TBA_API_KEY,
-    'Accept': 'application/json',
-  };
-
   try {
     // Fetch teams for the event
-    const teamsResponse = await fetch(
-      `${TBA_BASE_URL}/event/${eventKey}/teams`,
-      { headers }
-    );
-
-    if (!teamsResponse.ok) {
-      throw new Error(`Failed to fetch teams: ${teamsResponse.statusText}`);
-    }
-
-    const teams: TBATeam[] = await teamsResponse.json();
-
+    const teams: TBATeam[] = await fetchWithTBAAuth(`${TBA_BASE_URL}/event/${eventKey}/teams`);
+    
     // Fetch event stats
-    const statsResponse = await fetch(
-      `${TBA_BASE_URL}/event/${eventKey}/oprs`,
-      { headers }
-    );
-
-    if (!statsResponse.ok) {
+    let stats;
+    try {
+      stats = await fetchWithTBAAuth(`${TBA_BASE_URL}/event/${eventKey}/oprs`);
+    } catch (error) {
       console.warn('Failed to fetch OPR stats, using default values');
+      stats = null;
     }
-
-    const stats = statsResponse.ok ? await statsResponse.json() : null;
 
     // For each team, fetch their event status
     const teamsWithStats = await Promise.all(teams.map(async (team) => {
       try {
-        const statusResponse = await fetch(
-          `${TBA_BASE_URL}/team/frc${team.team_number}/events/2024/statuses`,
-          { headers }
+        const teamEvents = await fetchWithTBAAuth(
+          `${TBA_BASE_URL}/team/frc${team.team_number}/event/${eventKey}/status`
         );
 
-        const teamEvents: Record<string, TBATeamEventStatus> = statusResponse.ok 
-          ? await statusResponse.json()
-          : {};
-
-        // Find the last event's stats
-        const lastEventStats = Object.values(teamEvents).reduce((latest: TBATeamEventStatus | null, current: TBATeamEventStatus) => {
-          if (!latest || (current.last_match_time && latest.last_match_time && current.last_match_time > latest.last_match_time)) {
-            return current;
-          }
-          return latest;
-        }, null);
+        const qualRanking = teamEvents?.qual?.ranking || {};
+        const record = qualRanking?.record || { wins: 0, losses: 0 };
 
         return {
           teamNumber: team.team_number,
           teamName: team.nickname || `Team ${team.team_number}`,
           districtPoints: 0,
           stats: {
-            wins: lastEventStats?.qual?.ranking?.record?.wins || 0,
-            losses: lastEventStats?.qual?.ranking?.record?.losses || 0,
+            wins: record.wins || 0,
+            losses: record.losses || 0,
             opr: stats?.oprs?.[`frc${team.team_number}`] || 0,
-            autoAvg: lastEventStats?.qual?.ranking?.sort_orders?.[0] || 0,
+            autoAvg: qualRanking?.sort_orders?.[3] || 0,
           }
         };
       } catch (error) {
