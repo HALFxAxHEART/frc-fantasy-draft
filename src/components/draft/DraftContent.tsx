@@ -13,17 +13,31 @@ import { DraftErrorState } from "./DraftErrorState";
 import { DraftGameInterface } from "./DraftGameInterface";
 import { DraftLayout } from "./DraftLayout";
 import { Team } from "@/types/draft";
+import { Progress } from "@/components/ui/progress";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
   const { toast } = useToast();
   const { draftState, setDraftState } = useDraftState();
+  const [loadingProgress, setLoadingProgress] = React.useState(0);
   
   const { data: draftData, isLoading: isDraftLoading } = useDraftData(draftId);
   
   const { data: teams, isLoading: isTeamsLoading, error: teamsError } = useQuery({
     queryKey: ['eventTeams', draftData?.event_key],
-    queryFn: () => fetchEventTeams(draftData?.event_key || ''),
+    queryFn: async () => {
+      const teams = await fetchEventTeams(draftData?.event_key || '');
+      let progress = 0;
+      const increment = 100 / teams.length;
+      
+      const processedTeams = teams.map((team, index) => {
+        progress += increment;
+        setLoadingProgress(Math.min(Math.round(progress), 100));
+        return team;
+      });
+
+      return processedTeams;
+    },
     enabled: !!draftData?.event_key,
     meta: {
       onSuccess: (data: any) => {
@@ -32,9 +46,15 @@ export const DraftContent = () => {
           number: team.teamNumber,
           name: team.teamName
         })));
+        setLoadingProgress(100);
       },
       onError: (error: Error) => {
         console.error('Error loading teams:', error);
+        toast({
+          title: "Error Loading Teams",
+          description: error.message,
+          variant: "destructive"
+        });
       }
     }
   });
@@ -42,9 +62,6 @@ export const DraftContent = () => {
   // Initialize draft state with participants and event data
   React.useEffect(() => {
     if (draftData?.participants && draftData?.event_key) {
-      console.log('Draft participants:', draftData.participants);
-      console.log('Event key:', draftData.event_key);
-      
       const initialTeams = draftData.participants.map(participant => ({
         name: participant.name,
         teams: participant.teams || []
@@ -63,9 +80,19 @@ export const DraftContent = () => {
 
   if (isDraftLoading || isTeamsLoading) {
     return (
-      <DraftLoadingIndicator 
-        message={isDraftLoading ? "Loading draft data..." : "Loading teams..."}
-      />
+      <div className="space-y-4">
+        <DraftLoadingIndicator 
+          message={isDraftLoading ? "Loading draft data..." : "Loading teams..."}
+        />
+        {isTeamsLoading && (
+          <div className="w-full max-w-md mx-auto space-y-2">
+            <Progress value={loadingProgress} className="w-full" />
+            <p className="text-center text-sm text-muted-foreground">
+              Loading teams: {loadingProgress}%
+            </p>
+          </div>
+        )}
+      </div>
     );
   }
 

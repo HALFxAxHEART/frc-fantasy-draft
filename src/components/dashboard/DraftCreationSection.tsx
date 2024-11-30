@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { DraftCreation } from "@/components/DraftCreation";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { DraftTeam } from "@/types/draftCreation";
+import { Progress } from "@/components/ui/progress";
+import { fetchEventTeams } from "@/services/tbaService";
 
 interface DraftCreationSectionProps {
   userId: string;
@@ -34,6 +35,8 @@ export const DraftCreationSection = ({
   error
 }: DraftCreationSectionProps) => {
   const [nickname, setNickname] = useState("");
+  const [loadingTeams, setLoadingTeams] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -91,6 +94,17 @@ export const DraftCreationSection = ({
     }
 
     try {
+      setLoadingTeams(true);
+      const teams = await fetchEventTeams(selectedEvent);
+      let progress = 0;
+      const increment = 100 / teams.length;
+      
+      teams.forEach((team, index) => {
+        progress += increment;
+        setLoadingProgress(Math.min(Math.round(progress), 100));
+        console.log(`Loaded team ${team.teamNumber}: ${team.teamName}`);
+      });
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast({
@@ -124,6 +138,9 @@ export const DraftCreationSection = ({
         variant: "destructive",
       });
       console.error('Draft creation error:', error);
+    } finally {
+      setLoadingTeams(false);
+      setLoadingProgress(0);
     }
   };
 
@@ -150,6 +167,15 @@ export const DraftCreationSection = ({
             isLoading={isLoading}
             error={error}
           />
+
+          {loadingTeams && (
+            <div className="space-y-2">
+              <Progress value={loadingProgress} className="w-full" />
+              <p className="text-sm text-center text-muted-foreground">
+                Loading teams: {loadingProgress}%
+              </p>
+            </div>
+          )}
         </div>
       </Card>
     </div>
