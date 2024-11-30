@@ -80,7 +80,7 @@ export const DraftCreation = ({
 
         <div className="space-y-6">
           {teams.map((team, teamIndex) => (
-            <div key={teamIndex} className="bg-card p-4 space-y-4 rounded-lg border shadow-sm">
+            <div key={teamIndex} className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex-1 mr-4">
                   <label className="block text-sm font-medium mb-1">
