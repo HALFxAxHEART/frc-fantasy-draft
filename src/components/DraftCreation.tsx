@@ -24,7 +24,7 @@ export const DraftCreation = ({
 
   const draftTeams = teams.map(team => ({
     name: team.name,
-    participants: Array(team.participantCount).fill(""),
+    participants: Array(team.participantCount).fill(team.name),
     selectedTeams: []
   }));
 
