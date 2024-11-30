@@ -76,22 +76,6 @@ export const DraftCreationSection = ({
     }
   }, [userId, toast]);
 
-  const addTeam = () => {
-    setTeams([...teams, { name: "", participants: [""] }]);
-  };
-
-  const removeTeam = (index: number) => {
-    if (teams.length > 1) {
-      setTeams(teams.filter((_, i) => i !== index));
-    }
-  };
-
-  const updateTeam = (index: number, updatedTeam: Team) => {
-    const newTeams = [...teams];
-    newTeams[index] = updatedTeam;
-    setTeams(newTeams);
-  };
-
   const handleStartDraft = async () => {
     if (!selectedEvent) {
       toast({
@@ -112,6 +96,14 @@ export const DraftCreationSection = ({
     }
 
     try {
+      // Create participants array from team participants
+      const participants = teams.flatMap(team => 
+        team.participants.map(participant => ({
+          name: participant,
+          teams: []
+        }))
+      );
+
       const { data, error } = await supabase
         .from('drafts')
         .insert({
@@ -119,8 +111,9 @@ export const DraftCreationSection = ({
           event_key: selectedEvent,
           event_name: events?.find(e => e.key === selectedEvent)?.name || selectedEvent,
           status: 'active',
-          teams: JSON.stringify(teams),
+          participants: participants,
           nickname: draftNickname || null,
+          teams: teams,
         })
         .select()
         .single();
@@ -153,9 +146,17 @@ export const DraftCreationSection = ({
 
           <TeamsSection
             teams={teams}
-            onTeamAdd={addTeam}
-            onTeamUpdate={updateTeam}
-            onTeamRemove={removeTeam}
+            onTeamAdd={() => setTeams([...teams, { name: "", participants: [""] }])}
+            onTeamUpdate={(index, updatedTeam) => {
+              const newTeams = [...teams];
+              newTeams[index] = updatedTeam;
+              setTeams(newTeams);
+            }}
+            onTeamRemove={(index) => {
+              if (teams.length > 1) {
+                setTeams(teams.filter((_, i) => i !== index));
+              }
+            }}
           />
 
           <Button
