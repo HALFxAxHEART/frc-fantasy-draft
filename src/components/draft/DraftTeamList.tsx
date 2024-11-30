@@ -4,32 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { TeamCard } from "../TeamCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDraftState } from "./DraftStateProvider";
-import { Json } from "@/integrations/supabase/types";
-
-interface Team {
-  teamNumber: number;
-  teamName: string;
-  districtPoints: number;
-  stats: {
-    wins: number;
-    losses: number;
-    opr: number;
-    autoAvg: number;
-  };
-}
-
-interface DraftData {
-  selectedTeams: number[];
-  // Add other draft_data fields if needed
-}
-
-interface DraftParticipant {
-  name: string;
-  teams: Array<{
-    teamNumber: number;
-    teamName: string;
-  }>;
-}
+import { Team } from "@/types/draft";
 
 interface DraftTeamListProps {
   draftId: string;
@@ -61,10 +36,10 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      // Safely type assert the data from Supabase
-      const participants = (draft.participants as unknown as DraftParticipant[]) || [];
-      const draftData = ((draft.draft_data as unknown) as DraftData) || { selectedTeams: [] };
-      const selectedTeams = draftData.selectedTeams || [];
+      const participants = (draft.participants as unknown as Array<{
+        name: string;
+        teams: Team[];
+      }>) || [];
 
       const currentParticipantData = participants.find(p => p.name === currentParticipant);
       if (!currentParticipantData) {
@@ -75,15 +50,6 @@ export const DraftTeamList = ({
         toast({
           title: "Maximum Teams Reached",
           description: "You can only select up to 5 teams per participant.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (selectedTeams.includes(team.teamNumber)) {
-        toast({
-          title: "Team Already Selected",
-          description: "This team has already been drafted.",
           variant: "destructive",
         });
         return;
