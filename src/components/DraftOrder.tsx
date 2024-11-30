@@ -82,7 +82,7 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
                   <div className="text-sm grid grid-cols-2 gap-2">
                     {participant.teams.map((team, idx) => (
                       <div key={idx} className="bg-background/10 p-2 rounded text-foreground">
-                        Team {team.teamNumber}
+                        {team.teamName}
                       </div>
                     ))}
                   </div>
