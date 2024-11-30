@@ -1,3 +1,4 @@
+import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Plus, Minus } from "lucide-react";
@@ -64,7 +65,9 @@ export const DraftCreation = ({
   };
 
   return (
-    <div className="space-y-8">
+    <Card className="p-6 space-y-6">
+      <h2 className="text-2xl font-semibold">Create New Draft</h2>
+      
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-1">
@@ -80,7 +83,7 @@ export const DraftCreation = ({
 
         <div className="space-y-6">
           {teams.map((team, teamIndex) => (
-            <div key={teamIndex} className="p-4 space-y-4">
+            <Card key={teamIndex} className="p-4 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex-1 mr-4">
                   <label className="block text-sm font-medium mb-1">
@@ -144,7 +147,7 @@ export const DraftCreation = ({
                   </Button>
                 )}
               </div>
-            </div>
+            </Card>
           ))}
         </div>
 
@@ -166,6 +169,6 @@ export const DraftCreation = ({
           Start Draft
         </Button>
       </div>
-    </div>
+    </Card>
   );
 };
