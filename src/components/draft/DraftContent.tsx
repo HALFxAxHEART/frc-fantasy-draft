@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { DraftTimer } from "@/components/DraftTimer";
 import { DraftOrder } from "@/components/DraftOrder";
 import { DraftTeamList } from "./DraftTeamList";
@@ -14,6 +14,8 @@ import { fetchEventTeams } from "@/services/tbaService";
 import { DraftLoadingState } from "./DraftLoadingState";
 import { DraftLayout } from "./DraftLayout";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
@@ -59,26 +61,34 @@ export const DraftContent = () => {
   }
 
   if (!draftData) {
-    console.error('No draft data available');
     return (
       <DraftLayout>
-        <div className="text-center p-8">
-          <p className="text-lg text-muted-foreground">Draft not found. Please return to dashboard.</p>
+        <div className="text-center p-8 space-y-4">
+          <p className="text-lg text-muted-foreground">Draft not found.</p>
+          <Link to="/dashboard">
+            <Button variant="outline" className="gap-2">
+              <ArrowLeft className="h-4 w-4" /> Return to Dashboard
+            </Button>
+          </Link>
         </div>
       </DraftLayout>
     );
   }
 
   if (!draftData.participants || draftData.participants.length === 0) {
-    console.error('No participants in draft data:', draftData);
     return (
       <DraftLayout>
         <div className="space-y-8">
           <h1 className="text-3xl font-bold">
             {draftData.nickname ? `${draftData.nickname} - ${draftData.event_name}` : draftData.event_name}
           </h1>
-          <div className="text-center p-8">
-            <p className="text-lg text-muted-foreground">No participants found. Please return to dashboard and try again.</p>
+          <div className="text-center space-y-4">
+            <p className="text-lg text-muted-foreground">No participants found in this draft.</p>
+            <Link to="/dashboard">
+              <Button variant="outline" className="gap-2">
+                <ArrowLeft className="h-4 w-4" /> Return to Dashboard
+              </Button>
+            </Link>
           </div>
         </div>
       </DraftLayout>
