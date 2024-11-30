@@ -72,28 +72,30 @@ export const DraftOrder = ({ teams, currentIndex, round = 1 }: DraftOrderProps) 
                       {team.name?.[0]?.toUpperCase() || '?'}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-lg font-bold">{team.name}</span>
+                  <div className="flex flex-col">
+                    <span className="text-lg font-bold">{team.name}</span>
+                    {team.participants && team.participants.length > 0 && (
+                      <span className="text-sm text-muted-foreground">
+                        {team.participants.join(', ')}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="text-sm">
                   {isPicking && <span className="font-medium">(Picking)</span>}
                   {isNext && <span className="font-medium">(Next)</span>}
                 </div>
                 {team.selectedTeams && team.selectedTeams.length > 0 && (
-                  <div className="text-sm grid grid-cols-1 gap-2">
-                    {team.selectedTeams.map((selectedTeam, idx) => (
-                      <div key={idx} className="bg-background/10 p-2 rounded">
-                        {selectedTeam.teamName}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {team.participants && team.participants.length > 0 && (
                   <div className="text-sm mt-2">
-                    <div className="font-medium mb-1">Team Members:</div>
+                    <div className="font-medium mb-1">Selected Teams:</div>
                     <div className="grid grid-cols-1 gap-1">
-                      {team.participants.map((participant, idx) => (
-                        <div key={idx} className="text-sm">
-                          {participant}
+                      {team.selectedTeams.map((selectedTeam, idx) => (
+                        <div 
+                          key={idx} 
+                          className="bg-background/10 p-2 rounded flex items-center justify-between"
+                        >
+                          <span>{selectedTeam.teamName}</span>
+                          <span className="text-xs opacity-75">#{selectedTeam.teamNumber}</span>
                         </div>
                       ))}
                     </div>
