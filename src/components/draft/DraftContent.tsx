@@ -14,8 +14,8 @@ import { fetchEventTeams } from "@/services/tbaService";
 import { DraftLoadingState } from "./DraftLoadingState";
 import { DraftLayout } from "./DraftLayout";
 import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { DraftHeader } from "./DraftHeader";
+import { EmptyDraftState } from "./EmptyDraftState";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
@@ -31,9 +31,11 @@ export const DraftContent = () => {
 
   useEffect(() => {
     if (draftData && draftData.participants) {
+      // Randomly shuffle the participants array
+      const shuffledParticipants = [...draftData.participants].sort(() => Math.random() - 0.5);
       setDraftState(prev => ({
         ...prev,
-        participants: draftData.participants,
+        participants: shuffledParticipants,
         currentParticipantIndex: 0,
         draftStarted: false,
         draftComplete: false
@@ -46,8 +48,6 @@ export const DraftContent = () => {
   }
 
   if (draftError || teamsError) {
-    console.error('Draft Error:', draftError);
-    console.error('Teams Error:', teamsError);
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center space-y-4">
@@ -79,31 +79,14 @@ export const DraftContent = () => {
     return (
       <DraftLayout>
         <div className="space-y-8">
-          <h1 className="text-3xl font-bold">
-            {draftData.nickname ? `${draftData.nickname} - ${draftData.event_name}` : draftData.event_name}
-          </h1>
-          <div className="space-y-8">
-            <div className="text-center space-y-4">
-              <p className="text-lg text-muted-foreground">No participants found in this draft.</p>
-              <Link to="/dashboard">
-                <Button variant="outline" className="gap-2">
-                  <ArrowLeft className="h-4 w-4" /> Return to Dashboard
-                </Button>
-              </Link>
-            </div>
-            {teams && teams.length > 0 && (
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold">Teams in this event:</h2>
-                <DraftTeamList
-                  draftId={draftId || ''}
-                  availableTeams={teams}
-                  currentParticipant=""
-                  onTeamSelect={() => {}}
-                  hidePoints
-                />
-              </div>
-            )}
-          </div>
+          <DraftHeader 
+            nickname={draftData.nickname} 
+            eventName={draftData.event_name} 
+          />
+          <EmptyDraftState 
+            draftId={draftId || ''} 
+            teams={teams || []} 
+          />
         </div>
       </DraftLayout>
     );
@@ -125,7 +108,7 @@ export const DraftContent = () => {
         team,
         draftState.participants,
         currentParticipant.name,
-        teams
+        teams || []
       );
 
       const nextIndex = (draftState.currentParticipantIndex + 1) % draftState.participants.length;
@@ -141,7 +124,7 @@ export const DraftContent = () => {
       if (!isComplete) {
         toast({
           title: "Team Selected",
-          description: `${team.teamName} has been drafted`
+          description: `${team.teamName} has been drafted by ${currentParticipant.name}`
         });
       }
     } catch (error: any) {
@@ -160,9 +143,10 @@ export const DraftContent = () => {
   return (
     <DraftLayout>
       <div className="space-y-8">
-        <h1 className="text-3xl font-bold">
-          {draftData.nickname ? `${draftData.nickname} - ${draftData.event_name}` : draftData.event_name}
-        </h1>
+        <DraftHeader 
+          nickname={draftData.nickname} 
+          eventName={draftData.event_name} 
+        />
         
         {!draftState.draftStarted ? (
           <DraftSetup
