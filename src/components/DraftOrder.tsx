@@ -36,7 +36,7 @@ export const DraftOrder = ({ teams, currentIndex, round = 1 }: DraftOrderProps) 
   if (!teams?.length) {
     return (
       <Card className="p-6">
-        <p className="text-muted-foreground text-center">No teams added yet</p>
+        <p className="text-muted-foreground text-center">No participants added yet</p>
       </Card>
     );
   }
