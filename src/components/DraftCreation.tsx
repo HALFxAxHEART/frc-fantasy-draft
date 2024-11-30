@@ -23,8 +23,8 @@ export const DraftCreation = ({
   const [teams, setTeams] = useState<Team[]>([]);
 
   const draftTeams = teams.map(team => ({
-    name: team.name || `Team ${teams.indexOf(team) + 1}`,
-    participants: [],
+    name: team.name,
+    participants: Array(team.participantCount).fill(""),
     selectedTeams: []
   }));
 
