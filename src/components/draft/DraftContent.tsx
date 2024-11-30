@@ -22,7 +22,9 @@ export const DraftContent = () => {
   const { draftState, setDraftState } = useDraftState();
   
   const { data: draftData, isLoading: isDraftLoading } = useDraftData(draftId);
-  const { data: teams, isLoading: isTeamsLoading } = useQuery({
+  
+  // Fetch teams from The Blue Alliance
+  const { data: teams, isLoading: isTeamsLoading, error: teamsError } = useQuery({
     queryKey: ['eventTeams', draftData?.event_key],
     queryFn: () => fetchEventTeams(draftData?.event_key || ''),
     enabled: !!draftData?.event_key,
@@ -48,7 +50,23 @@ export const DraftContent = () => {
   }, [draftData, setDraftState]);
 
   if (isDraftLoading || isTeamsLoading) {
-    return <DraftLoadingState />;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-lg text-muted-foreground">
+          {isDraftLoading ? "Loading draft data..." : "Loading teams..."}
+        </p>
+      </div>
+    );
+  }
+
+  if (teamsError) {
+    return (
+      <DraftErrorState
+        title="Error Loading Teams"
+        message="Failed to load teams from The Blue Alliance. Please try again later."
+      />
+    );
   }
 
   if (!draftData) {
