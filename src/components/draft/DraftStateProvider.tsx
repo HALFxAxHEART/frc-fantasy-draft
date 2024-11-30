@@ -1,14 +1,21 @@
 import { createContext, useContext, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Team, DraftParticipant } from "@/types/draft";
+import { Team } from "@/types/draft";
+
+interface DraftTeam {
+  name: string;
+  participants: string[];
+  selectedTeams: Team[];
+}
 
 interface DraftState {
-  participants: DraftParticipant[];
+  participants: Array<{ name: string; teams: Team[] }>;
   selectedEvent: string;
   currentParticipantIndex: number;
+  currentTeamIndex: number;
   timeRemaining: number;
   draftComplete: boolean;
   draftStarted: boolean;
+  teams: DraftTeam[];
 }
 
 interface DraftStateContextType {
@@ -31,9 +38,11 @@ export const DraftStateProvider = ({ children }: { children: React.ReactNode }) 
     participants: [],
     selectedEvent: "",
     currentParticipantIndex: 0,
+    currentTeamIndex: 0,
     timeRemaining: 120,
     draftComplete: false,
     draftStarted: false,
+    teams: [],
   });
 
   return (
