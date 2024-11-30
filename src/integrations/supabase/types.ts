@@ -110,6 +110,8 @@ export type Database = {
       global_draft_participants: {
         Row: {
           created_at: string
+          current_pick: number | null
+          draft_position: number | null
           global_draft_id: string | null
           id: string
           rank: number | null
@@ -120,6 +122,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          current_pick?: number | null
+          draft_position?: number | null
           global_draft_id?: string | null
           id?: string
           rank?: number | null
@@ -130,6 +134,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          current_pick?: number | null
+          draft_position?: number | null
           global_draft_id?: string | null
           id?: string
           rank?: number | null
@@ -161,6 +167,8 @@ export type Database = {
           end_date: string
           id: string
           name: string | null
+          pick_time_seconds: number | null
+          picks_per_participant: number | null
           season_year: number
           settings: Json | null
           start_date: string
@@ -171,6 +179,8 @@ export type Database = {
           end_date: string
           id?: string
           name?: string | null
+          pick_time_seconds?: number | null
+          picks_per_participant?: number | null
           season_year: number
           settings?: Json | null
           start_date: string
@@ -181,6 +191,8 @@ export type Database = {
           end_date?: string
           id?: string
           name?: string | null
+          pick_time_seconds?: number | null
+          picks_per_participant?: number | null
           season_year?: number
           settings?: Json | null
           start_date?: string

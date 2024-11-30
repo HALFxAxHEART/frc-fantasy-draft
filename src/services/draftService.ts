@@ -7,32 +7,62 @@ export const selectTeam = async (
   team: Team,
   participants: DraftParticipant[],
   currentParticipant: string,
-  availableTeams: Team[]
+  availableTeams: Team[],
+  isGlobalDraft: boolean = false
 ) => {
-  const updatedParticipants = participants.map(p =>
-    p.name === currentParticipant
-      ? { ...p, teams: [...p.teams, team] }
-      : p
-  );
+  if (isGlobalDraft) {
+    const { data: participant, error: participantError } = await supabase
+      .from('global_draft_participants')
+      .select('*')
+      .eq('global_draft_id', draftId)
+      .eq('user_id', currentParticipant)
+      .single();
 
-  const updatedAvailableTeams = availableTeams.filter(
-    t => t.teamNumber !== team.teamNumber
-  );
+    if (participantError) throw participantError;
 
-  const { error } = await supabase
-    .from('drafts')
-    .update({
-      participants: updatedParticipants as unknown as Json,
-      draft_data: {
-        availableTeams: updatedAvailableTeams
-      } as unknown as Json
-    })
-    .eq('id', draftId);
+    const selectedTeams = participant.selected_teams as Team[] || [];
+    const updatedTeams = [...selectedTeams, team];
 
-  if (error) throw error;
+    const { error: updateError } = await supabase
+      .from('global_draft_participants')
+      .update({
+        selected_teams: updatedTeams,
+        current_pick: (participant.current_pick || 0) + 1
+      })
+      .eq('id', participant.id);
 
-  return {
-    updatedParticipants,
-    updatedAvailableTeams
-  };
+    if (updateError) throw updateError;
+
+    return {
+      updatedParticipants: participants,
+      updatedAvailableTeams: availableTeams.filter(t => t.teamNumber !== team.teamNumber)
+    };
+  } else {
+    const updatedParticipants = participants.map(p =>
+      p.name === currentParticipant
+        ? { ...p, teams: [...p.teams, team] }
+        : p
+    );
+
+    const updatedAvailableTeams = availableTeams.filter(
+      t => t.teamNumber !== team.teamNumber
+    );
+
+    const { error } = await supabase
+      .from('drafts')
+      .update({
+        participants: updatedParticipants as unknown as Json,
+        draft_data: {
+          availableTeams: updatedAvailableTeams
+        } as unknown as Json
+      })
+      .eq('id', draftId);
+
+    if (error) throw error;
+
+    return {
+      updatedParticipants,
+      updatedAvailableTeams
+    };
+  }
 };
