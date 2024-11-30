@@ -18,18 +18,15 @@ export interface TBAEvent {
 }
 
 export const fetchEvents = async (year: number) => {
-  const apiKey = import.meta.env.VITE_TBA_API_KEY;
+  const apiKey = 'iKZ5yeGO6M727PxtIfMVJo2pC9BtyQ6RBpOh4UEbVLwZCwPQEaife44DG7NPsCmq';
   
-  if (!apiKey) {
-    throw new Error('TBA API key is not configured. Please set VITE_TBA_API_KEY in your environment.');
-  }
-
   try {
     const response = await fetch(`${TBA_API_BASE_URL}/events/${year}`, {
       headers: {
         'X-TBA-Auth-Key': apiKey,
         'Accept': 'application/json',
       },
+      mode: 'cors',
     });
     
     if (!response.ok) {
