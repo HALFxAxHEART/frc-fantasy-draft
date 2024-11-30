@@ -20,13 +20,13 @@ export const selectTeam = async (
 
     if (participantError) throw participantError;
 
-    const selectedTeams = participant.selected_teams as Team[] || [];
+    const selectedTeams = (participant.selected_teams as unknown as Team[]) || [];
     const updatedTeams = [...selectedTeams, team];
 
     const { error: updateError } = await supabase
       .from('global_draft_participants')
       .update({
-        selected_teams: updatedTeams,
+        selected_teams: updatedTeams as unknown as Json,
         current_pick: (participant.current_pick || 0) + 1
       })
       .eq('id', participant.id);

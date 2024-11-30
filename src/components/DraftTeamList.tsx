@@ -1,22 +1,11 @@
-import { Card } from "../ui/card";
-import { useToast } from "../ui/use-toast";
+import { Card } from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { TeamCard } from "../TeamCard";
+import { TeamCard } from "@/components/TeamCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDraftState } from "./DraftStateProvider";
 import { Json } from "@/integrations/supabase/types";
-
-interface Team {
-  teamNumber: number;
-  teamName: string;
-  districtPoints: number;
-  stats: {
-    wins: number;
-    losses: number;
-    opr: number;
-    autoAvg: number;
-  };
-}
+import { Team } from "@/types/draft";
 
 interface DraftTeamListProps {
   draftId: string;
@@ -50,7 +39,7 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      const participants = draft.participants as unknown as Array<{
+      const participants = draft.participants as Array<{
         name: string;
         teams: Team[];
       }>;
