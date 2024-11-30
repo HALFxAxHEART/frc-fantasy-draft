@@ -1,1 +1,4 @@
 project_id = "rdgtfutmiucxdhbiizxy"
+
+[functions.tba]
+verify_jwt = false
