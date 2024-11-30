@@ -3,7 +3,17 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 const TBA_API_BASE_URL = 'https://www.thebluealliance.com/api/v3';
 const TBA_API_KEY = Deno.env.get('TBA_API_KEY');
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   try {
     const url = new URL(req.url);
     const year = url.searchParams.get('year');
@@ -12,7 +22,13 @@ serve(async (req) => {
     if (!year && !eventKey) {
       return new Response(
         JSON.stringify({ error: 'Either year or eventKey parameter is required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
+        { 
+          status: 400, 
+          headers: { 
+            'Content-Type': 'application/json',
+            ...corsHeaders
+          } 
+        }
       );
     }
 
@@ -41,8 +57,7 @@ serve(async (req) => {
       { 
         headers: { 
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+          ...corsHeaders
         } 
       }
     );
@@ -53,8 +68,7 @@ serve(async (req) => {
         status: 500, 
         headers: { 
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+          ...corsHeaders
         } 
       }
     );
