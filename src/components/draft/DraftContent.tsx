@@ -14,6 +14,7 @@ import { DraftGameInterface } from "./DraftGameInterface";
 import { supabase } from "@/integrations/supabase/client";
 import { Team } from "@/types/draft";
 import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
@@ -68,19 +69,18 @@ export const DraftContent = () => {
     );
   }
 
-  // Check if we have participants in the draft state
+  // Show loading state with spinner while participants are being initialized
   if (!draftState.teams || draftState.teams.length === 0) {
     return (
-      <DraftErrorState
-        title="Loading Participants"
-        message="Please wait while we load the participants..."
-      />
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-lg text-muted-foreground">Loading participants...</p>
+      </div>
     );
   }
 
   const currentTeam = draftState.teams[draftState.currentTeamIndex];
 
-  // Only show no participants error if we still don't have a current team
   if (!currentTeam) {
     return (
       <DraftErrorState
