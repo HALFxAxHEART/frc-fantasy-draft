@@ -25,11 +25,24 @@ export const DraftContent = () => {
     queryKey: ['eventTeams', draftData?.event_key],
     queryFn: () => fetchEventTeams(draftData?.event_key || ''),
     enabled: !!draftData?.event_key,
+    onSuccess: (data) => {
+      console.log('Teams loaded for event:', draftData?.event_key);
+      console.log('Team data:', data.map(team => ({
+        number: team.teamNumber,
+        name: team.teamName
+      })));
+    },
+    onError: (error) => {
+      console.error('Error loading teams:', error);
+    }
   });
 
   // Initialize draft state with participants and event data
   React.useEffect(() => {
     if (draftData?.participants && draftData?.event_key) {
+      console.log('Draft participants:', draftData.participants);
+      console.log('Event key:', draftData.event_key);
+      
       const initialTeams = draftData.participants.map(participant => ({
         name: participant.name,
         teams: participant.teams || []
