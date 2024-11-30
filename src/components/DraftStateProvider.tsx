@@ -1,19 +1,20 @@
 import { createContext, useContext, useState } from "react";
 import { Team } from "@/types/draft";
 
-interface DraftParticipant {
+interface DraftTeam {
   name: string;
-  teams: Team[];
+  participants: string[];
+  selectedTeams: Team[];
 }
 
 interface DraftState {
-  participants: DraftParticipant[];
+  teams: DraftTeam[];
   selectedEvent: string;
-  currentParticipantIndex: number;
+  currentTeamIndex: number;
   timeRemaining: number;
   draftComplete: boolean;
   draftStarted: boolean;
-  maxTeamsPerParticipant: number;
+  maxTeamsPerTeam: number;
   isGlobalDraft: boolean;
 }
 
@@ -34,13 +35,13 @@ export const useDraftState = () => {
 
 export const DraftStateProvider = ({ children }: { children: React.ReactNode }) => {
   const [draftState, setDraftState] = useState<DraftState>({
-    participants: [],
+    teams: [],
     selectedEvent: "",
-    currentParticipantIndex: 0,
+    currentTeamIndex: 0,
     timeRemaining: 120,
     draftComplete: false,
     draftStarted: false,
-    maxTeamsPerParticipant: 5,
+    maxTeamsPerTeam: 5,
     isGlobalDraft: false,
   });
 

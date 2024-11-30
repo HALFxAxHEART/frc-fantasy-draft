@@ -1,16 +1,15 @@
-import { Card } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
+import { Card } from "./ui/card";
+import { useToast } from "./ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { TeamCard } from "@/components/TeamCard";
+import { TeamCard } from "./TeamCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDraftState } from "./DraftStateProvider";
-import { Json } from "@/integrations/supabase/types";
 import { Team } from "@/types/draft";
 
 interface DraftTeamListProps {
   draftId: string;
   availableTeams: Team[];
-  currentParticipant: string;
+  currentTeam: string;
   onTeamSelect: (team: Team) => void;
   hidePoints?: boolean;
 }
@@ -18,7 +17,7 @@ interface DraftTeamListProps {
 export const DraftTeamList = ({
   draftId,
   availableTeams,
-  currentParticipant,
+  currentTeam,
   onTeamSelect,
   hidePoints = false,
 }: DraftTeamListProps) => {
@@ -29,7 +28,7 @@ export const DraftTeamList = ({
     try {
       const { data: draft } = await supabase
         .from('drafts')
-        .select('participants, draft_data')
+        .select('teams')
         .eq('id', draftId)
         .single();
 
@@ -37,20 +36,15 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      const participants = (draft.participants as unknown as Array<{
-        name: string;
-        teams: Team[];
-      }>) || [];
-
-      const currentParticipantData = participants.find(p => p.name === currentParticipant);
-      if (!currentParticipantData) {
-        throw new Error('Current participant not found');
+      const currentTeamData = draftState.teams[draftState.currentTeamIndex];
+      if (!currentTeamData) {
+        throw new Error('Current team not found');
       }
 
-      if (currentParticipantData.teams?.length >= 5) {
+      if (currentTeamData.selectedTeams?.length >= draftState.maxTeamsPerTeam) {
         toast({
           title: "Maximum Teams Reached",
-          description: "You can only select up to 5 teams per participant.",
+          description: "You can only select up to 5 teams per team.",
           variant: "destructive",
         });
         return;
@@ -60,7 +54,7 @@ export const DraftTeamList = ({
       
       toast({
         title: "Team Selected!",
-        description: `${team.teamName} has been drafted by ${currentParticipant}`,
+        description: `${team.teamName} has been drafted by ${currentTeam}`,
       });
     } catch (error: any) {
       toast({
@@ -72,8 +66,8 @@ export const DraftTeamList = ({
   };
 
   const filteredTeams = availableTeams.filter(team => 
-    !draftState.participants.some(p => 
-      p.teams.some(t => t.teamNumber === team.teamNumber)
+    !draftState.teams.some(draftTeam => 
+      draftTeam.selectedTeams?.some(selectedTeam => selectedTeam.teamNumber === team.teamNumber)
     )
   );
 
@@ -97,7 +91,6 @@ export const DraftTeamList = ({
             >
               <TeamCard
                 {...team}
-                districtPoints={0} // Providing a default value for districtPoints
                 hidePoints={hidePoints}
                 onSelect={() => handleTeamSelect(team)}
               />

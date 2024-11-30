@@ -4,20 +4,21 @@ import { motion } from "framer-motion";
 import { Team } from "@/types/draft";
 
 interface DraftOrderProps {
-  participants: Array<{
+  teams: Array<{
     name: string;
-    teams: Array<Team>;
+    participants: string[];
+    selectedTeams: Team[];
   }>;
   currentIndex: number;
   round?: number;
 }
 
-export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrderProps) => {
+export const DraftOrder = ({ teams, currentIndex, round = 1 }: DraftOrderProps) => {
   const isReverseRound = round % 2 === 0;
   
   const getPickingStatus = (displayIndex: number) => {
     const effectiveIndex = isReverseRound 
-      ? participants.length - 1 - currentIndex
+      ? teams.length - 1 - currentIndex
       : currentIndex;
     
     const nextIndex = isReverseRound
@@ -34,12 +35,12 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
     <Card className="p-6 space-y-4">
       <h3 className="text-xl font-semibold mb-4 text-foreground">Draft Order</h3>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {participants.map((participant, displayIndex) => {
+        {teams.map((team, displayIndex) => {
           const { isPicking, isNext } = getPickingStatus(displayIndex);
           
           return (
             <motion.div
-              key={participant.name}
+              key={team.name}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
@@ -58,22 +59,34 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
                   </span>
                   <Avatar className="h-12 w-12 border-2 border-background">
                     <AvatarFallback className="text-lg">
-                      {participant.name[0]?.toUpperCase()}
+                      {team.name[0]?.toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-lg font-bold">{participant.name}</span>
+                  <span className="text-lg font-bold">{team.name}</span>
                 </div>
                 <div className="text-sm">
                   {isPicking && <span className="font-medium">(Picking)</span>}
                   {isNext && <span className="font-medium">(Next)</span>}
                 </div>
-                {participant.teams.length > 0 && (
+                {team.selectedTeams.length > 0 && (
                   <div className="text-sm grid grid-cols-1 gap-2">
-                    {participant.teams.map((team, idx) => (
+                    {team.selectedTeams.map((selectedTeam, idx) => (
                       <div key={idx} className="bg-background/10 p-2 rounded text-foreground">
-                        {team.teamName}
+                        {selectedTeam.teamName}
                       </div>
                     ))}
+                  </div>
+                )}
+                {team.participants.length > 0 && (
+                  <div className="text-sm mt-2">
+                    <div className="font-medium mb-1">Team Members:</div>
+                    <div className="grid grid-cols-1 gap-1">
+                      {team.participants.map((participant, idx) => (
+                        <div key={idx} className="text-sm">
+                          {participant}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
