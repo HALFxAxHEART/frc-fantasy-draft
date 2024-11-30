@@ -20,35 +20,34 @@ export const DraftContent = () => {
   const { toast } = useToast();
   const { draftState, setDraftState } = useDraftState();
   
-  const { data: draftData, isLoading: isDraftLoading, error: draftError } = useDraftData(draftId);
-  const { data: teams, isLoading: isTeamsLoading, error: teamsError } = useQuery({
+  const { data: draftData, isLoading: isDraftLoading } = useDraftData(draftId);
+  const { data: teams, isLoading: isTeamsLoading } = useQuery({
     queryKey: ['eventTeams', draftData?.event_key],
     queryFn: () => fetchEventTeams(draftData?.event_key || ''),
     enabled: !!draftData?.event_key,
   });
 
-  // Initialize draft state with participants from draft data
+  // Initialize draft state with participants and event data
   useEffect(() => {
-    if (draftData?.participants) {
+    if (draftData?.participants && draftData?.event_key) {
+      const initialTeams = draftData.participants.map(participant => ({
+        name: participant.name,
+        teams: participant.teams || []
+      }));
+
       setDraftState(prev => ({
         ...prev,
-        teams: draftData.participants,
-        selectedEvent: draftData.event_key
+        teams: initialTeams,
+        selectedEvent: draftData.event_key,
+        draftStarted: false,
+        currentTeamIndex: 0,
+        draftComplete: false
       }));
     }
   }, [draftData, setDraftState]);
 
   if (isDraftLoading || isTeamsLoading) {
     return <DraftLoadingState />;
-  }
-
-  if (draftError || teamsError) {
-    return (
-      <DraftErrorState
-        title="Error Loading Draft"
-        message="There was an error loading the draft data. Please try again later."
-      />
-    );
   }
 
   if (!draftData) {
@@ -70,7 +69,9 @@ export const DraftContent = () => {
   }
 
   const currentTeam = draftState.teams[draftState.currentTeamIndex];
-  if (!currentTeam || draftState.teams.length === 0) {
+
+  // Only show no participants error if we have teams but no participants
+  if (!currentTeam && teams.length > 0 && (!draftState.teams || draftState.teams.length === 0)) {
     return (
       <DraftErrorState
         title="No Participants Found"
