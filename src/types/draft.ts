@@ -11,6 +11,11 @@ export interface Team {
   };
 }
 
+export interface DraftTeam {
+  name: string;
+  participants: string[];
+}
+
 export interface DraftParticipant {
   name: string;
   teams: Team[];

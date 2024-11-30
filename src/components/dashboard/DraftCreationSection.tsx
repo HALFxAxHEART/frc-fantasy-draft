@@ -8,11 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TeamsSection } from "./TeamsSection";
-
-interface Team {
-  name: string;
-  participants: string[];
-}
+import { DraftTeam } from "@/types/draft";
 
 interface DraftCreationSectionProps {
   userId: string;
@@ -39,7 +35,7 @@ export const DraftCreationSection = ({
   isLoading,
   error
 }: DraftCreationSectionProps) => {
-  const [teams, setTeams] = useState<Team[]>([{ name: "", participants: [""] }]);
+  const [teams, setTeams] = useState<DraftTeam[]>([{ name: "", participants: [""] }]);
   const [draftNickname, setDraftNickname] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -113,7 +109,7 @@ export const DraftCreationSection = ({
           status: 'active',
           participants: participants,
           nickname: draftNickname || null,
-          teams: teams,
+          teams: teams as any, // Type assertion to avoid JSON type error
         })
         .select()
         .single();
