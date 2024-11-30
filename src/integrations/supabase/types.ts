@@ -9,6 +9,54 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      draft_leaderboards: {
+        Row: {
+          created_at: string | null
+          draft_id: string
+          id: string
+          participant_name: string
+          rank: number | null
+          total_points: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          draft_id: string
+          id?: string
+          participant_name: string
+          rank?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          draft_id?: string
+          id?: string
+          participant_name?: string
+          rank?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "draft_leaderboards_draft_id_fkey"
+            columns: ["draft_id"]
+            isOneToOne: false
+            referencedRelation: "drafts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "draft_leaderboards_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drafts: {
         Row: {
           created_at: string
@@ -18,6 +66,7 @@ export type Database = {
           id: string
           nickname: string | null
           participants: Json | null
+          share_code: string | null
           status: string | null
           updated_at: string
           user_id: string | null
@@ -30,6 +79,7 @@ export type Database = {
           id?: string
           nickname?: string | null
           participants?: Json | null
+          share_code?: string | null
           status?: string | null
           updated_at?: string
           user_id?: string | null
@@ -42,6 +92,7 @@ export type Database = {
           id?: string
           nickname?: string | null
           participants?: Json | null
+          share_code?: string | null
           status?: string | null
           updated_at?: string
           user_id?: string | null
@@ -56,26 +107,148 @@ export type Database = {
           },
         ]
       }
+      global_draft_participants: {
+        Row: {
+          created_at: string
+          global_draft_id: string | null
+          id: string
+          rank: number | null
+          selected_teams: Json | null
+          teams: Json | null
+          total_points: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          global_draft_id?: string | null
+          id?: string
+          rank?: number | null
+          selected_teams?: Json | null
+          teams?: Json | null
+          total_points?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          global_draft_id?: string | null
+          id?: string
+          rank?: number | null
+          selected_teams?: Json | null
+          teams?: Json | null
+          total_points?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "global_draft_participants_global_draft_id_fkey"
+            columns: ["global_draft_id"]
+            isOneToOne: false
+            referencedRelation: "global_drafts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "global_draft_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      global_drafts: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          name: string | null
+          season_year: number
+          settings: Json | null
+          start_date: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          name?: string | null
+          season_year: number
+          settings?: Json | null
+          start_date: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          name?: string | null
+          season_year?: number
+          settings?: Json | null
+          start_date?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
           display_name: string | null
           id: string
+          is_admin: boolean | null
           profile_picture_url: string | null
         }
         Insert: {
           created_at?: string
           display_name?: string | null
           id: string
+          is_admin?: boolean | null
           profile_picture_url?: string | null
         }
         Update: {
           created_at?: string
           display_name?: string | null
           id?: string
+          is_admin?: boolean | null
           profile_picture_url?: string | null
         }
         Relationships: []
+      }
+      support_tickets: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          status: string | null
+          subject: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          status?: string | null
+          subject: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          status?: string | null
+          subject?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
