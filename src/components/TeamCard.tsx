@@ -3,11 +3,7 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Team } from "@/types/draft";
 
-interface TeamCardProps {
-  teamNumber: number;
-  teamName: string;
-  districtPoints: number;
-  logoUrl?: string;
+interface TeamCardProps extends Omit<Team, 'stats'> {
   stats?: {
     wins: number;
     losses: number;
