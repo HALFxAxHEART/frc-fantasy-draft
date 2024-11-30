@@ -61,6 +61,7 @@ export type Database = {
         Row: {
           created_at: string
           draft_data: Json | null
+          draft_teams: Json | null
           event_key: string
           event_name: string
           id: string
@@ -70,12 +71,14 @@ export type Database = {
           participants: Json | null
           share_code: string | null
           status: string | null
+          teams: Json | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           created_at?: string
           draft_data?: Json | null
+          draft_teams?: Json | null
           event_key: string
           event_name: string
           id?: string
@@ -85,12 +88,14 @@ export type Database = {
           participants?: Json | null
           share_code?: string | null
           status?: string | null
+          teams?: Json | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           created_at?: string
           draft_data?: Json | null
+          draft_teams?: Json | null
           event_key?: string
           event_name?: string
           id?: string
@@ -100,6 +105,7 @@ export type Database = {
           participants?: Json | null
           share_code?: string | null
           status?: string | null
+          teams?: Json | null
           updated_at?: string
           user_id?: string | null
         }
