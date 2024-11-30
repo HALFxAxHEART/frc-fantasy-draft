@@ -18,15 +18,11 @@ export interface TBAEvent {
 }
 
 export const fetchEvents = async (year: number) => {
-  const apiKey = 'iKZ5yeGO6M727PxtIfMVJo2pC9BtyQ6RBpOh4UEbVLwZCwPQEaife44DG7NPsCmq';
-  
   try {
-    const response = await fetch(`${TBA_API_BASE_URL}/events/${year}`, {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tba?year=${year}`, {
       headers: {
-        'X-TBA-Auth-Key': apiKey,
-        'Accept': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
       },
-      mode: 'cors',
     });
     
     if (!response.ok) {
@@ -37,6 +33,6 @@ export const fetchEvents = async (year: number) => {
     return response.json() as Promise<TBAEvent[]>;
   } catch (error) {
     console.error('Error fetching events:', error);
-    throw new Error('Failed to fetch events. Please check your API key and try again.');
+    throw new Error('Failed to fetch events. Please try again.');
   }
 };
