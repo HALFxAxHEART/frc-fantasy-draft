@@ -33,7 +33,8 @@ export const DraftOrder = ({ teams, currentIndex, round = 1 }: DraftOrderProps) 
     };
   };
 
-  if (!teams?.length) {
+  // Updated condition to check both teams array and its contents
+  if (!teams?.length || teams.every(team => !team.name)) {
     return (
       <Card className="p-6">
         <p className="text-muted-foreground text-center">No participants added yet</p>
