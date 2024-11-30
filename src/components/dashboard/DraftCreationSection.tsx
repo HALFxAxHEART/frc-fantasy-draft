@@ -4,7 +4,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { DraftControls } from "./DraftControls";
 import { EventSelector } from "@/components/EventSelector";
 import { supabase } from "@/integrations/supabase/client";
-import { DraftCreation } from "@/components/DraftCreation";
 
 interface DraftCreationSectionProps {
   userId: string;
@@ -31,7 +30,8 @@ export const DraftCreationSection = ({
   isLoading,
   error
 }: DraftCreationSectionProps) => {
-  const [nickname, setNickname] = useState("");
+  const [participants, setParticipants] = useState(2);
+  const [participantNames, setParticipantNames] = useState<string[]>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -71,6 +71,15 @@ export const DraftCreationSection = ({
   }, [userId, toast]);
 
   const handleStartDraft = async () => {
+    if (participantNames.some(name => !name.trim())) {
+      toast({
+        title: "Error",
+        description: "All participants must have names",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!selectedEvent) {
       toast({
         title: "Error",
@@ -81,6 +90,27 @@ export const DraftCreationSection = ({
     }
 
     try {
+      // First, verify that the user profile exists
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      if (!profile) {
+        toast({
+          title: "Error",
+          description: "Profile not found. Please try logging out and back in.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Now create the draft
       const { data, error: draftError } = await supabase
         .from('drafts')
         .insert({
@@ -88,7 +118,7 @@ export const DraftCreationSection = ({
           event_key: selectedEvent,
           event_name: events?.find(e => e.key === selectedEvent)?.name || selectedEvent,
           status: 'active',
-          nickname: nickname || null,
+          participants: participantNames.map(name => ({ name, teams: [] })),
         })
         .select()
         .single();
@@ -108,10 +138,19 @@ export const DraftCreationSection = ({
 
   return (
     <div className="space-y-8">
-      <DraftCreation
+      <DraftControls
+        participants={participants}
+        participantNames={participantNames}
+        onParticipantsChange={(value) => {
+          setParticipants(value);
+          setParticipantNames(Array(value).fill(""));
+        }}
+        onParticipantNameChange={(index, value) => {
+          const newNames = [...participantNames];
+          newNames[index] = value;
+          setParticipantNames(newNames);
+        }}
         onStartDraft={handleStartDraft}
-        nickname={nickname}
-        onNicknameChange={setNickname}
       />
       
       <EventSelector

@@ -64,8 +64,6 @@ export type Database = {
           event_key: string
           event_name: string
           id: string
-          max_participants_per_team: number | null
-          max_teams: number | null
           nickname: string | null
           participants: Json | null
           share_code: string | null
@@ -79,8 +77,6 @@ export type Database = {
           event_key: string
           event_name: string
           id?: string
-          max_participants_per_team?: number | null
-          max_teams?: number | null
           nickname?: string | null
           participants?: Json | null
           share_code?: string | null
@@ -94,8 +90,6 @@ export type Database = {
           event_key?: string
           event_name?: string
           id?: string
-          max_participants_per_team?: number | null
-          max_teams?: number | null
           nickname?: string | null
           participants?: Json | null
           share_code?: string | null
