@@ -17,19 +17,21 @@ export interface TBAEvent {
   end_date: string;
 }
 
-export const fetchEvents = async (year: number) => {
+const getTBAHeaders = () => {
   const apiKey = import.meta.env.VITE_TBA_API_KEY;
-  
   if (!apiKey) {
     throw new Error('TBA API key is not configured. Please set VITE_TBA_API_KEY in your environment.');
   }
+  return {
+    'X-TBA-Auth-Key': apiKey,
+    'Accept': 'application/json',
+  };
+};
 
+export const fetchEvents = async (year: number) => {
   try {
     const response = await fetch(`${TBA_API_BASE_URL}/events/${year}/simple`, {
-      headers: {
-        'X-TBA-Auth-Key': apiKey,
-        'Accept': 'application/json',
-      },
+      headers: getTBAHeaders(),
     });
     
     if (!response.ok) {
@@ -75,18 +77,9 @@ export const fetchEvents = async (year: number) => {
 };
 
 export const fetchEventDetails = async (eventKey: string): Promise<TBAEvent> => {
-  const apiKey = import.meta.env.VITE_TBA_API_KEY;
-  
-  if (!apiKey) {
-    throw new Error('TBA API key is not configured. Please set VITE_TBA_API_KEY in your environment.');
-  }
-
   try {
     const response = await fetch(`${TBA_API_BASE_URL}/event/${eventKey}/simple`, {
-      headers: {
-        'X-TBA-Auth-Key': apiKey,
-        'Accept': 'application/json',
-      },
+      headers: getTBAHeaders(),
     });
     
     if (!response.ok) {
@@ -111,18 +104,10 @@ export const fetchEventDetails = async (eventKey: string): Promise<TBAEvent> => 
 };
 
 export const fetchEventTeams = async (eventKey: string) => {
-  const apiKey = import.meta.env.VITE_TBA_API_KEY;
-  
-  if (!apiKey) {
-    throw new Error('TBA API key is not configured. Please set VITE_TBA_API_KEY in your environment.');
-  }
-
   try {
+    // Fetch basic team information
     const response = await fetch(`${TBA_API_BASE_URL}/event/${eventKey}/teams/simple`, {
-      headers: {
-        'X-TBA-Auth-Key': apiKey,
-        'Accept': 'application/json',
-      },
+      headers: getTBAHeaders(),
     });
     
     if (!response.ok) {
@@ -130,6 +115,8 @@ export const fetchEventTeams = async (eventKey: string) => {
     }
 
     const teams = await response.json();
+    
+    // Transform the data into our required format
     return teams.map((team: any) => ({
       teamNumber: team.team_number,
       teamName: team.nickname || `Team ${team.team_number}`,
