@@ -30,7 +30,7 @@ export const TeamsSection = ({
         </Button>
       </div>
 
-      <div className="flex flex-row flex-nowrap overflow-x-auto gap-4 pb-4">
+      <div className="grid grid-cols-2 gap-4">
         <AnimatePresence>
           {teams.map((team, index) => (
             <motion.div
@@ -38,7 +38,6 @@ export const TeamsSection = ({
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="flex-shrink-0"
             >
               <TeamBox
                 index={index}
