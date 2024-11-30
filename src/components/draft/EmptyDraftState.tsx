@@ -83,7 +83,7 @@ export const EmptyDraftState = ({ draftId, teams }: EmptyDraftStateProps) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-2">
           <DraftOrder
-            participants={draftTeams}
+            teams={draftState.teams}
             currentIndex={draftState.currentParticipantIndex}
           />
         </div>

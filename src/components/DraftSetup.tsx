@@ -4,11 +4,15 @@ import { Button } from "./ui/button";
 import { DraftOrder } from "./DraftOrder";
 
 interface DraftSetupProps {
-  participants: Array<{ name: string; teams: any[] }>;
+  teams: Array<{
+    name: string;
+    participants: string[];
+    selectedTeams: any[];
+  }>;
   onStartDraft: () => void;
 }
 
-export const DraftSetup = ({ participants, onStartDraft }: DraftSetupProps) => {
+export const DraftSetup = ({ teams, onStartDraft }: DraftSetupProps) => {
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [showStartButton, setShowStartButton] = useState(false);
 
@@ -16,7 +20,7 @@ export const DraftSetup = ({ participants, onStartDraft }: DraftSetupProps) => {
   useState(() => {
     let index = 0;
     const interval = setInterval(() => {
-      if (index < participants.length) {
+      if (index < teams.length) {
         setCurrentIndex(index);
         index++;
       } else {
@@ -39,7 +43,7 @@ export const DraftSetup = ({ participants, onStartDraft }: DraftSetupProps) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-2">
               <DraftOrder
-                participants={participants}
+                teams={teams}
                 currentIndex={currentIndex}
               />
             </div>

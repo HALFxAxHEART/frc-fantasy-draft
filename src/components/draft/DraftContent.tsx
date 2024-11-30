@@ -152,7 +152,7 @@ export const DraftContent = () => {
         
         {!draftState.draftStarted ? (
           <DraftSetup
-            participants={draftState.participants}
+            teams={draftState.teams}
             onStartDraft={() => setDraftState(prev => ({ ...prev, draftStarted: true }))}
           />
         ) : (
@@ -165,8 +165,8 @@ export const DraftContent = () => {
               />
               
               <DraftOrder
-                participants={draftState.participants}
-                currentIndex={draftState.currentParticipantIndex}
+                teams={draftState.teams}
+                currentIndex={draftState.currentTeamIndex}
               />
 
               <DraftTeamList
