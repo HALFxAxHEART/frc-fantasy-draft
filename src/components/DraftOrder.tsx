@@ -33,7 +33,7 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
   return (
     <Card className="p-6 space-y-4">
       <h3 className="text-xl font-semibold mb-4 text-foreground">Draft Order</h3>
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {participants.map((participant, displayIndex) => {
           const { isPicking, isNext } = getPickingStatus(displayIndex);
           
@@ -52,25 +52,23 @@ export const DraftOrder = ({ participants, currentIndex, round = 1 }: DraftOrder
               }`}
             >
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-lg font-bold min-w-[24px]">
-                      {displayIndex + 1}.
-                    </span>
-                    <Avatar className="h-12 w-12 border-2 border-background">
-                      <AvatarFallback className="text-lg">
-                        {participant.name[0]?.toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-lg font-bold">{participant.name}</span>
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    {isPicking && '(Picking)'}
-                    {isNext && '(Next)'}
+                <div className="flex items-center space-x-3">
+                  <span className="text-lg font-bold min-w-[24px]">
+                    {displayIndex + 1}.
                   </span>
+                  <Avatar className="h-12 w-12 border-2 border-background">
+                    <AvatarFallback className="text-lg">
+                      {participant.name[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-lg font-bold">{participant.name}</span>
+                </div>
+                <div className="text-sm">
+                  {isPicking && <span className="font-medium">(Picking)</span>}
+                  {isNext && <span className="font-medium">(Next)</span>}
                 </div>
                 {participant.teams.length > 0 && (
-                  <div className="text-sm grid grid-cols-2 gap-2">
+                  <div className="text-sm grid grid-cols-1 gap-2">
                     {participant.teams.map((team, idx) => (
                       <div key={idx} className="bg-background/10 p-2 rounded text-foreground">
                         {team.teamName}

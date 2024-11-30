@@ -157,28 +157,25 @@ export const DraftContent = () => {
           />
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="md:col-span-2">
-                <DraftOrder
-                  participants={draftState.participants}
-                  currentIndex={draftState.currentParticipantIndex}
-                />
-              </div>
-              <div>
-                <DraftTimer
-                  onTimeUp={() => {}}
-                  isActive={!draftState.draftComplete}
-                  autoSelectTeam={() => teams && handleTeamSelect(teams[0])}
-                />
-              </div>
-            </div>
+            <div className="space-y-8">
+              <DraftTimer
+                onTimeUp={() => {}}
+                isActive={!draftState.draftComplete}
+                autoSelectTeam={() => teams && handleTeamSelect(teams[0])}
+              />
+              
+              <DraftOrder
+                participants={draftState.participants}
+                currentIndex={draftState.currentParticipantIndex}
+              />
 
-            <DraftTeamList
-              draftId={draftId || ''}
-              availableTeams={teams || []}
-              currentParticipant={currentParticipant.name}
-              onTeamSelect={handleTeamSelect}
-            />
+              <DraftTeamList
+                draftId={draftId || ''}
+                availableTeams={teams || []}
+                currentParticipant={currentParticipant.name}
+                onTeamSelect={handleTeamSelect}
+              />
+            </div>
           </>
         )}
       </div>
