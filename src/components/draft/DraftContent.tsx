@@ -19,6 +19,8 @@ export const DraftContent = () => {
   const { toast } = useToast();
   const { draftState, setDraftState } = useDraftState();
   const [loadingProgress, setLoadingProgress] = React.useState(0);
+  const [teamsLoaded, setTeamsLoaded] = React.useState(0);
+  const [totalTeams, setTotalTeams] = React.useState(0);
   
   const { data: draftData, isLoading: isDraftLoading } = useDraftData(draftId);
   
@@ -26,12 +28,19 @@ export const DraftContent = () => {
     queryKey: ['eventTeams', draftData?.event_key],
     queryFn: async () => {
       const teams = await fetchEventTeams(draftData?.event_key || '');
-      let progress = 0;
-      const increment = 100 / teams.length;
+      setTotalTeams(teams.length);
+      setTeamsLoaded(0);
       
       const processedTeams = teams.map((team, index) => {
-        progress += increment;
-        setLoadingProgress(Math.min(Math.round(progress), 100));
+        setTimeout(() => {
+          setTeamsLoaded(prev => {
+            const newCount = prev + 1;
+            setLoadingProgress(Math.floor((newCount / teams.length) * 100));
+            return newCount;
+          });
+        }, 0);
+        
+        console.log(`Loaded team ${team.teamNumber}: ${team.teamName}`);
         return team;
       });
 
@@ -39,13 +48,8 @@ export const DraftContent = () => {
     },
     enabled: !!draftData?.event_key,
     meta: {
-      onSuccess: (data: any) => {
-        console.log('Teams loaded for event:', draftData?.event_key);
-        console.log('Team data:', data.map((team: any) => ({
-          number: team.teamNumber,
-          name: team.teamName
-        })));
-        setLoadingProgress(100);
+      onSuccess: () => {
+        console.log('All teams loaded successfully');
       },
       onError: (error: Error) => {
         console.error('Error loading teams:', error);
@@ -58,7 +62,6 @@ export const DraftContent = () => {
     }
   });
 
-  // Initialize draft state with participants and event data
   React.useEffect(() => {
     if (draftData?.participants && draftData?.event_key) {
       const initialTeams = draftData.participants.map(participant => ({
@@ -83,6 +86,8 @@ export const DraftContent = () => {
         isLoadingDraft={isDraftLoading}
         isLoadingTeams={isTeamsLoading}
         loadingProgress={loadingProgress}
+        teamsLoaded={teamsLoaded}
+        totalTeams={totalTeams}
       />
     );
   }
