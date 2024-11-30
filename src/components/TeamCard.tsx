@@ -5,9 +5,9 @@ import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 interface TeamStats {
   wins: number;
   losses: number;
-  opr: number;
-  autoAvg: number;
-  ranking?: number; // Made ranking optional to work with both contexts
+  opr?: number; // Made optional
+  autoAvg?: number; // Made optional
+  ranking?: number;
 }
 
 interface TeamCardProps {
@@ -17,7 +17,7 @@ interface TeamCardProps {
   logoUrl?: string;
   stats: TeamStats;
   onSelect: () => void;
-  hidePoints?: boolean; // Added hidePoints prop
+  hidePoints?: boolean;
 }
 
 export const TeamCard = ({ 
@@ -26,7 +26,7 @@ export const TeamCard = ({
   districtPoints, 
   stats, 
   onSelect,
-  hidePoints = false // Default to false
+  hidePoints = false
 }: TeamCardProps) => {
   const logoUrl = `https://www.thebluealliance.com/api/v3/team/frc${teamNumber}/media/avatar`;
   
@@ -54,8 +54,8 @@ export const TeamCard = ({
           <h4 className="text-sm font-semibold">Team Statistics</h4>
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div>Win/Loss: {stats.wins}/{stats.losses}</div>
-            <div>OPR: {stats.opr.toFixed(2)}</div>
-            <div>Auto Avg: {stats.autoAvg.toFixed(2)}</div>
+            {stats.opr !== undefined && <div>OPR: {stats.opr.toFixed(2)}</div>}
+            {stats.autoAvg !== undefined && <div>Auto Avg: {stats.autoAvg.toFixed(2)}</div>}
             {stats.ranking && <div>Rank: {stats.ranking}</div>}
           </div>
         </div>
