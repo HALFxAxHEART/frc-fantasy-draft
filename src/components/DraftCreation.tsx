@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card } from "./ui/card";
 import { Input } from "./ui/input";
 import { TeamSetup } from "./TeamSetup";
+import { DraftOrder } from "./DraftOrder";
 
 interface Team {
   name: string;
@@ -20,6 +21,12 @@ export const DraftCreation = ({
   onNicknameChange,
 }: DraftCreationProps) => {
   const [teams, setTeams] = useState<Team[]>([]);
+
+  const draftTeams = teams.map(team => ({
+    name: team.name || `Team ${teams.indexOf(team) + 1}`,
+    participants: [],
+    selectedTeams: []
+  }));
 
   return (
     <Card className="p-6 space-y-6">
@@ -42,6 +49,11 @@ export const DraftCreation = ({
           teams={teams}
           onTeamsChange={setTeams}
           onStartDraft={onStartDraft}
+        />
+
+        <DraftOrder
+          teams={draftTeams}
+          currentIndex={-1}
         />
       </div>
     </Card>
