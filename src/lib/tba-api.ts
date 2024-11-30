@@ -30,6 +30,7 @@ export const fetchEvents = async (year: number) => {
         'X-TBA-Auth-Key': apiKey,
         'Accept': 'application/json',
       },
+      mode: 'cors',
     });
     
     if (!response.ok) {
