@@ -1,7 +1,6 @@
 export interface Team {
   teamNumber: number;
   teamName: string;
-  districtPoints?: number;
   stats?: {
     wins: number;
     losses: number;
@@ -24,5 +23,4 @@ export interface DraftData {
   event_name: string;
   event_key: string;
   nickname?: string;
-  status?: 'pending' | 'active' | 'completed';
 }

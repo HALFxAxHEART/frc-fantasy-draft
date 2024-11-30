@@ -6,10 +6,10 @@ export const DraftControls = () => {
   const { toast } = useToast();
 
   const startDraft = () => {
-    if (!draftState.teams.length) {
+    if (!draftState.participants.length) {
       toast({
         title: "Error",
-        description: "No teams found. Please return to dashboard and try again.",
+        description: "No participants found. Please return to dashboard and try again.",
         variant: "destructive",
       });
       return;
@@ -22,7 +22,7 @@ export const DraftControls = () => {
     
     toast({
       title: "Draft Started",
-      description: `${draftState.teams[0].name}'s turn to pick`,
+      description: `${draftState.participants[0].name}'s turn to pick`,
     });
   };
 

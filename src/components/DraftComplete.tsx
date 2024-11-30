@@ -8,7 +8,6 @@ import { Button } from "./ui/button";
 
 interface DraftCompleteProps {
   draftId: string;
-  eventName: string;
   participants: Array<{
     name: string;
     teams: Array<{
@@ -25,7 +24,7 @@ interface DraftCompleteProps {
   }>;
 }
 
-export const DraftComplete = ({ draftId, eventName, participants }: DraftCompleteProps) => {
+export const DraftComplete = ({ draftId, participants }: DraftCompleteProps) => {
   const [isOpen, setIsOpen] = useState(true);
   const [showStats, setShowStats] = useState(false);
   const [currentParticipantIndex, setCurrentParticipantIndex] = useState(-1);
@@ -84,7 +83,7 @@ export const DraftComplete = ({ draftId, eventName, participants }: DraftComplet
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 200, damping: 10 }}
             >
-              {eventName} Draft Complete!
+              Congratulations! Draft Complete!
             </motion.h2>
             
             <motion.div 

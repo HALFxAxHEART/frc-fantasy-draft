@@ -1,35 +1,12 @@
-import { Progress } from "@/components/ui/progress";
-import { DraftLoadingIndicator } from "./DraftLoadingIndicator";
+import { Loader2 } from "lucide-react";
 
-interface DraftLoadingStateProps {
-  isLoadingDraft: boolean;
-  isLoadingTeams: boolean;
-  loadingProgress: number;
-  teamsLoaded?: number;
-  totalTeams?: number;
-}
-
-export const DraftLoadingState = ({
-  isLoadingDraft,
-  isLoadingTeams,
-  loadingProgress,
-  teamsLoaded = 0,
-  totalTeams = 0
-}: DraftLoadingStateProps) => {
+export const DraftLoadingState = () => {
   return (
-    <div className="space-y-4">
-      <DraftLoadingIndicator 
-        message={isLoadingDraft ? "Loading draft data..." : "Loading participants..."}
-      />
-      {(isLoadingDraft || isLoadingTeams) && (
-        <div className="w-full max-w-md mx-auto space-y-2">
-          <Progress value={loadingProgress} className="w-full" />
-          <p className="text-center text-sm text-muted-foreground">
-            Loading progress: {loadingProgress}% 
-            {isLoadingTeams && ` (${teamsLoaded}/${totalTeams} teams)`}
-          </p>
-        </div>
-      )}
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center space-y-4">
+        <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
+        <p className="text-lg text-muted-foreground">Loading draft data...</p>
+      </div>
     </div>
   );
 };

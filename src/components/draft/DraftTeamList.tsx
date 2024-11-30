@@ -1,19 +1,42 @@
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { DraftTeam } from "@/types/draftCreation";
-import { Users, Plus, Minus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { Card } from "../ui/card";
+import { useToast } from "../ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { TeamCard } from "../TeamCard";
+import { motion, AnimatePresence } from "framer-motion";
 import { useDraftState } from "./DraftStateProvider";
-import { Team } from "@/types/draft";
-import { TeamCard } from "@/components/TeamCard";
+import { Json } from "@/integrations/supabase/types";
 
-interface TeamListProps {
+interface Team {
+  teamNumber: number;
+  teamName: string;
+  districtPoints: number;
+  stats: {
+    wins: number;
+    losses: number;
+    opr: number;
+    autoAvg: number;
+  };
+}
+
+interface DraftData {
+  selectedTeams: number[];
+  // Add other draft_data fields if needed
+}
+
+interface DraftParticipant {
+  name: string;
+  teams: Array<{
+    teamNumber: number;
+    teamName: string;
+  }>;
+}
+
+interface DraftTeamListProps {
   draftId: string;
   availableTeams: Team[];
   currentParticipant: string;
-  onTeamSelect: (team: Team) => Promise<void>;
+  onTeamSelect: (team: Team) => void;
+  hidePoints?: boolean;
 }
 
 export const DraftTeamList = ({
@@ -21,34 +44,99 @@ export const DraftTeamList = ({
   availableTeams,
   currentParticipant,
   onTeamSelect,
-}: TeamListProps) => {
+  hidePoints = false,
+}: DraftTeamListProps) => {
   const { toast } = useToast();
   const { draftState } = useDraftState();
 
+  const handleTeamSelect = async (team: Team) => {
+    try {
+      const { data: draft } = await supabase
+        .from('drafts')
+        .select('participants, draft_data')
+        .eq('id', draftId)
+        .single();
+
+      if (!draft) {
+        throw new Error('Draft not found');
+      }
+
+      // Safely type assert the data from Supabase
+      const participants = (draft.participants as unknown as DraftParticipant[]) || [];
+      const draftData = ((draft.draft_data as unknown) as DraftData) || { selectedTeams: [] };
+      const selectedTeams = draftData.selectedTeams || [];
+
+      const currentParticipantData = participants.find(p => p.name === currentParticipant);
+      if (!currentParticipantData) {
+        throw new Error('Current participant not found');
+      }
+
+      if (currentParticipantData.teams?.length >= 5) {
+        toast({
+          title: "Maximum Teams Reached",
+          description: "You can only select up to 5 teams per participant.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (selectedTeams.includes(team.teamNumber)) {
+        toast({
+          title: "Team Already Selected",
+          description: "This team has already been drafted.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      onTeamSelect(team);
+      
+      toast({
+        title: "Team Selected!",
+        description: `${team.teamName} has been drafted by ${currentParticipant}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const filteredTeams = availableTeams.filter(team => 
+    !draftState.participants.some(p => 
+      p.teams.some(t => t.teamNumber === team.teamNumber)
+    )
+  );
+
   return (
-    <div className="space-y-6">
-      <Card className="p-6">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Available Teams</h3>
-            <span className="text-sm text-muted-foreground">
-              {currentParticipant}'s turn
-            </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {availableTeams.map((team) => (
+    <Card className="p-6">
+      <AnimatePresence>
+        <motion.div 
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          {filteredTeams.map((team) => (
+            <motion.div
+              key={team.teamNumber}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
               <TeamCard
-                key={team.teamNumber}
-                teamNumber={team.teamNumber}
-                teamName={team.teamName}
-                districtPoints={team.districtPoints}
-                stats={team.stats}
-                onSelect={() => onTeamSelect(team)}
+                {...team}
+                hidePoints={hidePoints}
+                onSelect={() => handleTeamSelect(team)}
               />
-            ))}
-          </div>
-        </div>
-      </Card>
-    </div>
+            </motion.div>
+          ))}
+        </motion.div>
+      </AnimatePresence>
+    </Card>
   );
 };

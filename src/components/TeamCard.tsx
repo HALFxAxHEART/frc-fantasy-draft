@@ -5,28 +5,28 @@ import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 interface TeamStats {
   wins: number;
   losses: number;
-  opr?: number;
-  autoAvg?: number;
-  ranking?: number;
+  opr: number;
+  autoAvg: number;
+  ranking?: number; // Made ranking optional to work with both contexts
 }
 
 interface TeamCardProps {
   teamNumber: number;
   teamName: string;
-  districtPoints?: number;
+  districtPoints: number;
   logoUrl?: string;
-  stats?: TeamStats;
+  stats: TeamStats;
   onSelect: () => void;
-  hidePoints?: boolean;
+  hidePoints?: boolean; // Added hidePoints prop
 }
 
 export const TeamCard = ({ 
   teamNumber, 
   teamName, 
-  districtPoints = 0, 
+  districtPoints, 
   stats, 
   onSelect,
-  hidePoints = false,
+  hidePoints = false // Default to false
 }: TeamCardProps) => {
   const logoUrl = `https://www.thebluealliance.com/api/v3/team/frc${teamNumber}/media/avatar`;
   
@@ -53,14 +53,10 @@ export const TeamCard = ({
         <div className="space-y-2">
           <h4 className="text-sm font-semibold">Team Statistics</h4>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            {stats && (
-              <>
-                <div>Win/Loss: {stats.wins}/{stats.losses}</div>
-                {stats.opr && <div>OPR: {stats.opr.toFixed(2)}</div>}
-                {stats.autoAvg && <div>Auto Avg: {stats.autoAvg.toFixed(2)}</div>}
-                {stats.ranking && <div>Rank: {stats.ranking}</div>}
-              </>
-            )}
+            <div>Win/Loss: {stats.wins}/{stats.losses}</div>
+            <div>OPR: {stats.opr.toFixed(2)}</div>
+            <div>Auto Avg: {stats.autoAvg.toFixed(2)}</div>
+            {stats.ranking && <div>Rank: {stats.ranking}</div>}
           </div>
         </div>
       </HoverCardContent>

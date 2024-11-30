@@ -13,7 +13,7 @@ const Login = () => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate('/select-draft');
+        navigate('/dashboard');
       }
     };
 

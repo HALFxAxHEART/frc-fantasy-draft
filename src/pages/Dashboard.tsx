@@ -9,8 +9,6 @@ import { DraftStats } from "@/components/DraftStats";
 import { supabase } from "@/integrations/supabase/client";
 import { UserDrafts } from "@/components/dashboard/UserDrafts";
 import { DraftCreationSection } from "@/components/dashboard/DraftCreationSection";
-import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 const Dashboard = () => {
   const [userId, setUserId] = useState<string | null>(null);
@@ -79,15 +77,11 @@ const Dashboard = () => {
 
           <div className="space-y-6 md:space-y-8">
             {userId && <UserDrafts userId={userId} />}
-            <Card className="p-6">
-              <h2 className="text-2xl font-semibold mb-4">Upcoming Events</h2>
-              <Separator className="my-4" />
-              <UpcomingEvents
-                events={events}
-                onEventSelect={handleEventSelect}
-                isLoading={isLoading}
-              />
-            </Card>
+            <UpcomingEvents
+              events={events}
+              onEventSelect={handleEventSelect}
+              isLoading={isLoading}
+            />
           </div>
         </div>
       </motion.div>

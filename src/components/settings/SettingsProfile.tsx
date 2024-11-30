@@ -50,12 +50,6 @@ export const SettingsProfile = ({ form }: { form: UseFormReturn<any> }) => {
           <p className="text-sm text-muted-foreground">
             Click on your profile picture to update it
           </p>
-          <div className="w-full p-4 bg-muted rounded-lg">
-            <p className="text-sm font-medium">Your User ID:</p>
-            <code className="block p-2 mt-1 bg-background rounded border select-all">
-              {userId}
-            </code>
-          </div>
         </div>
       )}
 

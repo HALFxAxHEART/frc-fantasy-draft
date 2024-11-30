@@ -4,10 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Trash2, ArrowRight, Trophy, Eye, Share2, ArrowLeft } from "lucide-react";
+import { Trash2, ArrowRight, Trophy, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { fetchEventDetails } from "@/services/tbaService";
-import { DraftSharing } from "@/components/DraftSharing";
 
 export const UserDrafts = ({ userId }: { userId: string }) => {
   const { toast } = useToast();
@@ -75,78 +74,60 @@ export const UserDrafts = ({ userId }: { userId: string }) => {
   if (!drafts?.length) return <div>No drafts yet</div>;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <Button 
-          variant="outline" 
-          onClick={() => navigate(-1)}
-          className="gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
-      </div>
-      
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {drafts?.map((draft) => {
-          const event = eventDetails?.[draft.event_key];
-          const isEventEnded = event && new Date(event.end_date) < new Date();
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {drafts.map((draft) => {
+        const event = eventDetails?.[draft.event_key];
+        const isEventEnded = event && new Date(event.end_date) < new Date();
 
-          return (
-            <Card key={draft.id} className="relative">
-              <CardHeader>
-                <CardTitle className="text-lg">{draft.event_name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-100 mb-4">
-                  Status: {draft.status}
-                </p>
-                {event && (
-                  <div className="text-sm text-muted-foreground mb-4">
-                    <p className="text-gray-100">Start: {format(new Date(event.start_date), 'PPP')}</p>
-                    <p className="text-gray-100">End: {format(new Date(event.end_date), 'PPP')}</p>
-                  </div>
-                )}
-                {draft.share_code && (
-                  <div className="mb-4">
-                    <DraftSharing shareCode={draft.share_code} />
-                  </div>
-                )}
-                <div className="flex justify-between items-center mt-4">
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDelete(draft.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                  <div className="space-x-2">
-                    {isEventEnded && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/results/${draft.id}`)}
-                      >
-                        <Trophy className="h-4 w-4 mr-2" />
-                        Results
-                      </Button>
-                    )}
+        return (
+          <Card key={draft.id} className="relative">
+            <CardHeader>
+              <CardTitle className="text-lg">{draft.event_name}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-100 mb-4">
+                Status: {draft.status}
+              </p>
+              {event && (
+                <div className="text-sm text-muted-foreground mb-4">
+                  <p className="text-gray-100">Start: {format(new Date(event.start_date), 'PPP')}</p>
+                  <p className="text-gray-100">End: {format(new Date(event.end_date), 'PPP')}</p>
+                </div>
+              )}
+              <div className="flex justify-between items-center mt-4">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDelete(draft.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+                <div className="space-x-2">
+                  {isEventEnded && (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleViewDraft(draft.id)}
-                      className="gap-2"
+                      onClick={() => navigate(`/results/${draft.id}`)}
                     >
-                      <Eye className="h-4 w-4" />
-                      View Draft
+                      <Trophy className="h-4 w-4 mr-2" />
+                      Results
                     </Button>
-                  </div>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleViewDraft(draft.id)}
+                    className="gap-2"
+                  >
+                    <Eye className="h-4 w-4" />
+                    View Draft
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 };

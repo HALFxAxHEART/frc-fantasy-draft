@@ -2,27 +2,21 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import { DraftOrder } from "./DraftOrder";
-import { DraftTeam } from "@/types/draftCreation";
 
 interface DraftSetupProps {
-  teams: DraftTeam[];
+  participants: Array<{ name: string; teams: any[] }>;
   onStartDraft: () => void;
 }
 
-export const DraftSetup = ({ teams, onStartDraft }: DraftSetupProps) => {
+export const DraftSetup = ({ participants, onStartDraft }: DraftSetupProps) => {
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [showStartButton, setShowStartButton] = useState(false);
-  const [randomizedTeams, setRandomizedTeams] = useState<DraftTeam[]>([]);
 
   // Start the animation sequence when component mounts
   useState(() => {
-    // Randomize team order
-    const shuffledTeams = [...teams].sort(() => Math.random() - 0.5);
-    setRandomizedTeams(shuffledTeams);
-
     let index = 0;
     const interval = setInterval(() => {
-      if (index < shuffledTeams.length) {
+      if (index < participants.length) {
         setCurrentIndex(index);
         index++;
       } else {
@@ -45,7 +39,7 @@ export const DraftSetup = ({ teams, onStartDraft }: DraftSetupProps) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="md:col-span-2">
               <DraftOrder
-                teams={randomizedTeams}
+                participants={participants}
                 currentIndex={currentIndex}
               />
             </div>

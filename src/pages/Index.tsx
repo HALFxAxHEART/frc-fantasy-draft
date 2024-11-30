@@ -23,7 +23,7 @@ const Index = () => {
             strategic prowess in the world of competitive robotics.
           </p>
           <div className="flex gap-4 justify-center mt-6 md:mt-8">
-            <Link to="/draft-selection">
+            <Link to="/login">
               <Button className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 md:px-8 py-4 md:py-6 rounded-lg text-base md:text-lg transition-all">
                 Get Started
               </Button>
