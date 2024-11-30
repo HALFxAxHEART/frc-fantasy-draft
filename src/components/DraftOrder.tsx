@@ -33,21 +33,19 @@ export const DraftOrder = ({ teams, currentIndex, round = 1 }: DraftOrderProps) 
     };
   };
 
-  if (!teams || teams.length === 0) {
-    return (
-      <Card className="p-6">
-        <div className="text-center text-muted-foreground">
-          No teams have been added yet
-        </div>
-      </Card>
-    );
-  }
+  // Show default team names if no teams are configured
+  const displayTeams = teams?.length > 0 ? teams : [
+    { name: "Team 1", participants: [], selectedTeams: [] },
+    { name: "Team 2", participants: [], selectedTeams: [] },
+    { name: "Team 3", participants: [], selectedTeams: [] },
+    { name: "Team 4", participants: [], selectedTeams: [] }
+  ];
 
   return (
     <Card className="p-6 space-y-4">
       <h3 className="text-xl font-semibold mb-4 text-foreground">Draft Order</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {teams.map((team, displayIndex) => {
+        {displayTeams.map((team, displayIndex) => {
           const { isPicking, isNext } = getPickingStatus(displayIndex);
           
           return (
