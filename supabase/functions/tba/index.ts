@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const TBA_API_BASE_URL = 'https://www.thebluealliance.com/api/v3';
 const TBA_API_KEY = Deno.env.get('TBA_API_KEY');
@@ -6,7 +6,7 @@ const TBA_API_KEY = Deno.env.get('TBA_API_KEY');
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+};
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -39,6 +39,8 @@ serve(async (req) => {
       endpoint = `/event/${eventKey}/teams`;
     }
 
+    console.log(`Fetching from TBA API: ${TBA_API_BASE_URL}${endpoint}`);
+
     const response = await fetch(`${TBA_API_BASE_URL}${endpoint}`, {
       headers: {
         'X-TBA-Auth-Key': TBA_API_KEY || '',
@@ -51,6 +53,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
+    console.log('TBA API Response:', data);
 
     return new Response(
       JSON.stringify(data),
@@ -62,6 +65,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
+    console.error('Error in TBA function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
@@ -73,4 +77,4 @@ serve(async (req) => {
       }
     );
   }
-})
+});
