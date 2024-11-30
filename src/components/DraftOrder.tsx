@@ -87,18 +87,6 @@ export const DraftOrder = ({ teams, currentIndex, round = 1 }: DraftOrderProps) 
                     ))}
                   </div>
                 )}
-                {team.participants && team.participants.length > 0 && (
-                  <div className="text-sm mt-2">
-                    <div className="font-medium mb-1">Team Members:</div>
-                    <div className="grid grid-cols-1 gap-1">
-                      {team.participants.map((participant, idx) => (
-                        <div key={idx} className="text-sm">
-                          {participant}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </motion.div>
           );

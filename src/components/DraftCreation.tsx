@@ -51,10 +51,12 @@ export const DraftCreation = ({
           onStartDraft={onStartDraft}
         />
 
-        <DraftOrder
-          teams={draftTeams}
-          currentIndex={-1}
-        />
+        {teams.length > 0 && (
+          <DraftOrder
+            teams={draftTeams}
+            currentIndex={-1}
+          />
+        )}
       </div>
     </Card>
   );
