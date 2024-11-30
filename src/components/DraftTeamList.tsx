@@ -12,7 +12,6 @@ interface DraftTeamListProps {
   availableTeams: Team[];
   currentParticipant: string;
   onTeamSelect: (team: Team) => void;
-  maxTeams?: number;
   hidePoints?: boolean;
 }
 
@@ -21,7 +20,6 @@ export const DraftTeamList = ({
   availableTeams,
   currentParticipant,
   onTeamSelect,
-  maxTeams = 5,
   hidePoints = false,
 }: DraftTeamListProps) => {
   const { toast } = useToast();
@@ -31,7 +29,7 @@ export const DraftTeamList = ({
     try {
       const { data: draft } = await supabase
         .from('drafts')
-        .select('participants')
+        .select('participants, draft_data')
         .eq('id', draftId)
         .single();
 
@@ -39,20 +37,20 @@ export const DraftTeamList = ({
         throw new Error('Draft not found');
       }
 
-      const participants = draft.participants as Array<{
+      const participants = (draft.participants as unknown as Array<{
         name: string;
         teams: Team[];
-      }>;
+      }>) || [];
 
       const currentParticipantData = participants.find(p => p.name === currentParticipant);
       if (!currentParticipantData) {
         throw new Error('Current participant not found');
       }
 
-      if (currentParticipantData.teams?.length >= maxTeams) {
+      if (currentParticipantData.teams?.length >= 5) {
         toast({
           title: "Maximum Teams Reached",
-          description: `You can only select up to ${maxTeams} teams per participant.`,
+          description: "You can only select up to 5 teams per participant.",
           variant: "destructive",
         });
         return;
@@ -99,6 +97,7 @@ export const DraftTeamList = ({
             >
               <TeamCard
                 {...team}
+                districtPoints={0} // Providing a default value for districtPoints
                 hidePoints={hidePoints}
                 onSelect={() => handleTeamSelect(team)}
               />
