@@ -1,21 +1,20 @@
 import { Button } from "./ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
-
-interface TeamStats {
-  wins: number;
-  losses: number;
-  opr?: number;
-  autoAvg?: number;
-  ranking?: number;
-}
+import { Team } from "@/types/draft";
 
 interface TeamCardProps {
   teamNumber: number;
   teamName: string;
   districtPoints: number;
   logoUrl?: string;
-  stats?: TeamStats;
+  stats?: {
+    wins: number;
+    losses: number;
+    opr?: number;
+    autoAvg?: number;
+    ranking?: number;
+  };
   onSelect: () => void;
   hidePoints?: boolean;
 }
