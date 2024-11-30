@@ -5,6 +5,8 @@ import { DraftTeamList } from "./DraftTeamList";
 import { Team } from "@/types/draft";
 import { DraftOrder } from "@/components/DraftOrder";
 import { useDraftState } from "./DraftStateProvider";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EmptyDraftStateProps {
   draftId: string;
@@ -12,12 +14,68 @@ interface EmptyDraftStateProps {
 }
 
 export const EmptyDraftState = ({ draftId, teams }: EmptyDraftStateProps) => {
-  const { draftState } = useDraftState();
+  const { draftState, setDraftState } = useDraftState();
+  const { toast } = useToast();
 
-  // Create a participant list from teams
-  const teamParticipants = teams.map(team => ({
-    name: `Team ${team.teamNumber}`,
-    teams: []
+  const handleTeamSelect = async (team: Team) => {
+    try {
+      const { data: draft } = await supabase
+        .from('drafts')
+        .select('teams')
+        .eq('id', draftId)
+        .single();
+
+      if (!draft) {
+        throw new Error('Draft not found');
+      }
+
+      const draftTeams = draft.teams as any[] || [];
+      const currentTeam = draftTeams[draftState.currentParticipantIndex];
+
+      if (!currentTeam) {
+        throw new Error('Team not found');
+      }
+
+      const updatedTeams = draftTeams.map((t, index) => {
+        if (index === draftState.currentParticipantIndex) {
+          return {
+            ...t,
+            selectedTeams: [...(t.selectedTeams || []), team]
+          };
+        }
+        return t;
+      });
+
+      const { error: updateError } = await supabase
+        .from('drafts')
+        .update({ teams: updatedTeams })
+        .eq('id', draftId);
+
+      if (updateError) throw updateError;
+
+      const nextIndex = (draftState.currentParticipantIndex + 1) % draftTeams.length;
+      setDraftState(prev => ({
+        ...prev,
+        currentParticipantIndex: nextIndex,
+      }));
+
+      toast({
+        title: "Team Selected",
+        description: `${team.teamName} has been drafted by Team ${currentTeam.name}`
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Get the teams from the draft data
+  const draftTeams = (draftState.participants || []).map(team => ({
+    name: team.name,
+    teams: team.teams || []
   }));
 
   return (
@@ -25,7 +83,7 @@ export const EmptyDraftState = ({ draftId, teams }: EmptyDraftStateProps) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-2">
           <DraftOrder
-            participants={teamParticipants}
+            participants={draftTeams}
             currentIndex={draftState.currentParticipantIndex}
           />
         </div>
@@ -44,8 +102,8 @@ export const EmptyDraftState = ({ draftId, teams }: EmptyDraftStateProps) => {
           <DraftTeamList
             draftId={draftId}
             availableTeams={teams}
-            currentParticipant=""
-            onTeamSelect={() => {}}
+            currentParticipant={draftTeams[draftState.currentParticipantIndex]?.name || ""}
+            onTeamSelect={handleTeamSelect}
             hidePoints
           />
         </div>
