@@ -7,9 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus } from "lucide-react";
-import { TeamBox } from "./TeamBox";
-import { motion, AnimatePresence } from "framer-motion";
+import { TeamsSection } from "./TeamsSection";
 
 interface Team {
   name: string;
@@ -153,28 +151,12 @@ export const DraftCreationSection = ({
             />
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label>Teams</Label>
-              <Button onClick={addTeam} size="sm" className="gap-2">
-                <Plus className="h-4 w-4" /> Add Team
-              </Button>
-            </div>
-
-            <div className="flex flex-wrap gap-4">
-              <AnimatePresence>
-                {teams.map((team, index) => (
-                  <TeamBox
-                    key={index}
-                    index={index}
-                    team={team}
-                    onUpdate={updateTeam}
-                    onRemove={removeTeam}
-                  />
-                ))}
-              </AnimatePresence>
-            </div>
-          </div>
+          <TeamsSection
+            teams={teams}
+            onTeamAdd={addTeam}
+            onTeamUpdate={updateTeam}
+            onTeamRemove={removeTeam}
+          />
 
           <Button
             onClick={handleStartDraft}
