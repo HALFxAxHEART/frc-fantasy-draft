@@ -8,12 +8,11 @@ import { useDraftData } from "@/hooks/useDraftData";
 import { selectTeam } from "@/services/draftService";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEventTeams } from "@/services/tbaService";
-import { DraftLoadingIndicator } from "./DraftLoadingIndicator";
 import { DraftErrorState } from "./DraftErrorState";
 import { DraftGameInterface } from "./DraftGameInterface";
 import { DraftLayout } from "./DraftLayout";
 import { Team } from "@/types/draft";
-import { Progress } from "@/components/ui/progress";
+import { DraftLoadingState } from "./DraftLoadingState";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
@@ -80,19 +79,11 @@ export const DraftContent = () => {
 
   if (isDraftLoading || isTeamsLoading) {
     return (
-      <div className="space-y-4">
-        <DraftLoadingIndicator 
-          message={isDraftLoading ? "Loading draft data..." : "Loading teams..."}
-        />
-        {isTeamsLoading && (
-          <div className="w-full max-w-md mx-auto space-y-2">
-            <Progress value={loadingProgress} className="w-full" />
-            <p className="text-center text-sm text-muted-foreground">
-              Loading teams: {loadingProgress}%
-            </p>
-          </div>
-        )}
-      </div>
+      <DraftLoadingState
+        isLoadingDraft={isDraftLoading}
+        isLoadingTeams={isTeamsLoading}
+        loadingProgress={loadingProgress}
+      />
     );
   }
 
@@ -125,7 +116,11 @@ export const DraftContent = () => {
 
   if (!draftState.teams || draftState.teams.length === 0) {
     return (
-      <DraftLoadingIndicator message="Loading participants..." />
+      <DraftLoadingState
+        isLoadingDraft={true}
+        isLoadingTeams={false}
+        loadingProgress={loadingProgress}
+      />
     );
   }
 
