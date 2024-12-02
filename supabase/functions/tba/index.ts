@@ -44,6 +44,7 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
+      console.error(`TBA API responded with status: ${response.status}`);
       throw new Error(`TBA API responded with status: ${response.status}`);
     }
 
