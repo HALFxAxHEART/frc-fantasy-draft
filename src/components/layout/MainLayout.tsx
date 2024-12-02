@@ -97,7 +97,7 @@ export const MainLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/20 to-background">
+    <div className="h-screen flex flex-col bg-gradient-to-b from-primary/20 to-background">
       <NavBar
         user={user}
         displayName={displayName}
@@ -114,7 +114,7 @@ export const MainLayout = () => {
         isSubmitting={isSubmitting}
       />
 
-      <main className="container py-6">
+      <main className="flex-1 container py-6 overflow-auto">
         <Outlet />
       </main>
 
