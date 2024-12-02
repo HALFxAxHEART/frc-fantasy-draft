@@ -21,9 +21,9 @@ const Login = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary/20 to-background p-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
+    <div className="h-full flex items-center justify-center">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
           <h1 className="text-4xl font-bold">Welcome</h1>
           <p className="text-muted-foreground mt-2">Sign in to continue to FRC Fantasy Draft</p>
         </div>

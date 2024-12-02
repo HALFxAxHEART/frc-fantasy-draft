@@ -4,13 +4,13 @@ import { Link } from "react-router-dom";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="container mx-auto px-8 py-16">
+    <div className="h-full flex flex-col">
+      <div className="flex-1 container mx-auto px-8 py-16 flex flex-col">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="text-center space-y-6"
+          className="text-center space-y-6 flex-shrink-0"
         >
           <span className="inline-block px-6 py-2 bg-primary text-primary-foreground text-lg font-medium rounded-full">
             FRC Fantasy Draft
@@ -35,7 +35,7 @@ const Index = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8"
+          className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 flex-shrink-0"
         >
           <div className="p-8 rounded-xl border bg-card shadow-lg">
             <h3 className="text-2xl font-semibold mb-4 text-foreground">1. Create Your Draft</h3>
