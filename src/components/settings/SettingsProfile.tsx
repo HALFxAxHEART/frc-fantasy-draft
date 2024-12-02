@@ -35,6 +35,10 @@ export const SettingsProfile = ({ form }: { form: UseFormReturn<any> }) => {
     fetchUserProfile();
   }, [form]);
 
+  const handleProfileUpdate = (newUrl: string) => {
+    setProfilePicture(newUrl);
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-semibold">Profile Settings</h2>
@@ -46,6 +50,7 @@ export const SettingsProfile = ({ form }: { form: UseFormReturn<any> }) => {
             userId={userId}
             displayName={displayName}
             currentUrl={profilePicture || undefined}
+            onUpdate={handleProfileUpdate}
           />
           <p className="text-sm text-muted-foreground">
             Click on your profile picture to update it
