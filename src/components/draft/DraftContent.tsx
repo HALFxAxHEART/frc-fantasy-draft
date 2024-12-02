@@ -1,16 +1,8 @@
-import { useParams, Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { DraftTimer } from "@/components/DraftTimer";
-import { DraftOrder } from "@/components/DraftOrder";
-import { DraftTeamList } from "./DraftTeamList";
+import { useParams } from "react-router-dom";
 import { DraftComplete } from "@/components/DraftComplete";
 import { DraftSetup } from "@/components/DraftSetup";
 import { useDraftState } from "./DraftStateProvider";
-import { useToast } from "@/components/ui/use-toast";
 import { useDraftData } from "@/hooks/useDraftData";
-import { selectTeam } from "@/services/draftService";
-import { Team } from "@/types/draft";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEventTeams } from "@/services/tbaService";
 import { DraftLoadingState } from "./DraftLoadingState";
@@ -18,10 +10,11 @@ import { DraftLayout } from "./DraftLayout";
 import { useEffect } from "react";
 import { DraftHeader } from "./DraftHeader";
 import { EmptyDraftState } from "./EmptyDraftState";
+import { DraftLoadingError } from "./DraftLoadingError";
+import { DraftInProgress } from "./DraftInProgress";
 
 export const DraftContent = () => {
   const { draftId } = useParams();
-  const { toast } = useToast();
   const { draftState, setDraftState } = useDraftState();
   
   const { data: draftData, isLoading: isDraftLoading, error: draftError } = useDraftData(draftId);
@@ -33,7 +26,6 @@ export const DraftContent = () => {
 
   useEffect(() => {
     if (draftData && draftData.participants) {
-      // Randomly shuffle the participants array
       const shuffledParticipants = [...draftData.participants].sort(() => Math.random() - 0.5);
       setDraftState(prev => ({
         ...prev,
@@ -51,28 +43,16 @@ export const DraftContent = () => {
 
   if (draftError || teamsError) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center space-y-4">
-          <p className="text-lg text-red-600">
-            {draftError ? 'Error loading draft data' : 'Error loading teams data'}
-          </p>
-          <p className="text-sm text-muted-foreground">Please try refreshing the page</p>
-        </div>
-      </div>
+      <DraftLoadingError 
+        error={draftError ? 'Error loading draft data' : 'Error loading teams data'} 
+      />
     );
   }
 
   if (!draftData) {
     return (
       <DraftLayout>
-        <div className="text-center p-8 space-y-4">
-          <p className="text-lg text-muted-foreground">Draft not found.</p>
-          <Link to="/dashboard">
-            <Button variant="outline" className="gap-2">
-              <ArrowLeft className="h-4 w-4" /> Return to Dashboard
-            </Button>
-          </Link>
-        </div>
+        <DraftLoadingError error="Draft not found." />
       </DraftLayout>
     );
   }
@@ -103,41 +83,6 @@ export const DraftContent = () => {
     return null;
   }
 
-  const handleTeamSelect = async (team: Team) => {
-    try {
-      const { updatedParticipants } = await selectTeam(
-        draftId || '',
-        team,
-        draftState.participants,
-        currentParticipant.name,
-        teams || []
-      );
-
-      const nextIndex = (draftState.currentParticipantIndex + 1) % draftState.participants.length;
-      const isComplete = updatedParticipants.every(p => p.teams.length >= 5);
-
-      setDraftState(prev => ({
-        ...prev,
-        participants: updatedParticipants,
-        currentParticipantIndex: nextIndex,
-        draftComplete: isComplete
-      }));
-
-      if (!isComplete) {
-        toast({
-          title: "Team Selected",
-          description: `${team.teamName} has been drafted by ${currentParticipant.name}`
-        });
-      }
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  };
-
   if (draftState.draftComplete) {
     return <DraftComplete draftId={draftId || ''} participants={draftState.participants} />;
   }
@@ -156,27 +101,13 @@ export const DraftContent = () => {
             onStartDraft={() => setDraftState(prev => ({ ...prev, draftStarted: true }))}
           />
         ) : (
-          <>
-            <div className="space-y-8">
-              <DraftTimer
-                onTimeUp={() => {}}
-                isActive={!draftState.draftComplete}
-                autoSelectTeam={() => teams && handleTeamSelect(teams[0])}
-              />
-              
-              <DraftOrder
-                teams={draftState.teams}
-                currentIndex={draftState.currentTeamIndex}
-              />
-
-              <DraftTeamList
-                draftId={draftId || ''}
-                availableTeams={teams || []}
-                currentParticipant={currentParticipant.name}
-                onTeamSelect={handleTeamSelect}
-              />
-            </div>
-          </>
+          <DraftInProgress
+            draftId={draftId || ''}
+            teams={teams || []}
+            currentParticipant={currentParticipant}
+            draftState={draftState}
+            setDraftState={setDraftState}
+          />
         )}
       </div>
     </DraftLayout>
