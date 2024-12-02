@@ -33,8 +33,8 @@ export const DraftOrder = ({ teams, currentIndex, round = 1 }: DraftOrderProps) 
     };
   };
 
-  // Check if teams array exists and has valid team objects
-  const hasValidTeams = teams?.length > 0;
+  // Check if teams array exists and has participants
+  const hasValidTeams = teams?.some(team => team.participants?.length > 0);
 
   if (!hasValidTeams) {
     return (
@@ -53,7 +53,7 @@ export const DraftOrder = ({ teams, currentIndex, round = 1 }: DraftOrderProps) 
           
           return (
             <motion.div
-              key={team.name || displayIndex}
+              key={team.participants[0] || displayIndex}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
@@ -72,14 +72,14 @@ export const DraftOrder = ({ teams, currentIndex, round = 1 }: DraftOrderProps) 
                   </span>
                   <Avatar className="h-12 w-12 border-2 border-background">
                     <AvatarFallback className="text-lg">
-                      {team.name?.[0]?.toUpperCase() || '?'}
+                      {team.participants[0]?.[0]?.toUpperCase() || '?'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
-                    <span className="text-lg font-bold">{team.name}</span>
-                    {team.participants && team.participants.length > 0 && (
+                    <span className="text-lg font-bold">{team.participants[0]}</span>
+                    {team.participants.length > 1 && (
                       <span className="text-sm text-muted-foreground">
-                        {team.participants.join(', ')}
+                        {team.participants.slice(1).join(', ')}
                       </span>
                     )}
                   </div>
