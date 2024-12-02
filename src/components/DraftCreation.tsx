@@ -24,7 +24,7 @@ export const DraftCreation = ({
   const [teams, setTeams] = useState<Team[]>([]);
 
   const draftTeams = teams.map(team => ({
-    name: team.name,
+    name: team.participants[0] || "",  // Use the first participant as the team name
     participants: team.participants,
     selectedTeams: []
   }));
