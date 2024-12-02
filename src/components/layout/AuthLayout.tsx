@@ -13,9 +13,7 @@ export const AuthLayout = () => {
               Sign in to continue to your dashboard
             </p>
           </div>
-          <div className="rounded-xl border bg-card p-8 shadow-lg">
-            <Outlet />
-          </div>
+          <Outlet />
         </div>
       </div>
     </div>

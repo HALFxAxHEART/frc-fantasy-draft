@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Footer } from "../Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
@@ -8,6 +8,7 @@ import { BugReportDialog } from "./BugReportDialog";
 
 export const MainLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [displayName, setDisplayName] = useState<string>("");
@@ -18,29 +19,33 @@ export const MainLayout = () => {
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      
+      // Only redirect to login if not on the index page and not authenticated
+      if (!session && location.pathname !== '/') {
         navigate('/login');
         return;
       }
-      setUser(session.user);
+      
+      if (session) {
+        setUser(session.user);
+        // Fetch user profile data
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name, profile_picture_url')
+          .eq('id', session.user.id)
+          .single();
 
-      // Fetch user profile data
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('display_name, profile_picture_url')
-        .eq('id', session.user.id)
-        .single();
-
-      if (profile) {
-        setDisplayName(profile.display_name || '');
-        setProfilePicture(profile.profile_picture_url);
+        if (profile) {
+          setDisplayName(profile.display_name || '');
+          setProfilePicture(profile.profile_picture_url);
+        }
       }
     };
 
     checkUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT' && location.pathname !== '/') {
         navigate('/login');
       } else if (session) {
         setUser(session.user);
@@ -48,7 +53,7 @@ export const MainLayout = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
