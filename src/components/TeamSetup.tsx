@@ -1,9 +1,7 @@
-import { Card } from "./ui/card";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 import { Button } from "./ui/button";
-import { Plus, Minus, UserPlus, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { TeamCard } from "./team-setup/TeamCard";
+import { AddTeamCard } from "./team-setup/AddTeamCard";
 
 interface Team {
   name: string;
@@ -27,23 +25,9 @@ export const TeamSetup = ({ teams, onTeamsChange, onStartDraft }: TeamSetupProps
     onTeamsChange(newTeams);
   };
 
-  const updateTeam = (index: number, field: keyof Team, value: string | number) => {
+  const updateTeamName = (index: number, value: string) => {
     const newTeams = [...teams];
-    if (field === 'participantCount') {
-      const count = Number(value);
-      const currentParticipants = newTeams[index].participants || [];
-      if (count > currentParticipants.length) {
-        // Add new empty participant slots
-        newTeams[index].participants = [
-          ...currentParticipants,
-          ...Array(count - currentParticipants.length).fill("")
-        ];
-      } else {
-        // Remove excess participant slots
-        newTeams[index].participants = currentParticipants.slice(0, count);
-      }
-    }
-    newTeams[index] = { ...newTeams[index], [field]: value };
+    newTeams[index] = { ...newTeams[index], name: value };
     onTeamsChange(newTeams);
   };
 
@@ -81,81 +65,18 @@ export const TeamSetup = ({ teams, onTeamsChange, onStartDraft }: TeamSetupProps
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <AnimatePresence>
           {teams.map((team, index) => (
-            <motion.div
+            <TeamCard
               key={index}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="relative"
-            >
-              <Card className="p-4 space-y-4">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2"
-                  onClick={() => removeTeam(index)}
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                
-                <div className="space-y-2">
-                  <Label>Team Name</Label>
-                  <Input
-                    value={team.name}
-                    onChange={(e) => updateTeam(index, "name", e.target.value)}
-                    placeholder="Enter team name"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Participants</Label>
-                  <div className="space-y-2">
-                    {team.participants.map((participant, pIndex) => (
-                      <div key={pIndex} className="flex items-center gap-2">
-                        <Input
-                          value={participant}
-                          onChange={(e) => updateParticipant(index, pIndex, e.target.value)}
-                          placeholder={`Participant ${pIndex + 1}`}
-                        />
-                        {team.participants.length > 1 && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeParticipant(index, pIndex)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => addParticipant(index)}
-                    className="w-full mt-2"
-                  >
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Add Participant
-                  </Button>
-                </div>
-              </Card>
-            </motion.div>
+              team={team}
+              index={index}
+              onTeamNameChange={(value) => updateTeamName(index, value)}
+              onParticipantChange={(pIndex, value) => updateParticipant(index, pIndex, value)}
+              onRemoveParticipant={(pIndex) => removeParticipant(index, pIndex)}
+              onAddParticipant={() => addParticipant(index)}
+              onRemoveTeam={() => removeTeam(index)}
+            />
           ))}
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-          >
-            <Card 
-              className="p-4 flex items-center justify-center h-full cursor-pointer hover:bg-accent transition-colors"
-              onClick={addTeam}
-            >
-              <Button variant="ghost" size="icon">
-                <Plus className="h-6 w-6" />
-              </Button>
-            </Card>
-          </motion.div>
+          <AddTeamCard onAddTeam={addTeam} />
         </AnimatePresence>
       </div>
 
