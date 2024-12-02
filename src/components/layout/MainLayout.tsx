@@ -2,10 +2,21 @@ import { Outlet, useNavigate, Link } from "react-router-dom";
 import { Footer } from "../Footer";
 import { Button } from "../ui/button";
 import { useTheme } from "next-themes";
-import { Moon, Sun, Bug, LogOut, Mail, Github } from "lucide-react";
+import { Moon, Sun, Bug, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { ProfilePicture } from "../ProfilePicture";
+import { useForm } from "react-hook-form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +39,14 @@ export const MainLayout = () => {
   const [user, setUser] = useState<any>(null);
   const [displayName, setDisplayName] = useState<string>("");
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm({
+    defaultValues: {
+      subject: "",
+      description: "",
+    },
+  });
 
   useEffect(() => {
     const checkUser = async () => {
@@ -75,12 +94,34 @@ export const MainLayout = () => {
     }
   };
 
-  const handleEmailBug = () => {
-    window.location.href = `mailto:support@example.com?subject=Bug%20Report&body=Please%20describe%20the%20bug%20you%20encountered:`;
-  };
+  const onSubmitBugReport = async (data: any) => {
+    try {
+      setIsSubmitting(true);
+      const { error } = await supabase
+        .from('support_tickets')
+        .insert({
+          user_id: user.id,
+          subject: data.subject,
+          description: data.description,
+        });
 
-  const handleGithubBug = () => {
-    window.open('https://github.com/your-repo/issues/new', '_blank');
+      if (error) throw error;
+
+      toast({
+        title: "Bug Report Submitted",
+        description: "Thank you for your feedback. We'll look into this issue.",
+      });
+
+      form.reset();
+    } catch (error: any) {
+      toast({
+        title: "Error submitting bug report",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -117,23 +158,43 @@ export const MainLayout = () => {
                 <DialogHeader>
                   <DialogTitle>Report a Bug</DialogTitle>
                 </DialogHeader>
-                <div className="flex flex-col gap-4">
-                  <Button
-                    onClick={handleEmailBug}
-                    className="flex items-center gap-2"
-                  >
-                    <Mail className="h-4 w-4" />
-                    Report via Email
-                  </Button>
-                  <Button
-                    onClick={handleGithubBug}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Github className="h-4 w-4" />
-                    Create GitHub Issue
-                  </Button>
-                </div>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmitBugReport)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="subject"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Subject</FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="Brief description of the issue" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              {...field} 
+                              placeholder="Please provide details about the bug"
+                              className="min-h-[100px]"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" disabled={isSubmitting}>
+                      {isSubmitting ? "Submitting..." : "Submit Report"}
+                    </Button>
+                  </form>
+                </Form>
               </DialogContent>
             </Dialog>
 
@@ -145,6 +206,7 @@ export const MainLayout = () => {
                       userId={user.id}
                       displayName={displayName}
                       currentUrl={profilePicture || undefined}
+                      onUpdate={(url) => setProfilePicture(url)}
                     />
                   </Button>
                 </DropdownMenuTrigger>
