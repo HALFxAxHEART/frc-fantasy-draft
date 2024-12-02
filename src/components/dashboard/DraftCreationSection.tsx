@@ -82,17 +82,16 @@ export const DraftCreationSection = ({
       return;
     }
 
-    if (teams.some(team => !team.name || team.participants.some(p => !p))) {
+    if (teams.some(team => team.participants.some(p => !p.trim()))) {
       toast({
         title: "Error",
-        description: "All teams must have a name and all participants must have names",
+        description: "All participants must have names",
         variant: "destructive",
       });
       return;
     }
 
     try {
-      // Create participants array from team participants
       const participants = teams.flatMap(team => 
         team.participants.map(participant => ({
           name: participant,
@@ -109,7 +108,7 @@ export const DraftCreationSection = ({
           status: 'active',
           participants: participants,
           nickname: draftNickname || null,
-          teams: teams as any, // Type assertion to avoid JSON type error
+          teams: teams as any,
         })
         .select()
         .single();
