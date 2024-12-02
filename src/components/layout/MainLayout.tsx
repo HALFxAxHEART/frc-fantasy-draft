@@ -62,19 +62,18 @@ export const MainLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold">
-            FRC Fantasy Draft
+    <div className="min-h-screen bg-gradient-to-b from-primary/20 to-background">
+      <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-14 max-w-screen-2xl items-center">
+          <Link to="/" className="flex items-center space-x-2">
+            <span className="font-bold">FRC Fantasy Draft</span>
           </Link>
-          
-          <div className="flex items-center gap-4">
+
+          <div className="flex flex-1 items-center justify-end space-x-2">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="rounded-full"
             >
               {theme === "dark" ? (
                 <Sun className="h-5 w-5" />
@@ -87,7 +86,6 @@ export const MainLayout = () => {
               variant="ghost"
               size="icon"
               onClick={handleReportBug}
-              className="rounded-full"
             >
               <Bug className="h-5 w-5" />
             </Button>
@@ -95,7 +93,7 @@ export const MainLayout = () => {
             {user && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
+                  <Button variant="ghost" size="icon">
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -112,11 +110,12 @@ export const MainLayout = () => {
             )}
           </div>
         </div>
-      </header>
+      </nav>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container py-6">
         <Outlet />
       </main>
+
       <Footer />
     </div>
   );
