@@ -33,8 +33,10 @@ export const DraftOrder = ({ teams, currentIndex, round = 1 }: DraftOrderProps) 
     };
   };
 
-  // Updated condition to check both teams array and its contents
-  if (!teams?.length || teams.every(team => !team.name)) {
+  // Check if teams array exists and has valid team objects
+  const hasValidTeams = teams?.length > 0 && teams.some(team => team.name || team.participants?.length > 0);
+
+  if (!hasValidTeams) {
     return (
       <Card className="p-6">
         <p className="text-muted-foreground text-center">No participants added yet</p>
