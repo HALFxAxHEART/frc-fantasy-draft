@@ -19,7 +19,7 @@ export const ProfilePicture = ({ userId, displayName, currentUrl, onUpdate }: {
   onUpdate?: (newUrl: string) => void;
 }) => {
   const [isUploading, setIsUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(currentUrl);
+  const [previewUrl, setPreviewUrl] = useState<string | undefined>(currentUrl);
   const { toast } = useToast();
 
   const deleteOldProfilePicture = async (oldUrl: string) => {
@@ -86,12 +86,12 @@ export const ProfilePicture = ({ userId, displayName, currentUrl, onUpdate }: {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="p-0 h-auto">
+        <div className="cursor-pointer">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={previewUrl} />
+            <AvatarImage src={previewUrl} alt={displayName} />
             <AvatarFallback>{displayName?.[0]?.toUpperCase()}</AvatarFallback>
           </Avatar>
-        </Button>
+        </div>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -100,7 +100,7 @@ export const ProfilePicture = ({ userId, displayName, currentUrl, onUpdate }: {
         <div className="space-y-4">
           <div className="flex justify-center">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={previewUrl} />
+              <AvatarImage src={previewUrl} alt={displayName} />
               <AvatarFallback>{displayName?.[0]?.toUpperCase()}</AvatarFallback>
             </Avatar>
           </div>
