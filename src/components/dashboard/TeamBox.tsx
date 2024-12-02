@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { X, UserPlus, User } from "lucide-react";
+import { X, UserPlus } from "lucide-react";
 
 interface TeamBoxProps {
   index: number;
@@ -52,20 +52,14 @@ export const TeamBox = ({ index, team, onUpdate, onRemove }: TeamBoxProps) => {
         </Button>
       </div>
 
-      <Input
-        value={team.name}
-        onChange={(e) => onUpdate(index, { ...team, name: e.target.value })}
-        placeholder="Enter team name"
-      />
-
       <div className="space-y-2">
+        <Label>Participants</Label>
         {team.participants.map((participant, pIndex) => (
           <div key={pIndex} className="flex items-center gap-2">
-            <User className="h-4 w-4 text-muted-foreground" />
             <Input
               value={participant}
               onChange={(e) => updateParticipant(pIndex, e.target.value)}
-              placeholder={`Participant ${pIndex + 1}`}
+              placeholder="Enter participant name"
               className="flex-1"
             />
             {team.participants.length > 1 && (
@@ -88,7 +82,7 @@ export const TeamBox = ({ index, team, onUpdate, onRemove }: TeamBoxProps) => {
         onClick={addParticipant}
         className="w-full gap-2"
       >
-        <UserPlus className="h-4 w-4" />
+        <UserPlus className="h-4 w-4 mr-2" />
         Add Participant
       </Button>
     </Card>
