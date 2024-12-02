@@ -82,6 +82,9 @@ export const UserDrafts = ({ userId }: { userId: string }) => {
         return (
           <Card key={draft.id} className="relative">
             <CardHeader>
+              {draft.nickname && (
+                <p className="text-sm text-muted-foreground">{draft.nickname}</p>
+              )}
               <CardTitle className="text-lg">{draft.event_name}</CardTitle>
             </CardHeader>
             <CardContent>
