@@ -34,7 +34,7 @@ export const DraftOrder = ({ teams, currentIndex, round = 1 }: DraftOrderProps) 
   };
 
   // Check if teams array exists and has valid team objects
-  const hasValidTeams = teams?.length > 0 && teams.some(team => team.name || team.participants?.length > 0);
+  const hasValidTeams = teams?.length > 0;
 
   if (!hasValidTeams) {
     return (
