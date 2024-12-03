@@ -24,15 +24,6 @@ export const Footer = () => {
         </div>
         <div className="flex items-center gap-4">
           <a
-            href="https://www.stapulasolutions.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 hover:text-foreground transition-colors"
-          >
-            Created by Stapula Solutions
-            <ExternalLink className="h-3 w-3" />
-          </a>
-          <a
             href="https://trentonrobotics.com"
             target="_blank"
             rel="noopener noreferrer"
