@@ -1,17 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
-  const [selectedWeek, setSelectedWeek] = useState<string>("all");
   const navigate = useNavigate();
 
   // Check authentication status
@@ -35,12 +27,6 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  // Generate weeks array including Week 0
-  const weeks = Array.from({ length: 9 }, (_, i) => ({
-    value: i === 0 ? "0" : i.toString(),
-    label: `Week ${i === 0 ? "0" : i}`,
-  }));
-
   return (
     <div className="container mx-auto px-4 py-8">
       <motion.div
@@ -55,25 +41,6 @@ const Index = () => {
           <p className="text-lg text-muted-foreground">
             Create and manage your FRC Fantasy Draft teams
           </p>
-          
-          <div className="w-[200px]">
-            <Select
-              value={selectedWeek}
-              onValueChange={setSelectedWeek}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Week" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Weeks</SelectItem>
-                {weeks.map((week) => (
-                  <SelectItem key={week.value} value={week.value}>
-                    {week.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
