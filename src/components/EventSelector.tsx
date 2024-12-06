@@ -10,6 +10,8 @@ interface EventSelectorProps {
   onYearChange: (year: number) => void;
   selectedDistrict: string;
   onDistrictChange: (district: string) => void;
+  selectedWeek: string;
+  onWeekChange: (week: string) => void;
   isLoading?: boolean;
   error?: Error | null;
 }
@@ -22,6 +24,8 @@ export const EventSelector = ({
   onYearChange,
   selectedDistrict,
   onDistrictChange,
+  selectedWeek,
+  onWeekChange,
   isLoading,
   error
 }: EventSelectorProps) => {
@@ -29,9 +33,16 @@ export const EventSelector = ({
   const districts = events 
     ? [...new Set(events.filter(e => e.district).map(e => e.district?.abbreviation))]
     : [];
+  const weeks = Array.from({ length: 9 }, (_, i) => ({
+    value: i === 0 ? "0" : i.toString(),
+    label: `Week ${i === 0 ? "0" : i}`,
+  }));
 
   const filteredEvents = events?.filter(event => {
     if (selectedDistrict && event.district?.abbreviation !== selectedDistrict) {
+      return false;
+    }
+    if (selectedWeek !== "all" && event.week?.toString() !== selectedWeek) {
       return false;
     }
     return true;
@@ -41,7 +52,7 @@ export const EventSelector = ({
     <Card className="p-6 space-y-4">
       <h3 className="text-lg font-semibold mb-4">Select Event</h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
           <label className="block text-sm font-medium mb-2">Year</label>
           <Select value={selectedYear.toString()} onValueChange={(value) => onYearChange(Number(value))}>
@@ -52,6 +63,23 @@ export const EventSelector = ({
               {years.map((year) => (
                 <SelectItem key={year} value={year.toString()}>
                   {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">Week</label>
+          <Select value={selectedWeek} onValueChange={onWeekChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select week" />
+            </SelectTrigger>
+            <SelectContent className="bg-background border rounded-md shadow-lg min-w-[200px]">
+              <SelectItem value="all">All Weeks</SelectItem>
+              {weeks.map((week) => (
+                <SelectItem key={week.value} value={week.value}>
+                  {week.label}
                 </SelectItem>
               ))}
             </SelectContent>

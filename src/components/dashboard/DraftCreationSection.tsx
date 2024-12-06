@@ -37,6 +37,7 @@ export const DraftCreationSection = ({
 }: DraftCreationSectionProps) => {
   const [teams, setTeams] = useState<DraftTeam[]>([{ name: "", participants: [""] }]);
   const [draftNickname, setDraftNickname] = useState("");
+  const [selectedWeek, setSelectedWeek] = useState("all");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -172,6 +173,8 @@ export const DraftCreationSection = ({
         onYearChange={onYearChange}
         selectedDistrict={selectedDistrict}
         onDistrictChange={onDistrictChange}
+        selectedWeek={selectedWeek}
+        onWeekChange={setSelectedWeek}
         isLoading={isLoading}
         error={error}
       />
