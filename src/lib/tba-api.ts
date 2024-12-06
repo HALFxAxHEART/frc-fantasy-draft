@@ -15,6 +15,7 @@ export interface TBAEvent {
   start_date: string;
   end_date: string;
   year: number;
+  week?: number;  // Added week property as optional
 }
 
 export interface TBATeam {
