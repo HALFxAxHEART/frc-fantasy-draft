@@ -1,62 +1,86 @@
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Index = () => {
-  return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 container mx-auto px-8 py-16 flex flex-col">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center space-y-6 flex-shrink-0"
-        >
-          <span className="inline-block px-6 py-2 bg-primary text-primary-foreground text-lg font-medium rounded-full">
-            FRC Fantasy Draft
-          </span>
-          <h1 className="text-5xl md:text-7xl font-bold text-foreground mt-6">
-            Draft Your Dream FRC Alliance
-          </h1>
-          <p className="text-xl text-muted-foreground mt-6 max-w-3xl mx-auto">
-            Create your fantasy FRC team, compete with friends, and prove your
-            strategic prowess in the world of competitive robotics.
-          </p>
-          <div className="flex gap-4 justify-center mt-8">
-            <Link to="/login">
-              <Button size="lg" className="text-lg px-8 py-6">
-                Get Started
-              </Button>
-            </Link>
-          </div>
-        </motion.div>
+  const [selectedWeek, setSelectedWeek] = useState<string>("all");
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 flex-shrink-0"
-        >
-          <div className="p-8 rounded-xl border bg-card shadow-lg">
-            <h3 className="text-2xl font-semibold mb-4 text-foreground">1. Create Your Draft</h3>
-            <p className="text-lg text-muted-foreground">
-              Start by selecting an FRC event and inviting participants to join your draft. Each participant will get a chance to pick teams in a predetermined order.
-            </p>
+  // Generate weeks array including Week 0
+  const weeks = Array.from({ length: 9 }, (_, i) => ({
+    value: i === 0 ? "0" : i.toString(),
+    label: `Week ${i === 0 ? "0" : i}`,
+  }));
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-8"
+      >
+        <div className="flex flex-col gap-4">
+          <h1 className="text-4xl font-bold tracking-tight">
+            FRC Fantasy Draft
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            Create and manage your FRC Fantasy Draft teams
+          </p>
+          
+          <div className="w-[200px]">
+            <Select
+              value={selectedWeek}
+              onValueChange={setSelectedWeek}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Week" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Weeks</SelectItem>
+                {weeks.map((week) => (
+                  <SelectItem key={week.value} value={week.value}>
+                    {week.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <div className="p-8 rounded-xl border bg-card shadow-lg">
-            <h3 className="text-2xl font-semibold mb-4 text-foreground">2. Draft Teams</h3>
-            <p className="text-lg text-muted-foreground">
-              When it's your turn, pick from the available teams. Each participant gets 5 picks, and teams can only be selected once. Choose wisely based on team statistics and performance!
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="col-span-full lg:col-span-2 space-y-4"
+          >
+            <h2 className="text-2xl font-semibold">Getting Started</h2>
+            <p className="text-muted-foreground">
+              Welcome to FRC Fantasy Draft! Create your own draft or join an existing one to get started.
             </p>
-          </div>
-          <div className="p-8 rounded-xl border bg-card shadow-lg">
-            <h3 className="text-2xl font-semibold mb-4 text-foreground">3. Compete</h3>
-            <p className="text-lg text-muted-foreground">
-              After the draft, follow your teams through the event. Your score will be based on your teams' performance throughout the competition.
-            </p>
-          </div>
-        </motion.div>
-      </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="col-span-full lg:col-span-1 space-y-4"
+          >
+            <h2 className="text-2xl font-semibold">Quick Links</h2>
+            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+              <li>Create a new draft</li>
+              <li>Join existing draft</li>
+              <li>View your drafts</li>
+              <li>Manage settings</li>
+            </ul>
+          </motion.div>
+        </div>
+      </motion.div>
     </div>
   );
 };
